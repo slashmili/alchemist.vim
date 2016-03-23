@@ -1,4 +1,4 @@
-# vim-kimya
+# alchemist.vim
 
 This is a VIM plugin which integrates [alchemist-server](https://github.com/tonini/alchemist-server) into VIM.
 
