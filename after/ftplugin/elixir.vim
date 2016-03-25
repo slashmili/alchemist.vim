@@ -1,26 +1,26 @@
-if exists("b:did_ftplugin_kimya")
+if exists("b:did_ftplugin_alchemist")
     finish
 endif
 
-let b:did_ftplugin_kimya = 1
+let b:did_ftplugin_alchemist = 1
 
-if !exists('g:kimya#alchemist_client')
-    let g:kimya#alchemist_client = expand("<sfile>:p:h:h") . '/../alchemist/client/run.exs'
+if !exists('g:alchemist#alchemist_client')
+    let g:alchemist#alchemist_client = expand("<sfile>:p:h:h") . '/../alchemist_client'
 endif
 
-if !exists('g:kimya#root')
-    let g:kimya#root = getcwd()
+if !exists('g:alchemist#root')
+    "let g:alchemist#root = getcwd()
+    let g:alchemist#root = '/Users/milad/dev/elide'
 end
 
-
-if !executable(g:kimya#alchemist_client)
+if !executable(g:alchemist#alchemist_client)
     finish
 endif
 
-if !exists('g:kimya#omnifunc')
-    let g:kimya#omnifunc = 1
+if !exists('g:alchemist#omnifunc')
+    let g:alchemist#omnifunc = 1
 endif
 
-if exists('&omnifunc') && g:kimya#omnifunc
+if exists('&omnifunc') && g:alchemist#omnifunc
   setl omnifunc=elixircomplete#Complete
 endif

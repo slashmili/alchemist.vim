@@ -1,0 +1,144 @@
+#!/usr/bin/env python
+from __future__ import print_function
+import os, sys, tempfile
+import subprocess, shlex, socket
+import getopt, re
+import syslog
+
+def debug(text):
+    #syslog.openlog("alchemist_client")
+    #syslog.syslog(syslog.LOG_ALERT, text)
+    with open("/tmp/alchemist_client.log", "a") as myfile:
+        myfile.write("%s\n" % text)
+
+
+
+#TODO:
+#add unit test
+#set time out for recv
+#create connection if log file doesn't exists
+#recreate connection if server is not responsive
+#get tmp dir
+#extract command_type from command
+#find the running instance recursivly
+
+def send_command(sock, cmd_type, cmd):
+    sock.sendall(cmd + "\n")
+    result = ''
+    for line in readlines(sock):
+        result += "%s\n" % line
+        if line.strip() == "END-OF-%s" % cmd_type: break
+        if line.strip() == "END, func_puts-OF-DOCL": break
+
+    return result
+
+def readlines(sock, recv_buffer=4096, delim='\n'):
+    buffer = ''
+    data = True
+    while data:
+        data = sock.recv(recv_buffer)
+        buffer += data
+
+        while buffer.find(delim) != -1:
+            line, buffer = buffer.split('\n', 1)
+            yield line
+    return
+
+
+def alchemist_help():
+    return("Usage: alchemist_client -c <command> -t <command_type> -d <working_directory> -a <alchemist_script>")
+
+def main(argv):
+    cmd_type = ""
+    cmd = ""
+    cwd = ""
+    alchemist_script = ""
+    try:
+        opts, args = getopt.getopt(argv,"hc:t:d:a:",["type=","command=", "directory=", "alchemist="])
+    except getopt.GetoptError:
+        print(alchemist_help())
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print(alchemist_help())
+            sys.exit()
+        elif opt in ("-c", "--command"):
+            cmd = arg
+        elif opt in ("-t", "--type"):
+            cmd_type = arg
+        elif opt in ("-d", "--directory"):
+            cwd = arg
+        elif opt in ("-a", "--alchemist"):
+            alchemist_script = arg
+    if cmd == "":
+        cmd = raw_input()
+    debug("cmd_type:%s, cmd:%s, cwd:%s, alchemist_script:%s" %
+            (cmd_type, cmd, cwd, alchemist_script))
+
+
+    process_command(cmd_type, cmd, cwd, alchemist_script)
+
+def process_command(cmd_type, cmd, cwd, alchemist_script):
+    server_log = get_server_log(cwd)
+    if server_log == None:
+        raise "create connection"
+        alchemist_script = "elixir /Users/milad/dev/alchemist-server/run.exs --env=dev --listen"
+        arg = shlex.split(alchemist_script)
+        if os.path.exists(log_tmp) == False:
+            log_file = open(log_tmp, "w")
+        subprocess.Popen(arg, stdout=log_file, stderr=log_file, cwd=cwd)
+    else:
+        connection = extract_connection_settings(server_log)
+        if connection == None:
+            raise "recreate connection"
+        sock = connect(connection)
+        if sock == None:
+            raise "recreate connection"
+
+        print(send_command(sock, cmd_type, cmd), end="")
+
+
+def connect(host_port):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect(host_port)
+    if is_connection_alive(sock) == False:
+        sock.close()
+        return None
+    return sock
+
+def is_connection_alive(sock):
+    if send_command(sock, "PING", "PING") == "PONG\nEND-OF-PING\n":
+        True
+    False
+
+def extract_connection_settings(server_log):
+    for line in open(server_log, "r").readlines():
+        match = re.search(r'ok\|(?P<host>\w+):(?P<port>\d+)', line)
+        if match:
+            (host, port) = match.groups()
+            return (host, int(port))
+            break
+    return None
+
+
+def get_server_log(cwd):
+    dir_tmp = "%s/alchemist_server" % (os.environ['TMPDIR'])
+    log_tmp = "%s/%s" % (dir_tmp, cwd.replace("/", "zS"))
+    if os.path.exists(dir_tmp) == False:
+        os.makedirs(dir_tmp)
+
+    if os.path.exists(log_tmp) == True:
+        return log_tmp
+
+    return None
+
+
+
+if __name__ == "__main__":
+    debug("executed")
+
+    main(sys.argv[1:])
+
+    debug("done.........|")
+
+
