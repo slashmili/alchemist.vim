@@ -9,8 +9,7 @@ if !exists('g:alchemist#alchemist_client')
 endif
 
 if !exists('g:alchemist#root')
-    "let g:alchemist#root = getcwd()
-    let g:alchemist#root = '/Users/milad/dev/elide'
+    let g:alchemist#root = getcwd()
 end
 
 if !executable(g:alchemist#alchemist_client)

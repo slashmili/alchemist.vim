@@ -69,8 +69,8 @@ endfunction
 
 
 function! elixircomplete#get_suggestions(hint)
-    let req = s:alchemist_format("COMP", a:hint, "Elixir", [], [])  . "\n"
-    let result = system(g:alchemist#alchemist_client. ' -t COMP -d /Users/milad/dev/elide -a /Users/milad/dev/alchemist-server/run.exs', req)
+    let req = s:alchemist_format("COMP", a:hint, "Elixir", [], [])
+    let result = s:alchemist_client(req)
     return filter(split(result, '\n'), 'v:val != "END-OF-COMP"')
 endfunction
 
@@ -81,4 +81,9 @@ function! s:alchemist_format(cmd, arg, context, imports, aliases)
     return a:cmd. " { \"" . a:arg . "\", [ context: ". a:context.
                           \ ", imports: ". string(a:imports).
                           \ ", aliases: ". string(a:aliases) . "] }"
+endfunction
+
+function! s:alchemist_client(req)
+    let req = a:req . "\n"
+    return system(g:alchemist#alchemist_client.  ' -d ' . g:alchemist#root, req)
 endfunction
