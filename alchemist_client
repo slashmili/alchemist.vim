@@ -9,35 +9,6 @@ import traceback
 
 debug = True
 
-def debug(text):
-    if debug == False:
-        return
-    syslog.openlog("alchemist_client")
-    syslog.syslog(syslog.LOG_ALERT, text)
-
-def send_command(sock, cmd_type, cmd):
-    sock.sendall(cmd + "\n")
-    result = ''
-    for line in readlines(sock):
-        result += "%s\n" % line
-        if line.strip() == "END-OF-%s" % cmd_type: break
-        if line.strip() == "END, func_puts-OF-DOCL": break
-
-    return result
-
-def readlines(sock, recv_buffer=4096, delim='\n'):
-    buffer = ''
-    data = True
-    while data:
-        data = sock.recv(recv_buffer)
-        buffer += data
-
-        while buffer.find(delim) != -1:
-            line, buffer = buffer.split('\n', 1)
-            yield line
-    return
-
-
 def alchemist_help():
     return """Usage: alchemist_client -c <command> -t <command_type> -d <working_directory> -a <alchemist_script>
 
@@ -137,6 +108,28 @@ def connect(host_port):
         return None
     return sock
 
+def send_command(sock, cmd_type, cmd):
+    sock.sendall(cmd + "\n")
+    result = ''
+    for line in readlines(sock):
+        result += "%s\n" % line
+        if line.strip() == "END-OF-%s" % cmd_type: break
+        if line.strip() == "END, func_puts-OF-DOCL": break
+
+    return result
+
+def readlines(sock, recv_buffer=4096, delim='\n'):
+    buffer = ''
+    data = True
+    while data:
+        data = sock.recv(recv_buffer)
+        buffer += data
+
+        while buffer.find(delim) != -1:
+            line, buffer = buffer.split('\n', 1)
+            yield line
+    return
+
 def is_connection_alive(sock):
     if send_command(sock, "PING", "PING") == "PONG\nEND-OF-PING\n":
         True
@@ -184,6 +177,11 @@ def create_server_log(cwd):
     return None
 
 
+def debug(text):
+    if debug == False:
+        return
+    syslog.openlog("alchemist_client")
+    syslog.syslog(syslog.LOG_ALERT, text)
 
 
 if __name__ == "__main__":
