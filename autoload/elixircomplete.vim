@@ -87,3 +87,9 @@ function! s:alchemist_client(req)
     let req = a:req . "\n"
     return system(g:alchemist#alchemist_client.  ' -d ' . g:alchemist#root, req)
 endfunction
+
+function! elixircomplete#get_doc(word)
+    let req = s:alchemist_format("DOCL", a:word, "Elixir", [], [])
+    let result = s:alchemist_client(req)
+    echo result
+endfunction
