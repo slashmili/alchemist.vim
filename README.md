@@ -16,7 +16,7 @@ This plugin uses [alchemist-server](https://github.com/tonini/alchemist-server) 
 
 ## Dependencies
 
-You need this dependencies on the same machine you run vim
+You need these dependencies on the same machine you run vim
 
 * **Elixir** > v1.0.4 to run alchemist-server
 * **Python** `alchemist_client` is the script that talks to _alchemist-server_ 
