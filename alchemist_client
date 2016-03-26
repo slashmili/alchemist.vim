@@ -1,0 +1,205 @@
+#!/usr/bin/env python
+from __future__ import print_function
+import os, sys, tempfile
+import subprocess, shlex, socket
+import getopt, re
+import syslog
+import time
+import traceback
+
+debug = True
+
+def debug(text):
+    if debug == False:
+        return
+    syslog.openlog("alchemist_client")
+    syslog.syslog(syslog.LOG_ALERT, text)
+
+def send_command(sock, cmd_type, cmd):
+    sock.sendall(cmd + "\n")
+    result = ''
+    for line in readlines(sock):
+        result += "%s\n" % line
+        if line.strip() == "END-OF-%s" % cmd_type: break
+        if line.strip() == "END, func_puts-OF-DOCL": break
+
+    return result
+
+def readlines(sock, recv_buffer=4096, delim='\n'):
+    buffer = ''
+    data = True
+    while data:
+        data = sock.recv(recv_buffer)
+        buffer += data
+
+        while buffer.find(delim) != -1:
+            line, buffer = buffer.split('\n', 1)
+            yield line
+    return
+
+
+def alchemist_help():
+    return """Usage: alchemist_client -c <command> -t <command_type> -d <working_directory> -a <alchemist_script>
+
+    a client that talks to alchemist_server through network socket
+
+    Options:
+    -c, --command=""           Command that is going to be sent to alchemist server if nothing is provided read a line from STDIN
+    -t, --command-type=""      Command type, if it's not provided, extract it from command
+    -d, --directory=           Directory that alchemist server should process code from
+    -a, --alchemist-server=""  Path to alchemist server `run.exs`, if it's not provided load it from alchemist-server/run.exs
+    """
+
+def main(argv):
+    cmd_type = ""
+    cmd = ""
+    cwd = ""
+    alchemist_script = ""
+    try:
+        opts, args = getopt.getopt(argv,"hc:t:d:a:",["type=","command-type=", "directory=", "alchemist-server="])
+    except getopt.GetoptError:
+        print(alchemist_help())
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print(alchemist_help())
+            sys.exit()
+        elif opt in ("-c", "--command"):
+            cmd = arg
+        elif opt in ("-t", "--command-type"):
+            cmd_type = arg
+        elif opt in ("-d", "--directory"):
+            cwd = arg
+        elif opt in ("-a", "--alchemist-server"):
+            alchemist_script = arg
+    if cmd == "":
+        cmd = raw_input()
+    if alchemist_script == "":
+        alchemist_script = "%s/alchemist-server/run.exs" % where_am_i()
+    if cmd_type == "":
+        cmd_type = cmd.split(" ")[0]
+    debug("cmd_type:%s, cmd:%s, cwd:%s, alchemist_script:%s" %
+            (cmd_type, cmd, cwd, alchemist_script))
+
+    if cmd == "" or cmd_type == "" or alchemist_script == "" or cwd == "":
+        print(alchemist_help())
+        sys.exit(2)
+
+    process_command(cmd_type, cmd, cwd, alchemist_script)
+
+
+def where_am_i():
+    return os.path.dirname(os.path.realpath(__file__))
+
+def process_command(cmd_type, cmd, cwd, alchemist_script):
+    server_log = get_server_log(cwd)
+    if server_log == None:
+        server_log = create_server_log(cwd)
+        run_alchemist_server(alchemist_script, server_log, cwd)
+
+    connection = extract_connection_settings(server_log)
+    if connection == None:
+        run_alchemist_server(alchemist_script, server_log, cwd)
+        connection = extract_connection_settings(server_log)
+
+    sock = connect(connection)
+    if sock == None:
+        run_alchemist_server(alchemist_script, server_log, cwd)
+        connection = extract_connection_settings(server_log)
+        sock = connect(connection)
+
+    print(send_command(sock, cmd_type, cmd), end="")
+
+
+def run_alchemist_server(alchemist_script, server_log, cwd):
+    if os.path.exists(alchemist_script) == False:
+        raise Exception("alchemist script does not exist in (%s)" % alchemist_script)
+    alchemist_script = "elixir %s --env=dev --listen" % alchemist_script
+    arg = shlex.split(alchemist_script)
+    log_file = open(server_log, "w")
+    subprocess.Popen(arg, stdout=log_file, stderr=log_file, cwd=cwd)
+    for t in range(1, 5):
+        time.sleep(t/10.1)
+        if len(open(server_log).readlines()) > 0:
+            break
+
+def connect(host_port):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    try:
+        sock.connect(host_port)
+    except socket.error as e:
+        debug("Can not establish connection to %s, error: %s" % (host_port, e))
+        return None
+
+    if is_connection_alive(sock) == False:
+        sock.close()
+        return None
+    return sock
+
+def is_connection_alive(sock):
+    if send_command(sock, "PING", "PING") == "PONG\nEND-OF-PING\n":
+        True
+    False
+
+def extract_connection_settings(server_log):
+    """
+    >>> server_log = "t/fixtures/alchemist_server/valid.log"
+    >>> print(extract_connection_settings(server_log))
+    ('localhost', 2433)
+
+    >>> server_log = "t/fixtures/alchemist_server/invalid.log"
+    >>> print(extract_connection_settings(server_log))
+    None
+    """
+    for line in open(server_log, "r").readlines():
+        match = re.search(r'ok\|(?P<host>\w+):(?P<port>\d+)', line)
+        if match:
+            (host, port) = match.groups()
+            return (host, int(port))
+            break
+    return None
+
+
+def get_server_log(cwd):
+    dir_tmp = "%s/alchemist_server" % (os.environ['TMPDIR'])
+    log_tmp = "%s/%s" % (dir_tmp, cwd.replace("/", "zS"))
+    if os.path.exists(dir_tmp) == False:
+        return None
+
+    if os.path.exists(log_tmp) == True:
+        return log_tmp
+
+    return None
+
+def create_server_log(cwd):
+    dir_tmp = "%s/alchemist_server" % (os.environ['TMPDIR'])
+    log_tmp = "%s/%s" % (dir_tmp, cwd.replace("/", "zS"))
+    if os.path.exists(dir_tmp) == False:
+        os.makedirs(dir_tmp)
+
+    if os.path.exists(log_tmp) == False:
+        return log_tmp
+
+    return None
+
+
+
+
+if __name__ == "__main__":
+    debug("starting alchemist_client...")
+
+    try:
+        if "--test" in sys.argv[1:]:
+            import doctest
+            doctest.testmod()
+            sys.exit()
+        main(sys.argv[1:])
+    except Exception as e:
+        debug("Exception occurred: %s" % traceback.format_exc())
+        print("error: %s" % e.message)
+        sys.exit(1)
+
+    debug("done.")
+
+
