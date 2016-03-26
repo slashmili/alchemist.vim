@@ -69,27 +69,7 @@ endfunction
 
 
 function! elixircomplete#get_suggestions(hint)
-    let req = s:alchemist_format("COMP", a:hint, "Elixir", [], [])
-    let result = s:alchemist_client(req)
+    let req = alchemist#alchemist_format("COMP", a:hint, "Elixir", [], [])
+    let result = alchemist#alchemist_client(req)
     return filter(split(result, '\n'), 'v:val != "END-OF-COMP"')
-endfunction
-
-function! s:alchemist_format(cmd, arg, context, imports, aliases)
-    " context: Module
-    " imports: List(Module)
-    " aliases: List({Alias, Module})
-    return a:cmd. " { \"" . a:arg . "\", [ context: ". a:context.
-                          \ ", imports: ". string(a:imports).
-                          \ ", aliases: ". string(a:aliases) . "] }"
-endfunction
-
-function! s:alchemist_client(req)
-    let req = a:req . "\n"
-    return system(g:alchemist#alchemist_client.  ' -d ' . g:alchemist#root, req)
-endfunction
-
-function! elixircomplete#get_doc(word)
-    let req = s:alchemist_format("DOCL", a:word, "Elixir", [], [])
-    let result = s:alchemist_client(req)
-    echo result
 endfunction

@@ -23,3 +23,5 @@ endif
 if exists('&omnifunc') && g:alchemist#omnifunc
   setl omnifunc=elixircomplete#Complete
 endif
+
+nnoremap K :call alchemist#lookup_name_under_cursor()<CR>
