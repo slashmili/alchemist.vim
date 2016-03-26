@@ -7,11 +7,13 @@ import syslog
 import time
 import traceback
 
+debug = True
+
 def debug(text):
-    #syslog.openlog("alchemist_client")
-    #syslog.syslog(syslog.LOG_ALERT, text)
-    with open("/tmp/alchemist_client.log", "a") as myfile:
-        myfile.write("%s\n" % text)
+    if debug == False:
+        return
+    syslog.openlog("alchemist_client")
+    syslog.syslog(syslog.LOG_ALERT, text)
 
 def send_command(sock, cmd_type, cmd):
     sock.sendall(cmd + "\n")
