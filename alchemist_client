@@ -155,7 +155,7 @@ def extract_connection_settings(server_log):
 
 
 def get_server_log(cwd):
-    dir_tmp = "%s/alchemist_server" % (os.environ['TMPDIR'])
+    dir_tmp = "%s/alchemist_server" % (get_tmp_dir())
     log_tmp = "%s/%s" % (dir_tmp, cwd.replace("/", "zS"))
     if os.path.exists(dir_tmp) == False:
         return None
@@ -166,7 +166,7 @@ def get_server_log(cwd):
     return None
 
 def create_server_log(cwd):
-    dir_tmp = "%s/alchemist_server" % (os.environ['TMPDIR'])
+    dir_tmp = "%s/alchemist_server" % (get_tmp_dir())
     log_tmp = "%s/%s" % (dir_tmp, cwd.replace("/", "zS"))
     if os.path.exists(dir_tmp) == False:
         os.makedirs(dir_tmp)
@@ -176,6 +176,29 @@ def create_server_log(cwd):
 
     return None
 
+def get_tmp_dir():
+    """
+    >>> os.environ['TMPDIR'] = '/tmp/foo01/'
+    >>> get_tmp_dir()
+    '/tmp/foo01/'
+    >>> del os.environ['TMPDIR']
+    >>> os.environ['TEMP'] = '/tmp/foo02/'
+    >>> get_tmp_dir()
+    '/tmp/foo02/'
+    >>> del os.environ['TEMP']
+    >>> os.environ['TMP'] = '/tmp/foo03/'
+    >>> get_tmp_dir()
+    '/tmp/foo03/'
+    >>> del os.environ['TMP']
+    >>> get_tmp_dir()
+    '/tmp/'
+    """
+    if tempfile.tempdir != None:
+        return tempfile.tempdir
+    for var in ['TMPDIR', 'TEMP', 'TMP']:
+        if var in os.environ:
+            return os.environ[var]
+    return "/tmp/"
 
 def debug(text):
     if debug == False:
