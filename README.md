@@ -3,7 +3,7 @@
 [![License GPL 3](https://img.shields.io/badge/license-GPL_3-green.svg)](http://www.gnu.org/licenses/gpl-3.0)
 [![Build Status](https://travis-ci.org/slashmili/alchemist.vim.svg?branch=develop)](https://travis-ci.org/slashmili/alchemist.vim)
 
-**NOTE** : This is an experimental project and needs extra features in *alchemist-server* which is on going disucssion in this [PR](https://github.com/tonini/alchemist-server/pull/8). For I used the clone of *alchemist-server* in this project
+**NOTE** : This is an experimental project and needs extra features in *alchemist-server* which is on going disucssion in this [PR](https://github.com/tonini/alchemist-server/pull/8). I used the clone of *alchemist-server* in this project
 
 This plugin uses [alchemist-server](https://github.com/tonini/alchemist-server) to give inside about your elixir project inside vim.
 
