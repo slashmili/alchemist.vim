@@ -13,15 +13,6 @@ def debug(text):
     with open("/tmp/alchemist_client.log", "a") as myfile:
         myfile.write("%s\n" % text)
 
-
-
-#TODO:
-#add unit test
-#set time out for recv
-#get tmp dir
-#extract command_type from command
-#find the running instance recursivly
-
 def send_command(sock, cmd_type, cmd):
     sock.sendall(cmd + "\n")
     result = ''
@@ -97,6 +88,7 @@ def main(argv):
 
 def where_am_i():
     return os.path.dirname(os.path.realpath(__file__))
+
 def process_command(cmd_type, cmd, cwd, alchemist_script):
     server_log = get_server_log(cwd)
     if server_log == None:
@@ -149,6 +141,15 @@ def is_connection_alive(sock):
     False
 
 def extract_connection_settings(server_log):
+    """
+    >>> server_log = "t/fixtures/alchemist_server/valid.log"
+    >>> print(extract_connection_settings(server_log))
+    ('localhost', 2433)
+
+    >>> server_log = "t/fixtures/alchemist_server/invalid.log"
+    >>> print(extract_connection_settings(server_log))
+    None
+    """
     for line in open(server_log, "r").readlines():
         match = re.search(r'ok\|(?P<host>\w+):(?P<port>\d+)', line)
         if match:
@@ -187,6 +188,10 @@ if __name__ == "__main__":
     debug("starting alchemist_client...")
 
     try:
+        if "--test" in sys.argv[1:]:
+            import doctest
+            doctest.testmod()
+            sys.exit()
         main(sys.argv[1:])
     except Exception as e:
         debug("Exception occurred: %s" % traceback.format_exc())
