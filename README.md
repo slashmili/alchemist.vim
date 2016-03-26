@@ -1,5 +1,8 @@
 # alchemist.vim
 
+[![License GPL 3](https://img.shields.io/badge/license-GPL_3-green.svg)](http://www.gnu.org/licenses/gpl-3.0)
+[![Build Status](https://travis-ci.org/slashmili/alchemist.vim.svg?branch=develop)](https://travis-ci.org/slashmili/alchemist.vim)
+
 This is a VIM plugin which integrates [alchemist-server](https://github.com/tonini/alchemist-server) into VIM.
 
 **alchemist-server** allows us to integrate this actions into VIM:
