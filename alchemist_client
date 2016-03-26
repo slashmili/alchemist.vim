@@ -46,7 +46,16 @@ def readlines(sock, recv_buffer=4096, delim='\n'):
 
 
 def alchemist_help():
-    return("Usage: alchemist_client -c <command> -t <command_type> -d <working_directory> -a <alchemist_script>")
+    return """Usage: alchemist_client -c <command> -t <command_type> -d <working_directory> -a <alchemist_script>
+
+    a client that talks to alchemist_server through network socket
+
+    Options:
+    -c, --command=""           Command that is going to be sent to alchemist server if nothing is provided read a line from STDIN
+    -t, --command-type=""      Command type, if it's not provided, extract it from command
+    -d, --directory=           Directory that alchemist server should process code from
+    -a, --alchemist-server=""  Path to alchemist server `run.exs`, if it's not provided load it from alchemist-server/run.exs
+    """
 
 def main(argv):
     cmd_type = ""
@@ -54,7 +63,7 @@ def main(argv):
     cwd = ""
     alchemist_script = ""
     try:
-        opts, args = getopt.getopt(argv,"hc:t:d:a:",["type=","command=", "directory=", "alchemist="])
+        opts, args = getopt.getopt(argv,"hc:t:d:a:",["type=","command-type=", "directory=", "alchemist-server="])
     except getopt.GetoptError:
         print(alchemist_help())
         sys.exit(2)
@@ -64,21 +73,30 @@ def main(argv):
             sys.exit()
         elif opt in ("-c", "--command"):
             cmd = arg
-        elif opt in ("-t", "--type"):
+        elif opt in ("-t", "--command-type"):
             cmd_type = arg
         elif opt in ("-d", "--directory"):
             cwd = arg
-        elif opt in ("-a", "--alchemist"):
+        elif opt in ("-a", "--alchemist-server"):
             alchemist_script = arg
     if cmd == "":
         cmd = raw_input()
+    if alchemist_script == "":
+        alchemist_script = "%s/alchemist-server/run.exs" % where_am_i()
+    if cmd_type == "":
+        cmd_type = cmd.split(" ")[0]
     debug("cmd_type:%s, cmd:%s, cwd:%s, alchemist_script:%s" %
             (cmd_type, cmd, cwd, alchemist_script))
 
+    if cmd == "" or cmd_type == "" or alchemist_script == "" or cwd == "":
+        print(alchemist_help())
+        sys.exit(2)
 
     process_command(cmd_type, cmd, cwd, alchemist_script)
 
 
+def where_am_i():
+    return os.path.dirname(os.path.realpath(__file__))
 def process_command(cmd_type, cmd, cwd, alchemist_script):
     server_log = get_server_log(cwd)
     if server_log == None:
