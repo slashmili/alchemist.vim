@@ -83,3 +83,11 @@ endfunction
 function! s:close_doc_win()
     close!
 endfunction
+
+function! alchemist#exdoc(...)
+    if empty(a:000)
+        call alchemist#lookup_name_under_cursor()
+        return
+    endif
+    call s:open_doc_window(a:000[0], "new", "split")
+endfunction
