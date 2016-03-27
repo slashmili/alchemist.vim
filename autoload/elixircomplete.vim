@@ -55,7 +55,13 @@ function! s:parse_suggestion(base, suggestion)
     echom "base: " . a:base . " | suggestion:" . a:suggestion
     if a:suggestion =~ s:elixir_fun_w_arity
         let word = strpart(a:suggestion, 0, match(a:suggestion, '/[0-9]\+$'))
-        return {'word': a:base . word, 'abbr': a:suggestion, 'kind': 'f' }
+        if a:base =~ '.*\.$'
+            " case: Li^X^O => base: "List." word: "first" ===> List.first
+            return {'word': a:base . word, 'abbr': a:suggestion, 'kind': 'f' }
+        else
+            " case: g^X^O => base "get_" word: "get_in" ===> get_in
+            return {'word': word, 'abbr': a:suggestion, 'kind': 'f' }
+        endif
     elseif a:base =~ s:erlang_module
         return {'word': ':'.a:suggestion, 'abbr': a:suggestion, 'kind': 'm'}
     elseif a:suggestion =~ s:elixir_module
