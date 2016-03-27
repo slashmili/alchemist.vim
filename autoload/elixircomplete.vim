@@ -56,7 +56,6 @@ function! s:build_completions(base)
 endfunction
 
 function! s:parse_suggestion(base, suggestion)
-    echom "base: " . a:base . " | suggestion:" . a:suggestion
     if a:suggestion =~ s:elixir_fun_w_arity
         let word = strpart(a:suggestion, 0, match(a:suggestion, '/[0-9]\+$'))
         if a:base =~ '.*\.$'
@@ -73,8 +72,12 @@ function! s:parse_suggestion(base, suggestion)
             " case: Li^X^O => base: "List." suggestion: "List." ==> List.
             return {'word': a:suggestion, 'abbr': a:suggestion, 'kind': 'm'}
         endif
-        " case: Li^X^O => base: "List." suggestion: "Chars" ==> List.Chars.
-        return {'word': a:base.a:suggestion.'.', 'abbr': a:suggestion, 'kind': 'm'}
+        if a:base =~ '\.$'
+            " case: Li^X^O => base: "List." suggestion: "Chars" ==> List.Chars.
+            return {'word': a:base.a:suggestion.'.', 'abbr': a:suggestion, 'kind': 'm'}
+        endif
+        " case: L^X^O => base: "L" suggestion: "List" ==> List
+        return {'word': a:suggestion.'.', 'abbr': a:suggestion, 'kind': 'm'}
     else
         return {'word': a:suggestion, 'abbr': a:suggestion }
     endif
