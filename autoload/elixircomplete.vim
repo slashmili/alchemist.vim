@@ -47,6 +47,10 @@ function! s:build_completions(base)
         return suggestions
     elseif len(suggestions) > 1
         let [ newbase ; tail ] = suggestions
+        if newbase =~ '.*\.$'
+            " case Li^X^O should offer "List." as the first completion
+            return map(suggestions, 's:parse_suggestion(newbase, v:val)')
+        end
         return map(tail, 's:parse_suggestion(newbase, v:val)')
     endif
 endfunction
@@ -65,6 +69,11 @@ function! s:parse_suggestion(base, suggestion)
     elseif a:base =~ s:erlang_module
         return {'word': ':'.a:suggestion, 'abbr': a:suggestion, 'kind': 'm'}
     elseif a:suggestion =~ s:elixir_module
+        if a:base == a:suggestion
+            " case: Li^X^O => base: "List." suggestion: "List." ==> List.
+            return {'word': a:suggestion, 'abbr': a:suggestion, 'kind': 'm'}
+        endif
+        " case: Li^X^O => base: "List." suggestion: "Chars" ==> List.Chars.
         return {'word': a:base.a:suggestion.'.', 'abbr': a:suggestion, 'kind': 'm'}
     else
         return {'word': a:suggestion, 'abbr': a:suggestion }
