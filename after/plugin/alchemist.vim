@@ -1,3 +1,5 @@
+let s:buf_nr = -1
+
 function! alchemist#alchemist_client(req)
     let req = a:req . "\n"
     return system(g:alchemist#alchemist_client.  ' -d ' . g:alchemist#root, req)
@@ -28,70 +30,54 @@ endfunction
 function! alchemist#lookup_name_under_cursor()
     let query = substitute(expand("<cWORD>"), '[.,;]$', '', '')
     let query = substitute(query, '(.*$', '', '')
-    let query = substitute(query, '</\?tt>', '', 'g')
-    call s:display_doc(query)
+    call s:open_doc_window(query, 'new', 'split')
 endfunction
 
-function! s:display_doc(query)
-    let doc = alchemist#get_doc(a:query)
-    "TODO: find a way without creating tmp file
-    let fileName = a:query.".ansi"
-    let cacheFile = substitute('/tmp/'.fileName, '#', ',','')
-    let lines = filter(split(doc, '\n'), 'v:val != "END, func_puts-OF-DOCL"')
-    let lines = filter(lines, 'v:val !~ "Could not load module*"')
-    if len(lines) == 0
+function! s:open_doc_window(query, newposition, position)
+    let content = alchemist#get_doc(a:query)
+
+    let lines = split(content, '\n')
+    if len(lines) < 3
         redraw
         echom "No matches!"
-    else
-        call s:focusBrowserWindow()
-        call writefile(lines, fnameescape(cacheFile))
-        exec "edit ".fnameescape(fnameescape(cacheFile))
-        call s:prepareDocBuffer()
-    endif
-endfunction
-
-function! s:focusBrowserWindow()
-    if !exists("s:browser_bufnr")
-        rightbelow split
         return
     endif
-    if bufwinnr(s:browser_bufnr) == winnr()
-        return
-    end
-    let winnr = bufwinnr(s:browser_bufnr)
-    if winnr == -1
-        " create window
-        rightbelow split
-    else
-        exec winnr . "wincmd w"
+
+    " reuse existing buffer window if it exists otherwise create a new one
+    if !bufexists(s:buf_nr)
+        execute a:newposition
+        sil file `="[ExDoc]"`
+        let s:buf_nr = bufnr('%')
+        if alchemist#ansi_enabled()
+            AnsiEsc
+        else
+            set ft=markdown
+        endif
+    elseif bufwinnr(s:buf_nr) == -1
+        execute a:position
+        execute s:buf_nr . 'buffer'
+    elseif bufwinnr(s:buf_nr) != bufwinnr('%')
+        execute bufwinnr(s:buf_nr) . 'wincmd w'
     endif
-endfunction
 
-function! s:prepareDocBuffer()
-    setlocal nowrap
-    setlocal textwidth=0
-    noremap <buffer> q :call <SID>close_doc_win()<cr>
-    setlocal statusline="%<%f\ %r%=%-14.(%l,%c%V%)\ %P"
+    setlocal bufhidden=delete
+    setlocal buftype=nofile
+    setlocal noswapfile
+    setlocal nobuflisted
+    setlocal nocursorline
+    setlocal nocursorcolumn
+    setlocal iskeyword+=:
+    setlocal iskeyword-=-
 
-
-    let s:browser_bufnr = bufnr('%')
-    call s:syntaxLoad()
+    setlocal modifiable
+    %delete _
+    call append(0, split(content, "\n"))
+    sil $delete _
+    sil $delete _
+    AnsiEsc!
+    normal gg
     setlocal nomodifiable
-endfunction
-
-func! s:syntaxLoad()
-    if !exists("g:syntax_on")
-        setlocal modifiable
-        silent! %!sed -e 's/<\/\?tt>/`/g' -e 's/<\/\?em>//g' -e 's/<\/\?b>//g' -e 's/<\/\?i>//g'
-        setlocal nomodifiable
-        write
-        return
-    endif
-
-    "TODO: prevent toggling AnsiEsc
-    if alchemist#ansi_enabled()
-        AnsiEsc
-    endif
+    noremap <buffer> q :call <SID>close_doc_win()<cr>
 endfunction
 
 function! s:close_doc_win()
