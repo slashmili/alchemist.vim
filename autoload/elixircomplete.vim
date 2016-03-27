@@ -32,6 +32,7 @@ function! s:FindStart()
     " but it does seem to work for now.
     let l:isk_bak = &isk
     set isk+=.
+    set isk+=:
     let pos = searchpos('\<', 'bnW', line('.'))[1] - 1
     let &isk = l:isk_bak
     echo pos
@@ -46,22 +47,19 @@ function! s:build_completions(base)
         return suggestions
     elseif len(suggestions) > 1
         let [ newbase ; tail ] = suggestions
-        if newbase !~ '.*\.$' " non-unique match
-            let newbase = strpart(newbase, 0, match(newbase, '[^.]\+$'))
-        endif
         return map(tail, 's:parse_suggestion(newbase, v:val)')
     endif
 endfunction
 
 function! s:parse_suggestion(base, suggestion)
-    "echom "base: " . a:base . " | suggestion:" . a:suggestion
+    echom "base: " . a:base . " | suggestion:" . a:suggestion
     if a:suggestion =~ s:elixir_fun_w_arity
         let word = strpart(a:suggestion, 0, match(a:suggestion, '/[0-9]\+$'))
         return {'word': a:base . word, 'abbr': a:suggestion, 'kind': 'f' }
+    elseif a:base =~ s:erlang_module
+        return {'word': ':'.a:suggestion, 'abbr': a:suggestion, 'kind': 'm'}
     elseif a:suggestion =~ s:elixir_module
         return {'word': a:base.a:suggestion.'.', 'abbr': a:suggestion, 'kind': 'm'}
-    elseif a:suggestion =~ s:erlang_module
-        return {'word': ':'.a:suggestion, 'abbr': a:suggestion, 'kind': 'm'}
     else
         return {'word': a:suggestion, 'abbr': a:suggestion }
     endif
