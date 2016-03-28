@@ -45,7 +45,7 @@ function! s:open_doc_window(query, newposition, position)
     let lines = split(content, '\n')
     if len(lines) < 3
         redraw
-        echom "No matches!"
+        echom "No matches for '" . a:query . "'!"
         return
     endif
 
