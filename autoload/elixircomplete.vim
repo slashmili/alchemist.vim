@@ -62,8 +62,15 @@ function! s:parse_suggestion(base, suggestion)
             " case: Li^X^O => base: "List." word: "first" ===> List.first
             return {'word': a:base . word, 'abbr': a:suggestion, 'kind': 'f' }
         else
-            " case: g^X^O => base "get_" word: "get_in" ===> get_in
-            return {'word': word, 'abbr': a:suggestion, 'kind': 'f' }
+            let ch = split(a:base, '\.')
+            if len(ch) == 1
+                " case: g^X^O => base "get_" word: "get_in" ===> get_in
+                return {'word': word, 'abbr': a:suggestion, 'kind': 'f' }
+            endif
+            " case: List.f^X^O => base "List.f" word: "first" ===> List.first
+            let func_fqn = join(ch[:(len(ch)-2)], ".") . "." . word
+            "echom "base: " . a:base . ", word: " . word . ", sugg: " . a:suggestion
+            return {'word': func_fqn, 'abbr': a:suggestion, 'kind': 'f' }
         endif
     elseif a:base =~ s:erlang_module
         return {'word': ':'.a:suggestion, 'abbr': a:suggestion, 'kind': 'm'}
