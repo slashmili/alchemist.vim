@@ -28,8 +28,14 @@ function! alchemist#ansi_enabled()
 endfunction
 
 function! alchemist#lookup_name_under_cursor()
-    let query = substitute(expand("<cWORD>"), '[.,;]$', '', '')
+    "looking for full function/module string
+    "ex. OptionParse.parse
+    "ex. GenServer
+    let query = substitute(expand("<cWORD>"), '[.,;}]$', '', '')
     let query = substitute(query, '(.*$', '', '')
+    "looking for module doc if cursor is on name of module
+    let word = expand("<cword>")
+    let query = strpart(query, 0, match(query, word . '$')) . word
     call s:open_doc_window(query, 'new', 'split')
 endfunction
 
