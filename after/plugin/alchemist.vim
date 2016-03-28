@@ -77,7 +77,7 @@ function! s:open_doc_window(query, newposition, position)
     AnsiEsc!
     normal gg
     setlocal nomodifiable
-    noremap <buffer> q :call <SID>close_doc_win()<cr>
+    noremap <silent> <buffer> q :call <SID>close_doc_win()<cr>
 endfunction
 
 function! s:close_doc_win()
