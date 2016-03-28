@@ -79,7 +79,9 @@ def process_command(cmd_type, cmd, cwd, alchemist_script):
         connection = extract_connection_settings(server_log)
         sock = connect(connection)
 
-    print(send_command(sock, cmd_type, cmd), end="")
+    result = send_command(sock, cmd_type, cmd)
+    print(result, end="")
+    debug(result)
 
 
 def run_alchemist_server(alchemist_script, server_log, cwd):
