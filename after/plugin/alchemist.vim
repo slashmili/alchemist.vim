@@ -15,9 +15,18 @@ function! alchemist#alchemist_format(cmd, arg, context, imports, aliases)
     " context: Module
     " imports: List(Module)
     " aliases: List({Alias, Module})
+    let aliases_str = string(a:aliases)
+    if aliases_str == "[]"
+        let aliases_str = string(alchemist#get_aliases())
+    endif
+    "remove '
+    let aliases_str = substitute(aliases_str, "'", '', 'g')
+    "replace : to ,
+    let aliases_str = substitute(aliases_str, ":", ',', 'g')
+
     return a:cmd. " { \"" . a:arg . "\", [ context: ". a:context.
                           \ ", imports: ". string(a:imports).
-                          \ ", aliases: ". string(a:aliases) . "] }"
+                          \ ", aliases: ". aliases_str . "] }"
 endfunction
 
 function! alchemist#ansi_enabled()
@@ -100,4 +109,47 @@ function! alchemist#exdoc(...)
         return
     endif
     call s:open_doc_window(a:000[0], "new", "split")
+endfunction
+
+function! s:strip(input_string)
+    return substitute(a:input_string, '^\s*\(.\{-}\)\s*$', '\1', '')
+endfunction
+
+function alchemist#get_aliases()
+    let module_match = '[A-Za-z0-9\._]'
+    let module_sep_match = '[A-Za-z0-9\._,[:space:]]'
+    let alias_match = '^\s\+alias\s\+'
+    let simple_match = alias_match . '\(' . module_match . '\+\)'
+    let multiple_match = alias_match .'\(' . module_match . '\+\)\.{\(' . module_sep_match .'\+\)}'
+    let as_match =  alias_match . '\(' . module_match . '\+\)\s*,\s*as:\s\+\(' . module_match . '\+\)'
+    let lines = getline(1, line('.'))
+    let aliases = []
+    for l in lines
+        let r = matchlist(l, as_match)
+        if len(r) > 0
+            let aliases = aliases + [{r[2] : r[1]}]
+            continue
+        endif
+
+        let r = matchlist(l, multiple_match)
+        if len(r) > 0
+            let base_module = r[1]
+            let sub_modules = split(r[2], ",")
+            for m in sub_modules
+                let alias_name = split(m, '\.')[-1]
+                let alias_name = s:strip(alias_name)
+                let aliases =  aliases + [{alias_name : s:strip(base_module) . '.' . s:strip(m)}]
+            endfor
+            continue
+        endif
+
+        let r = matchlist(l, simple_match)
+        if len(r) > 0
+            let base_module = r[1]
+            let alias_name = split(base_module, '\.')[-1]
+            let aliases = aliases + [{alias_name : base_module}]
+            continue
+        endif
+    endfor
+    return aliases
 endfunction
