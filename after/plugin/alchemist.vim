@@ -136,11 +136,12 @@ function! alchemist#get_current_module_details()
         if module != {}
             let module.line = matched_line
             let result.module =  module
+            "we reached the top of the module
             return result
         endif
         let aliases = alchemist#get_aliases(l)
         if aliases != []
-            let result.aliases = result.aliases + aliases
+            let result.aliases += aliases
         endif
         let import = alchemist#get_import(l)
         if import != ''
@@ -185,7 +186,7 @@ function! alchemist#get_aliases(line)
         for m in sub_modules
             let alias_name = split(m, '\.')[-1]
             let alias_name = s:strip(alias_name)
-            let aliases =  aliases + [{alias_name : s:strip(base_module) . '.' . s:strip(m)}]
+            let aliases +=  [{alias_name : s:strip(base_module) . '.' . s:strip(m)}]
         endfor
         return aliases
     endif
