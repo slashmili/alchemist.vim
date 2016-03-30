@@ -52,3 +52,12 @@ Go to your elixir project directory and run `vim`
 ### Demo
 <a href="https://asciinema.org/a/e23f0el00vlg0s5z9nrwp6kba"> <img src="https://asciinema.org/a/e23f0el00vlg0s5z9nrwp6kba.png" height=400></a>
 
+## Issues
+
+If you faced any problem, create a new issue [in the issue tracker](https://github.com/slashmili/alchemist.vim/issues).
+
+## Contributing
+
+Fork the project and help to add new feauters to the project. Don't know what to contribute? Take a look at the project [todo list](https://github.com/slashmili/alchemist.vim/issues/1)
+
+Remember all interactions on our repositories follow elixir's [Code of Conduct](https://github.com/elixir-lang/elixir/blob/master/CODE_OF_CONDUCT.md).
