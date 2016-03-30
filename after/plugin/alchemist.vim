@@ -28,7 +28,6 @@ function! alchemist#alchemist_format(cmd, arg, context, imports, aliases)
         endif
         let imports_str = string(current_module.imports)
     endif
-    echom string(current_module.imports)
     "remove '
     let aliases_str = substitute(aliases_str, "'", '', 'g')
     let imports_str = substitute(imports_str, "'", '', 'g')
