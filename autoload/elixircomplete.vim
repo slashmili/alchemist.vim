@@ -73,6 +73,11 @@ function! s:parse_suggestion(base, suggestion)
             return {'word': func_fqn, 'abbr': a:suggestion, 'kind': 'f' }
         endif
     elseif a:base =~ s:erlang_module
+        echom 'base: ' . a:base . ', sug: ' . a:suggestion
+        if a:suggestion[0] == ":"
+            " case: :gen.^X^O => base ":gen." ==> :gen.
+            return {'word': a:suggestion, 'abbr': a:suggestion, 'kind': 'm'}
+        endif
         return {'word': ':'.a:suggestion, 'abbr': a:suggestion, 'kind': 'm'}
     elseif a:suggestion =~ s:elixir_module
         if a:base == a:suggestion
