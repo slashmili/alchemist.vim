@@ -10,7 +10,7 @@
 
 **NOTE** : This is an experimental project and needs extra features in *alchemist-server* which is on going disucssion in this [PR](https://github.com/tonini/alchemist-server/pull/8). I used the clone of *alchemist-server* in this project
 
-This plugin uses [alchemist-server](https://github.com/tonini/alchemist-server) to give inside about your elixir project inside vim.
+This plugin uses [alchemist-server](https://github.com/tonini/alchemist-server) to give inside about your elixir project in vim.
 
 **alchemist.vim** supports:
 
