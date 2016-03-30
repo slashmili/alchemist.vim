@@ -50,5 +50,5 @@ Go to your elixir project directory and run `vim`
   * Documention: `K` while your are in `NORMAL` mode (it's capital k)
 
 ### Demo
-[![asciicast](https://asciinema.org/a/e23f0el00vlg0s5z9nrwp6kba.png)](https://asciinema.org/a/e23f0el00vlg0s5z9nrwp6kba)
+<a href="https://asciinema.org/a/e23f0el00vlg0s5z9nrwp6kba"> <img src="https://asciinema.org/a/e23f0el00vlg0s5z9nrwp6kba.png" height=400></a>
 
