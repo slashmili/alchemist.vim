@@ -7,7 +7,7 @@ import syslog
 import time
 import traceback
 
-debug = True
+debug = False
 
 def alchemist_help():
     return """Usage: alchemist_client -c <command> -t <command_type> -d <working_directory> -a <alchemist_script>
