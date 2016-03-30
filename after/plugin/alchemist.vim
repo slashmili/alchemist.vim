@@ -3,7 +3,11 @@ let s:module_match = '[A-Za-z0-9\._]\+'
 
 function! alchemist#alchemist_client(req)
     let req = a:req . "\n"
-    return system(g:alchemist#alchemist_client.  ' -d ' . g:alchemist#root, req)
+    let ansi = ""
+    if !alchemist#ansi_enabled()
+        let ansi = '--colors=false'
+    endif
+    return system(g:alchemist#alchemist_client. ' ' . ansi  . ' -d ' . g:alchemist#root, req)
 endfunction
 
 function! alchemist#get_doc(word)
@@ -103,7 +107,9 @@ function! s:open_doc_window(query, newposition, position)
     call append(0, split(content, "\n"))
     sil $delete _
     sil $delete _
-    AnsiEsc!
+    if alchemist#ansi_enabled()
+        AnsiEsc!
+    endif
     normal gg
     setlocal nomodifiable
     noremap <silent> <buffer> q :call <SID>close_doc_win()<cr>

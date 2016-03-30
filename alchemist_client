@@ -19,6 +19,7 @@ def alchemist_help():
     -t, --command-type=""      Command type, if it's not provided, extract it from command
     -d, --directory=           Directory that alchemist server should process code from
     -a, --alchemist-server=""  Path to alchemist server `run.exs`, if it's not provided load it from alchemist-server/run.exs
+    --colors=true              Enable/Disable ansi
     """
 
 def main(argv):
@@ -26,8 +27,9 @@ def main(argv):
     cmd = ""
     cwd = ""
     alchemist_script = ""
+    ansi = True
     try:
-        opts, args = getopt.getopt(argv,"hc:t:d:a:",["type=","command-type=", "directory=", "alchemist-server="])
+        opts, args = getopt.getopt(argv,"hc:t:d:a:",["type=","command-type=", "directory=", "alchemist-server=", "colors="])
     except getopt.GetoptError:
         print(alchemist_help())
         sys.exit(2)
@@ -43,6 +45,9 @@ def main(argv):
             cwd = arg
         elif opt in ("-a", "--alchemist-server"):
             alchemist_script = arg
+        elif opt in ("--colors"):
+            if arg == "false":
+                ansi = False
     if cmd == "":
         cmd = raw_input()
     if alchemist_script == "":
@@ -56,26 +61,26 @@ def main(argv):
         print(alchemist_help())
         sys.exit(2)
 
-    process_command(cmd_type, cmd, cwd, alchemist_script)
+    process_command(cmd_type, cmd, cwd, ansi, alchemist_script)
 
 
 def where_am_i():
     return os.path.dirname(os.path.realpath(__file__))
 
-def process_command(cmd_type, cmd, cwd, alchemist_script):
+def process_command(cmd_type, cmd, cwd, ansi, alchemist_script):
     server_log = get_server_log(cwd)
     if server_log == None:
         server_log = create_server_log(cwd)
-        run_alchemist_server(alchemist_script, server_log, cwd)
+        run_alchemist_server(alchemist_script, server_log, cwd, ansi)
 
     connection = extract_connection_settings(server_log)
     if connection == None:
-        run_alchemist_server(alchemist_script, server_log, cwd)
+        run_alchemist_server(alchemist_script, server_log, cwd, ansi)
         connection = extract_connection_settings(server_log)
 
     sock = connect(connection)
     if sock == None:
-        run_alchemist_server(alchemist_script, server_log, cwd)
+        run_alchemist_server(alchemist_script, server_log, cwd, ansi)
         connection = extract_connection_settings(server_log)
         sock = connect(connection)
 
@@ -84,10 +89,12 @@ def process_command(cmd_type, cmd, cwd, alchemist_script):
     debug(result)
 
 
-def run_alchemist_server(alchemist_script, server_log, cwd):
+def run_alchemist_server(alchemist_script, server_log, cwd, ansi):
     if os.path.exists(alchemist_script) == False:
         raise Exception("alchemist script does not exist in (%s)" % alchemist_script)
     alchemist_script = "elixir %s --env=dev --listen" % alchemist_script
+    if ansi == False:
+        alchemist_script = "%s --no-ansi" % alchemist_script
     arg = shlex.split(alchemist_script)
     log_file = open(server_log, "w")
     subprocess.Popen(arg, stdout=log_file, stderr=log_file, cwd=cwd)

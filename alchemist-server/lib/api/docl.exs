@@ -11,8 +11,6 @@ defmodule Alchemist.API.Docl do
   alias Alchemist.Helpers.CaptureIO
 
   def request(args, device) do
-    Application.put_env(:iex, :colors, [enabled: true])
-
     args
     |> normalize
     |> process(device)
