@@ -23,6 +23,9 @@ function! alchemist#alchemist_format(cmd, arg, context, imports, aliases)
     endif
     let imports_str = string(a:imports)
     if imports_str == "[]"
+        if current_module.module != {}
+            let current_module.imports += [current_module.module.name]
+        endif
         let imports_str = string(current_module.imports)
     endif
     echom string(current_module.imports)
