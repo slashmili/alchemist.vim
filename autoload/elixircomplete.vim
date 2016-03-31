@@ -8,12 +8,11 @@ let s:erlang_module= ':\<'
 let s:elixir_fun_w_arity = '.*/[0-9]$'
 let s:elixir_module = '[A-Z][[:alnum:]_]\+\([A_Z][[:alnum:]_]+\)*'
 
-
-function! elixircomplete#Complete(findstart, base)
+function! elixircomplete#Complete(findstart, base_or_suggestions)
     if a:findstart
         return s:FindStart()
     else
-        return s:build_completions(a:base)
+        return s:build_completions(a:base_or_suggestions)
     endif
 endfunction
 
@@ -39,8 +38,14 @@ function! s:FindStart()
     return pos
 endfunction
 
-function! s:build_completions(base)
-    let suggestions = elixircomplete#get_suggestions(a:base)
+
+function! s:build_completions(base_or_suggestions)
+    if type(a:base_or_suggestions) == type([])
+      let suggestions = a:base_or_suggestions
+    else
+      let suggestions = elixircomplete#get_suggestions(a:base_or_suggestions)
+    endif
+
     if len(suggestions) == 0
         return -1
     elseif len(suggestions) == 1
