@@ -1,3 +1,8 @@
+" This code partially is based on helpex.vim project
+" Authors:
+"  * sanmiguel <michael.coles@gmail.com>
+"  * Milad
+
 if !exists('g:alchemist#alchemist_client')
     let g:alchemist#alchemist_client = expand("<sfile>:p:h:h") . '/../alchemist_client'
 endif
