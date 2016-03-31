@@ -38,7 +38,7 @@ Plugin 'slashmili/alchemist.vim'
 
 To show the documents in color you need [AnsiEsc](https://github.com/powerman/vim-plugin-AnsiEsc) plugin as well
 ```
-Plugin 'powerman/vim-plugin-AnsiEsc.git'
+Plugin 'powerman/vim-plugin-AnsiEsc'
 ```
 
 ## Usage
