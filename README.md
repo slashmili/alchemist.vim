@@ -50,7 +50,12 @@ Go to your elixir project directory and run `vim`
   * Documention: `K` while your are in `NORMAL` mode (it's capital k)
 
 ### Demo
-<a href="https://asciinema.org/a/e23f0el00vlg0s5z9nrwp6kba"> <img src="https://asciinema.org/a/e23f0el00vlg0s5z9nrwp6kba.png" height=400></a>
+
+#### Vanilla vim
+<a href="https://asciinema.org/a/e23f0el00vlg0s5z9nrwp6kba"><img src="https://asciinema.org/a/e23f0el00vlg0s5z9nrwp6kba.png" height="400"></a>
+
+##### Autocomplete with deoplete
+<a href="https://asciinema.org/a/9uupb79bp90p9ji4jbfolvzuk"><img src="https://asciinema.org/a/9uupb79bp90p9ji4jbfolvzuk.png" height="300"></a>
 
 ## Issues
 
