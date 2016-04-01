@@ -81,7 +81,8 @@ function! alchemist#lookup_name_under_cursor()
         let query = before
     elseif after =~ '.*\.'
         "case before = OptionParse after = r.parse
-        let up_to_dot = matchlist(after, '\(.*\)\.')
+        "case before = Mix.Shel    after = l.IO.cmd
+        let up_to_dot = matchlist(after, '\([A-Za-z0-9_]\+\)\.')
         let query = before . up_to_dot[1]
     else
         let query = before . after
