@@ -1,5 +1,6 @@
 let s:buf_nr = -1
 let s:module_match = '[A-Za-z0-9\._]\+'
+let s:module_func_match = '[A-Za-z0-9\._?!]\+'
 
 function! alchemist#alchemist_client(req)
     let req = a:req . "\n"
@@ -57,11 +58,12 @@ function! alchemist#lookup_name_under_cursor()
     "ex. List.Chars.Atom
     "ex. {:ok, Map.new}
     "ex. Enum.map(&Guard.execute(&1))
+    "ex. Enum.all?(&(&1.valid?))
 
     let before_cursor = strpart(getline('.'), 0, col('.'))
     let after_cursor = strpart(getline('.'), col('.'))
-    let before_match = matchlist(before_cursor, s:module_match . '$')
-    let after_match = matchlist(after_cursor, '^' . s:module_match)
+    let before_match = matchlist(before_cursor, s:module_func_match . '$')
+    let after_match = matchlist(after_cursor, '^' . s:module_func_match)
     let query = ''
     let before = ''
     if len(before_match) > 0
