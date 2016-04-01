@@ -83,14 +83,16 @@ function! s:open_doc_window(query, newposition, position)
         let s:buf_nr = bufnr('%')
         if alchemist#ansi_enabled()
             AnsiEsc
-        else
-            set ft=markdown
         endif
     elseif bufwinnr(s:buf_nr) == -1
         execute a:position
         execute s:buf_nr . 'buffer'
     elseif bufwinnr(s:buf_nr) != bufwinnr('%')
         execute bufwinnr(s:buf_nr) . 'wincmd w'
+    endif
+
+    if !alchemist#ansi_enabled()
+        setlocal ft=markdown
     endif
 
     setlocal bufhidden=delete

@@ -24,8 +24,8 @@ This plugin uses [alchemist-server](https://github.com/tonini/alchemist-server) 
 You need these dependencies on the same machine you run vim
 
 * **Elixir** > v1.0.4 to run alchemist-server
-* **Python** `alchemist_client` is the script that talks to _alchemist-server_ 
-* **AnsiEsc** to show documents in color in vim
+* **Python** `alchemist_client` is the script that talks to _alchemist-server_
+* **AnsiEsc** (optional) to show documents in color in vim otherwise documents will be shown as _markdown_
 
 ## Installation
 
