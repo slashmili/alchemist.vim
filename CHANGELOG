@@ -1,0 +1,10 @@
+Hydrogen (1.X.X)
+
+v 1.1.1
+	- restore default min_pattern_length for deoplete
+
+v 1.1.0
+	- added support for deoplete
+
+v 1.0.0
+	- initial release
