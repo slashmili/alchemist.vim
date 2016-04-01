@@ -15,7 +15,6 @@ class Source(Base):
         self.mark = '[alchemist]'
         self.filetypes = ['elixir']
         self.is_bytepos = False
-        self.min_pattern_length = 0
 
     def get_complete_position(self, context):
         return self.vim.call('elixircomplete#Complete', 1, '')
