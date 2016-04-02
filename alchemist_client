@@ -42,12 +42,15 @@ def main(argv):
         elif opt in ("-t", "--command-type"):
             cmd_type = arg
         elif opt in ("-d", "--directory"):
-            cwd = os.path.abspath(arg)
+            cwd = arg
         elif opt in ("-a", "--alchemist-server"):
             alchemist_script = arg
         elif opt in ("--colors"):
             if arg == "false":
                 ansi = False
+    if os.path.exists(cwd.strip()) == False:
+        raise Exception("working directory [%s] doesn't exist" % cwd)
+    cwd = get_project_base_dir(os.path.abspath(arg))
     if cmd == "":
         cmd = raw_input()
     if alchemist_script == "":
@@ -95,6 +98,7 @@ def run_alchemist_server(alchemist_script, server_log, cwd, ansi):
     alchemist_script = "elixir %s --env=dev --listen" % alchemist_script
     if ansi == False:
         alchemist_script = "%s --no-ansi" % alchemist_script
+    alchemist_script = "%s %s" % (alchemist_script, cwd)
     arg = shlex.split(alchemist_script)
     log_file = open(server_log, "w")
     subprocess.Popen(arg, stdout=log_file, stderr=log_file, cwd=cwd)
@@ -199,15 +203,64 @@ def get_tmp_dir():
     >>> get_tmp_dir()
     '/tmp/foo03/'
     >>> del os.environ['TMP']
-    >>> get_tmp_dir()
-    '/tmp/'
+    >>> get_tmp_dir() == tempfile.tempdir
+    True
     """
-    if tempfile.tempdir != None:
-        return tempfile.tempdir
     for var in ['TMPDIR', 'TEMP', 'TMP']:
         if var in os.environ:
             return os.environ[var]
+    if tempfile.tempdir != None:
+        return tempfile.tempdir
+
     return "/tmp/"
+
+def get_project_base_dir(cwd, running_servers_logs=None):
+    """
+    >>> #prepare the test env
+    >>> tmp_dir = tempfile.mkdtemp()
+    >>> p01_dir = os.path.join(tmp_dir, "p01")
+    >>> os.mkdir(p01_dir)
+    >>> p01_lib_dir = os.path.join(p01_dir, "lib")
+    >>> os.mkdir(p01_lib_dir)
+    >>> p01_log = p01_dir.replace("/", "zS")
+    >>> #end
+    >>> #detect that base dir is already running
+    >>> get_project_base_dir(p01_dir, [p01_log]) == p01_dir
+    True
+    >>> #since server is running on base dir, if lib dir is given, should return base dir
+    >>> get_project_base_dir(p01_lib_dir, [p01_log]) == p01_dir
+    True
+    >>> #if given dir is out of base dir, should return the exact dir
+    >>> get_project_base_dir(tmp_dir, [p01_log]) == tmp_dir
+    True
+    >>> #since there is no running server, lib dir is detected as base dir
+    >>> get_project_base_dir(p01_lib_dir, []) == p01_lib_dir
+    True
+    >>> #prepare mix test
+    >>> open(os.path.join(p01_dir, "mix.exs"), 'a').close()
+    >>> #should find mix.exs recursively and return base dir
+    >>> get_project_base_dir(p01_lib_dir, []) == p01_dir
+    True
+    """
+
+    if running_servers_logs == None:
+        dir_tmp = "%s/alchemist_server" % (get_tmp_dir())
+        running_servers_logs = os.listdir(dir_tmp)
+    paths = cwd.split(os.sep)
+    mix_dir = []
+    for i in range(len(paths)):
+        project_dir = os.sep.join(paths[:len(paths)-i])
+        log_tmp = "%s" % project_dir.replace("/", "zS")
+        if log_tmp in running_servers_logs:
+            return project_dir
+
+        if os.path.exists(os.path.join(project_dir, "mix.exs")):
+            mix_dir.append(project_dir)
+
+    if len(mix_dir):
+        return mix_dir.pop(0)
+
+    return cwd
 
 def debug(text):
     if debug == False:
