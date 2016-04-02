@@ -1,5 +1,6 @@
 let s:buf_nr = -1
 let s:module_match = '[A-Za-z0-9\._]\+'
+let s:module_func_match = '[A-Za-z0-9\._?!]\+'
 
 function! alchemist#alchemist_client(req)
     let req = a:req . "\n"
@@ -56,13 +57,36 @@ function! alchemist#lookup_name_under_cursor()
     "ex. GenServer
     "ex. List.Chars.Atom
     "ex. {:ok, Map.new}
-    "ex. Enum.map(&Guard.execute(&1)) < wont work for help on Guard.execute
-    let query = substitute(expand("<cWORD>"), '[.,;}]$', '', '')
-    let query = substitute(query, '(.*$', '', '')
-    "looking for module doc if cursor is on name of module
-    let word = expand("<cword>")
-    let query = strpart(query, 0, match(query, word . '\C')) . word
+    "ex. Enum.map(&Guard.execute(&1))
+    "ex. Enum.all?(&(&1.valid?))
 
+    let before_cursor = strpart(getline('.'), 0, col('.'))
+    let after_cursor = strpart(getline('.'), col('.'))
+    let before_match = matchlist(before_cursor, s:module_func_match . '$')
+    let after_match = matchlist(after_cursor, '^' . s:module_func_match)
+    let query = ''
+    let before = ''
+    if len(before_match) > 0
+        let before = before_match[0]
+    endif
+    let after = ''
+    if len(after_match) > 0
+        let after = after_match[0]
+    endif
+    if before =~ '\.$'
+        "case before = List.Chars. after = to_char_list
+        let query = substitute(before, '[.]$', '', '')
+    elseif after =~ '^\.'
+        "case before = List.Chars  after = .to_char_list
+        let query = before
+    elseif after =~ '.*\.'
+        "case before = OptionParse after = r.parse
+        "case before = Mix.Shel    after = l.IO.cmd
+        let up_to_dot = matchlist(after, '\([A-Za-z0-9_]\+\)\.')
+        let query = before . up_to_dot[1]
+    else
+        let query = before . after
+    endif
     call s:open_doc_window(query, 'new', 'split')
 endfunction
 

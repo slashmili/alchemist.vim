@@ -1,5 +1,8 @@
 Hydrogen (1.X.X)
 
+v 1.2.0
+	- improvements on looking up for module/function name
+
 v 1.1.1
 	- restore default min_pattern_length for deoplete
 
