@@ -1,3 +1,10 @@
+Helium (2.X.X)
+
+v 2.0.0
+	- use absolute path of project directory
+	- detect project base dir based on running servers or locating mix.exs
+
+
 Hydrogen (1.X.X)
 
 v 1.2.0
