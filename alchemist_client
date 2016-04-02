@@ -42,7 +42,7 @@ def main(argv):
         elif opt in ("-t", "--command-type"):
             cmd_type = arg
         elif opt in ("-d", "--directory"):
-            cwd = arg
+            cwd = os.path.abspath(arg)
         elif opt in ("-a", "--alchemist-server"):
             alchemist_script = arg
         elif opt in ("--colors"):
