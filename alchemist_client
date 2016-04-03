@@ -302,6 +302,25 @@ def erlang_mod_auto_complete(base, first, suggestion):
 
     return mod_dict
 
+def elixir_mod_auto_complete(base, first, suggestion):
+    """
+    >>> pprint.pprint(elixir_mod_auto_complete('Li', 'List.', 'List.'))
+    {'abbr': 'List.', 'kind': 'm', 'word': 'List.'}
+    >>> pprint.pprint(elixir_mod_auto_complete('Li', 'List.', 'Chars'))
+    {'abbr': 'Chars', 'kind': 'm', 'word': 'List.Chars.'}
+    >>> pprint.pprint(elixir_mod_auto_complete('L', 'L', 'List'))
+    {'abbr': 'List', 'kind': 'm', 'word': 'List.'}
+    """
+    mod_dict = {'kind': 'm', 'abbr': suggestion}
+    if first == suggestion:
+        mod_dict['word'] = suggestion
+    elif first[-1] == '.':
+        mod_dict['word'] = "%s%s." % (first, suggestion)
+    else:
+        mod_dict['word'] = '%s.' % suggestion
+
+    return mod_dict
+
 def debug(text):
     if debug == False:
         return
