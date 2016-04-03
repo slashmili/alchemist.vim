@@ -11,7 +11,8 @@ import pprint
 debug = False
 
 re_elixir_fun_with_arity = re.compile(r'(?P<func>.*)/[0-9]+$')
-re_erlang_module = re.compile(r'^(?P<module>.*)')
+re_erlang_module = re.compile(r'^\:(?P<module>.*)')
+re_elixir_module = re.compile(r'^(?P<module>[A-Z][A-Za-z0-9\._]+)')
 
 def alchemist_help():
     return """Usage: alchemist_client -c <command> -t <command_type> -d <working_directory> -a <alchemist_script>
@@ -266,6 +267,54 @@ def get_project_base_dir(cwd, running_servers_logs=None):
 
     return cwd
 
+def auto_complete(base, suggestions):
+    """
+    >>> pprint.pprint(auto_complete('Li', []))
+    None
+    >>> pprint.pprint(auto_complete('Li', ['List.', 'Chars', 'first/1']))
+    [{'abbr': 'List.', 'kind': 'm', 'word': 'List.'},
+     {'abbr': 'Chars', 'kind': 'm', 'word': 'List.Chars.'},
+     {'abbr': 'first/1', 'kind': 'f', 'word': 'List.first'}]
+    >>> pprint.pprint(auto_complete('L', ['L', 'List', 'Logger']))
+    [{'abbr': 'List', 'kind': 'm', 'word': 'List.'},
+     {'abbr': 'Logger', 'kind': 'm', 'word': 'Logger.'}]
+    >>> pprint.pprint(auto_complete('g', ['get_', 'get_in/2']))
+    [{'abbr': 'get_in/2', 'kind': 'f', 'word': 'get_in'}]
+    >>> pprint.pprint(auto_complete('g', ['get_in/2', 'get_in', 'get_in/2']))
+    [{'abbr': 'get_in/2', 'kind': 'f', 'word': 'get_in'}]
+    >>> pprint.pprint(auto_complete('List.f', ['List.f', 'first/1', 'flatten/1']))
+    [{'abbr': 'first/1', 'kind': 'f', 'word': 'List.first'},
+     {'abbr': 'flatten/1', 'kind': 'f', 'word': 'List.flatten'}]
+    >>> pprint.pprint(auto_complete(':gen', [':gen', 'gen', 'gen_event']))
+    [{'abbr': ':gen', 'kind': 'm', 'word': ':gen'},
+     {'abbr': ':gen_event', 'kind': 'm', 'word': ':gen_event'}]
+    >>> pprint.pprint(auto_complete(':g', [':g', 'gb_sets', 'gb_trees', 'global']))
+    [{'abbr': ':gb_sets', 'kind': 'm', 'word': ':gb_sets'},
+     {'abbr': ':gb_trees', 'kind': 'm', 'word': ':gb_trees'},
+     {'abbr': ':global', 'kind': 'm', 'word': ':global'}]
+    >>> pprint.pprint(auto_complete(':gen_server.', [':gen_server.', 'behaviour_info/1', 'module_info/0']))
+    [{'abbr': ':gen_server.', 'kind': 'm', 'word': ':gen_server.'},
+     {'abbr': 'behaviour_info/1',
+      'kind': 'f',
+      'word': ':gen_server.behaviour_info'},
+     {'abbr': 'module_info/0', 'kind': 'f', 'word': ':gen_server.module_info'}]
+    """
+    if len(suggestions) == 0: return None
+    return_list = []
+    first_item = suggestions[0]
+    if suggestions[0][-1] != '.':
+        suggestions.pop(0)
+    for sug in suggestions:
+        if re_elixir_fun_with_arity.match(sug):
+            return_list.append(func_auto_complete(base, suggestions[0], sug))
+        elif re_elixir_module.match(sug):
+            return_list.append(elixir_mod_auto_complete(base, suggestions[0], sug))
+        elif re_erlang_module.match(first_item):
+            return_list.append(erlang_mod_auto_complete(base, suggestions[0], sug))
+
+
+    return return_list
+
 def func_auto_complete(base, first, suggestion):
     """
     >>> pprint.pprint(func_auto_complete("Li", "List.", "first/1"))
@@ -296,9 +345,10 @@ def erlang_mod_auto_complete(base, first, suggestion):
     >>> #pprint.pprint(erlang_mod_auto_complete(':g', ':g', 'gb_sets'))
     """
     #TODO: to check case: :gen.^X^O => base ":gen." ==> :gen.
-    mod_dict = {'kind': 'm', 'abbr': ':%s' % suggestion}
-    mod_name = ':%s' % re_erlang_module.match(suggestion).group('module')
-    mod_dict['word'] = mod_name
+    if suggestion[0] != ':':
+        suggestion = ':%s' % suggestion
+    mod_dict = {'kind': 'm', 'abbr': suggestion}
+    mod_dict['word'] = suggestion
 
     return mod_dict
 
@@ -313,7 +363,7 @@ def elixir_mod_auto_complete(base, first, suggestion):
     """
     mod_dict = {'kind': 'm', 'abbr': suggestion}
     if first == suggestion:
-        mod_dict['word'] = suggestion
+        mod_dict['word'] = '%s.' % suggestion.strip('.')
     elif first[-1] == '.':
         mod_dict['word'] = "%s%s." % (first, suggestion)
     else:
