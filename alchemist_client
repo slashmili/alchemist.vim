@@ -11,6 +11,7 @@ import pprint
 debug = False
 
 elixir_fun_with_arity = re.compile(r'(?P<func>.*)/[0-9]+$')
+re_erlang_module = re.compile(r'^(?P<module>.*)')
 
 def alchemist_help():
     return """Usage: alchemist_client -c <command> -t <command_type> -d <working_directory> -a <alchemist_script>
@@ -288,6 +289,18 @@ def func_auto_complete(base, first, suggestion):
     func_dict['word'] = word
     return func_dict
 
+def erlang_mod_auto_complete(base, first, suggestion):
+    """
+    >>> pprint.pprint(erlang_mod_auto_complete(':gen', ':gen', 'gen'))
+    {'abbr': ':gen', 'kind': 'm', 'word': ':gen'}
+    >>> #pprint.pprint(erlang_mod_auto_complete(':g', ':g', 'gb_sets'))
+    """
+    #TODO: to check case: :gen.^X^O => base ":gen." ==> :gen.
+    mod_dict = {'kind': 'm', 'abbr': ':%s' % suggestion}
+    mod_name = ':%s' % re_erlang_module.match(suggestion).group('module')
+    mod_dict['word'] = mod_name
+
+    return mod_dict
 
 def debug(text):
     if debug == False:
