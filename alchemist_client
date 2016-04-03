@@ -10,7 +10,7 @@ import pprint
 
 debug = False
 
-elixir_fun_with_arity = re.compile(r'(?P<func>.*)/[0-9]+$')
+re_elixir_fun_with_arity = re.compile(r'(?P<func>.*)/[0-9]+$')
 re_erlang_module = re.compile(r'^(?P<module>.*)')
 
 def alchemist_help():
@@ -276,7 +276,7 @@ def func_auto_complete(base, first, suggestion):
     {'abbr': 'get_in/2', 'kind': 'f', 'word': 'get_in'}
     """
     func_dict = {'kind': 'f', 'abbr': suggestion}
-    func_name = elixir_fun_with_arity.match(suggestion).group('func')
+    func_name = re_elixir_fun_with_arity.match(suggestion).group('func')
     word = "%s%s" % (first, func_name)
 
     func_parts = base.split('.')
