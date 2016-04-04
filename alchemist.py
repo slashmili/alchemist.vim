@@ -18,6 +18,7 @@ class AlchemistClient:
         self.re_elixir_fun_with_arity = re.compile(r'(?P<func>.*)/[0-9]+$')
         self.re_erlang_module = re.compile(r'^\:(?P<module>.*)')
         self.re_elixir_module = re.compile(r'^(?P<module>[A-Z][A-Za-z0-9\._]+)')
+        self.re_compx_base = re.compile(r'^.*{\s*"(?P<base>.*)"\s*')
 
 
     def process_command(self, cmd, cmd_type=None):
@@ -39,7 +40,11 @@ class AlchemistClient:
             connection = self._extract_connection_settings(server_log)
             sock = self._connect(connection)
 
-        result = self._send_command(sock, cmd_type, cmd)
+        if cmd_type == 'COMPX':
+            result = self._send_compx(sock, cmd)
+        else:
+            result = self._send_command(sock, cmd_type, cmd)
+
         return result
 
     def _log(self, text):
@@ -125,6 +130,22 @@ class AlchemistClient:
             if line.strip() == "END-OF-%s" % cmd_type: break
 
         return result
+
+    def _send_compx(self, sock, cmd):
+        cmd_type = 'COMP'
+        cmd = cmd.replace('COMPX', 'COMP')
+        base_match = self.re_compx_base.match(cmd)
+        if base_match:
+            base = base_match.group('base')
+        result = self._send_command(sock, cmd_type, cmd)
+        suggestions = filter(lambda x: x != 'END-OF-COMP', result.split("\n"))
+        auto_completes = self.auto_complete(base, suggestions)
+        r = []
+        for ac in auto_completes:
+            r.append("kind:%s, word:%s, abbr:%s" % (ac['kind'], ac['word'], ac['abbr']))
+        r.append('END-OF-COMPX')
+        return "\n".join(r)
+
 
     def _sock_readlines(self, sock, recv_buffer=4096, delim='\n'):
         buffer = ''
@@ -276,6 +297,8 @@ class AlchemistClient:
         if suggestions[0][-1] != '.':
             suggestions.pop(0)
         for sug in suggestions:
+            if len(sug) == 0:
+                continue
             if self.re_elixir_fun_with_arity.match(sug):
                 return_list.append(self.func_auto_complete(base, suggestions[0], sug))
             elif self.re_elixir_module.match(sug):

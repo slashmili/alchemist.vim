@@ -53,61 +53,21 @@ function! s:build_completions(base_or_suggestions)
 
     if len(suggestions) == 0
         return -1
-    elseif len(suggestions) == 1
-        return suggestions
-    elseif len(suggestions) > 1
-        let [ newbase ; tail ] = suggestions
-        if newbase =~ '.*\.$'
-            " case Li^X^O should offer "List." as the first completion
-            return map(suggestions, 's:parse_suggestion(newbase, v:val)')
-        end
-        return map(tail, 's:parse_suggestion(newbase, v:val)')
     endif
+    return suggestions
 endfunction
-
-function! s:parse_suggestion(base, suggestion)
-    if a:suggestion =~ s:elixir_fun_w_arity
-        let word = strpart(a:suggestion, 0, match(a:suggestion, '/[0-9]\+$'))
-        if a:base =~ '.*\.$'
-            " case: Li^X^O => base: "List." word: "first" ===> List.first
-            return {'word': a:base . word, 'abbr': a:suggestion, 'kind': 'f' }
-        else
-            let ch = split(a:base, '\.')
-            if len(ch) == 1
-                " case: g^X^O => base "get_" word: "get_in" ===> get_in
-                return {'word': word, 'abbr': a:suggestion, 'kind': 'f' }
-            endif
-            " case: List.f^X^O => base "List.f" word: "first" ===> List.first
-            let func_fqn = join(ch[:(len(ch)-2)], ".") . "." . word
-            "echom "base: " . a:base . ", word: " . word . ", sugg: " . a:suggestion
-            return {'word': func_fqn, 'abbr': a:suggestion, 'kind': 'f' }
-        endif
-    elseif a:base =~ s:erlang_module
-        echom 'base: ' . a:base . ', sug: ' . a:suggestion
-        if a:suggestion[0] == ":"
-            " case: :gen.^X^O => base ":gen." ==> :gen.
-            return {'word': a:suggestion, 'abbr': a:suggestion, 'kind': 'm'}
-        endif
-        return {'word': ':'.a:suggestion, 'abbr': a:suggestion, 'kind': 'm'}
-    elseif a:suggestion =~ s:elixir_module
-        if a:base == a:suggestion
-            " case: Li^X^O => base: "List." suggestion: "List." ==> List.
-            return {'word': a:suggestion, 'abbr': a:suggestion, 'kind': 'm'}
-        endif
-        if a:base =~ '\.$'
-            " case: Li^X^O => base: "List." suggestion: "Chars" ==> List.Chars.
-            return {'word': a:base.a:suggestion.'.', 'abbr': a:suggestion, 'kind': 'm'}
-        endif
-        " case: L^X^O => base: "L" suggestion: "List" ==> List
-        return {'word': a:suggestion.'.', 'abbr': a:suggestion, 'kind': 'm'}
-    else
-        return {'word': a:suggestion, 'abbr': a:suggestion }
-    endif
-endfunction
-
 
 function! elixircomplete#get_suggestions(hint)
-    let req = alchemist#alchemist_format("COMP", a:hint, "Elixir", [], [])
+    let req = alchemist#alchemist_format("COMPX", a:hint, "Elixir", [], [])
     let result = alchemist#alchemist_client(req)
-    return filter(split(result, '\n'), 'v:val != "END-OF-COMP"')
+    let suggestions = filter(split(result, '\n'), 'v:val != "END-OF-COMPX"')
+    let parsed_suggestion = []
+    for sugg in suggestions
+        let details = matchlist(sugg, 'kind:\(.*\), word:\(.*\), abbr:\(.*\)$')
+        if len(details) > 0
+            let a = {'kind': details[1], 'word': details[2], 'abbr': details[3]}
+            call add(parsed_suggestion, a)
+        endif
+    endfor
+    return parsed_suggestion
 endfunction
