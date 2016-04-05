@@ -3,6 +3,8 @@ Helium (2.X.X)
 v 2.0.0
 	- use absolute path of project directory
 	- detect project base dir based on running servers or locating mix.exs
+	- move autocomplete rules to python client
+	- set 10 seconds time while talking to alchemist server
 
 
 Hydrogen (1.X.X)
