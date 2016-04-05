@@ -3,7 +3,8 @@ import os
 import tempfile
 import re
 import pprint
-import subprocess, shlex, socket
+import subprocess, shlex
+import select, socket
 import time
 import syslog
 
@@ -123,11 +124,17 @@ class AlchemistClient:
         return False
 
     def _send_command(self, sock, cmd_type, cmd):
-        sock.sendall(cmd + "\n")
+        sock.sendall("%s\n" % cmd)
         result = ''
-        for line in self._sock_readlines(sock):
-            result += "%s\n" % line
-            if line.strip() == "END-OF-%s" % cmd_type: break
+        try:
+            for line in self._sock_readlines(sock):
+                result += "%s\n" % line
+                if line.strip() == "END-OF-%s" % cmd_type: break
+        except socket.error as e:
+            if e.errno == 35:
+                raise Exception("reached 10 sec timeout, error:Resource temporarily unavailable")
+            else:
+                raise e
 
         return result
 
@@ -147,10 +154,12 @@ class AlchemistClient:
         return "\n".join(r)
 
 
-    def _sock_readlines(self, sock, recv_buffer=4096, delim='\n'):
+    def _sock_readlines(self, sock, recv_buffer=4096, delim='\n', timeout=10):
         buffer = ''
         data = True
+        sock.setblocking(0)
         while data:
+            select.select([sock], [], [], timeout)
             data = sock.recv(recv_buffer)
             buffer += data
 
