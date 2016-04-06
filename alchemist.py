@@ -19,7 +19,7 @@ class AlchemistClient:
         self.re_elixir_fun_with_arity = re.compile(r'(?P<func>.*)/[0-9]+$')
         self.re_erlang_module = re.compile(r'^\:(?P<module>.*)')
         self.re_elixir_module = re.compile(r'^(?P<module>[A-Z][A-Za-z0-9\._]+)')
-        self.re_compx_base = re.compile(r'^.*{\s*"(?P<base>.*)"\s*')
+        self.re_x_base = re.compile(r'^.*{\s*"(?P<base>.*)"\s*')
 
 
     def process_command(self, cmd, cmd_type=None):
@@ -43,6 +43,8 @@ class AlchemistClient:
 
         if cmd_type == 'COMPX':
             result = self._send_compx(sock, cmd)
+        elif cmd_type == 'DEFLX':
+            result = self._send_deflx(sock, cmd)
         else:
             result = self._send_command(sock, cmd_type, cmd)
 
@@ -141,7 +143,7 @@ class AlchemistClient:
     def _send_compx(self, sock, cmd):
         cmd_type = 'COMP'
         cmd = cmd.replace('COMPX', 'COMP')
-        base_match = self.re_compx_base.match(cmd)
+        base_match = self.re_x_base.match(cmd)
         if base_match:
             base = base_match.group('base')
         result = self._send_command(sock, cmd_type, cmd)
@@ -153,6 +155,36 @@ class AlchemistClient:
         r.append('END-OF-COMPX')
         return "\n".join(r)
 
+    def _send_deflx(self, sock, cmd):
+        cmd_type = 'DEFL'
+        cmd = cmd.replace('DEFLX', 'DEFL')
+        base_match = self.re_x_base.match(cmd)
+        base = base_match.group('base')
+        cmd = cmd.replace(base, self._defl_extract_module_func(base), 1)
+        result = self._send_command(sock, cmd_type, cmd)
+        result = result.replace('END-OF-DEFL', 'END-OF-DEFLX')
+        return result
+
+    def _defl_extract_module_func(self, query):
+        """
+        >>> alchemist = AlchemistClient()
+        >>> alchemist._defl_extract_module_func("System")
+        'System,nil'
+        >>> alchemist._defl_extract_module_func("System.put_env")
+        'System,put_env'
+        >>> alchemist._defl_extract_module_func("ExGuard.Guard")
+        'ExGuard.Guard,nil'
+        >>> alchemist._defl_extract_module_func("ExGuard.Guard.guard")
+        'ExGuard.Guard,guard'
+        """
+        func = 'nil'
+        module = query
+        func_match = re.compile(r'(?P<module>.*)\.(?P<func>[a-z_!?]+)$')
+        match = func_match.match(query)
+        if match:
+            func = match.group('func')
+            module = match.group('module')
+        return '%s,%s' % (module, func)
 
     def _sock_readlines(self, sock, recv_buffer=4096, delim='\n', timeout=10):
         buffer = ''
