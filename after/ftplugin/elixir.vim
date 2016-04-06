@@ -26,3 +26,5 @@ endif
 
 nnoremap <silent> K :call alchemist#lookup_name_under_cursor()<CR>
 command! -nargs=? ExDoc call alchemist#exdoc(<f-args>)
+command! -buffer -bar -nargs=? -complete=custom,alchemist#mix_complete Mix
+    \ call alchemist#mix(<q-args>)
