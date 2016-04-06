@@ -87,7 +87,7 @@ function! alchemist#lookup_name_under_cursor()
     else
         let query = before . after
     endif
-    call s:open_doc_window(query, 'new', 'split')
+    return query
 endfunction
 
 function! s:open_doc_window(query, newposition, position)
@@ -146,11 +146,13 @@ function! s:close_doc_win()
 endfunction
 
 function! alchemist#exdoc(...)
+    let query = ''
     if empty(a:000)
-        call alchemist#lookup_name_under_cursor()
-        return
+        let query = alchemist#lookup_name_under_cursor()
+    else
+        let query = a:000[0]
     endif
-    call s:open_doc_window(a:000[0], "new", "split")
+    call s:open_doc_window(query, "new", "split")
 endfunction
 
 function! s:strip(input_string)
