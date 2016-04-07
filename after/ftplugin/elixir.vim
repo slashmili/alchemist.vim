@@ -25,4 +25,5 @@ if exists('&omnifunc') && g:alchemist#omnifunc
 endif
 
 nnoremap <silent> K :call alchemist#lookup_name_under_cursor()<CR>
-command! -nargs=? ExDoc call alchemist#exdoc(<f-args>)
+command! -nargs=? -complete=customlist,elixircomplete#ExDocComplete ExDoc
+      \ call alchemist#exdoc(<f-args>)
