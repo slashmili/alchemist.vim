@@ -263,6 +263,6 @@ command! -nargs=? -complete=customlist,elixircomplete#ExDocComplete ExDoc
       \ call alchemist#exdoc(<f-args>)
 
 if !exists(':Mix')
-  command! -buffer -bar -nargs=? -complete=custom,alchemist#mix_complete Mix
+  command! -bar -nargs=? -complete=custom,alchemist#mix_complete Mix
         \ call alchemist#mix(<q-args>)
 endif
