@@ -15,7 +15,7 @@ defmodule Alchemist.API.Docl do
     |> normalize
     |> process(device)
 
-    IO.puts device, "END, func_puts-OF-DOCL"
+    IO.puts device, "END-OF-DOCL"
   end
 
   def process([expr, modules, aliases], device) do

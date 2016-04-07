@@ -46,8 +46,13 @@ Go to your elixir project directory and run `vim`
 
 ### Shortkeys:
 
-  * Auto completion: `<C-x><C-o>` while your are in `INSERT` mode
-  * Documention: Press `K` while cursor is under a module or function in `NORMAL` mode or execute `:ExDoc <module/function>` command
+  * Auto completion: `<C-x><C-o>` while your are in `INSERT` mode.
+  * Documention: Press `K` while cursor is under a module or function in `NORMAL`.
+
+### Commands:
+
+  * ExDoc: `ExDoc [module/function]` provides document (press TAB to get autocomplete).
+  * Mix: `Mix [command]` run mix command (press TAB to get commands autocomplete). If you already have an existing `Mix` command, alchemist doesn't define this command.
 
 ### Demo
 

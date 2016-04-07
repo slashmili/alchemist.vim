@@ -1,4 +1,5 @@
 import os
+import re
 from numbers import Number
 from subprocess import PIPE, Popen
 from .base import Base
@@ -15,6 +16,7 @@ class Source(Base):
         self.mark = '[alchemist]'
         self.filetypes = ['elixir']
         self.is_bytepos = False
+        self.re_suggestions = re.compile(r'kind:(?P<kind>.*), word:(?P<word>.*), abbr:(?P<abbr>.*)$')
 
     def get_complete_position(self, context):
         return self.vim.call('elixircomplete#Complete', 1, '')
@@ -36,8 +38,16 @@ class Source(Base):
         return self.vim.eval(self.ALCHEMIST_CLIENT)
 
     def __get_request__(self, input):
-        return self.vim.call(self.ALCHEMIST_FORMAT, 'COMP', input, 'Elixir', [], [])
+        return self.vim.call(self.ALCHEMIST_FORMAT, 'COMPX', input, 'Elixir', [], [])
 
     def __get_suggestions__(self, server_results):
-        suggestions = self.vim.call(self.ALCHEMIST_COMPLETE, 0, server_results)
-        return [] if isinstance(suggestions, Number) else suggestions
+        suggestions = []
+        for result in server_results:
+            matches = self.re_suggestions.match(result)
+            suggestions.append({
+                'kind': matches.group('kind'),
+                'word': matches.group('word'),
+                'abbr': matches.group('abbr')
+            })
+
+        return suggestions
