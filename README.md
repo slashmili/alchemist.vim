@@ -52,7 +52,7 @@ Go to your elixir project directory and run `vim`
 ### Commands:
 
   * ExDoc: `ExDoc [module/function]` provides document (press TAB to get autocomplete).
-  * Mix: `Mix [command]` run mix command (press TAB to get command's autocomplete). If you already have an existing `Mix` command, alchemist doesn't define this command.
+  * Mix: `Mix [command]` run mix command (press TAB to get commands autocomplete). If you already have an existing `Mix` command, alchemist doesn't define this command.
 
 ### Demo
 
