@@ -24,7 +24,7 @@ if exists('&omnifunc') && g:alchemist#omnifunc
   setl omnifunc=elixircomplete#Complete
 endif
 
-nnoremap <silent> K :call alchemist#lookup_name_under_cursor()<CR>
+nnoremap <silent> K :call alchemist#exdoc()<CR>
 
 nnoremap <silent> <c-]> :call alchemist#exdef()<CR>
 command! -nargs=? ExDef call alchemist#exdef(<f-args>)
