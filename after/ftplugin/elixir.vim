@@ -26,3 +26,6 @@ endif
 
 nnoremap <silent> K :call alchemist#exdoc()<CR>
 command! -nargs=? ExDoc call alchemist#exdoc(<f-args>)
+
+nnoremap <silent> <c-]> :call alchemist#exdef()<CR>
+command! -nargs=? ExDef call alchemist#exdef(<f-args>)

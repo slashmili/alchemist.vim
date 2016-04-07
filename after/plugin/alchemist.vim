@@ -96,7 +96,7 @@ function! s:open_doc_window(query, newposition, position)
     let lines = split(content, '\n')
     if len(lines) < 3
         redraw
-        echom "No matches for '" . a:query . "'!"
+        echo "Alchemist: No matches for '" . a:query . "'!"
         return
     endif
 
@@ -153,6 +153,32 @@ function! alchemist#exdoc(...)
         let query = a:000[0]
     endif
     call s:open_doc_window(query, "new", "split")
+endfunction
+
+function! alchemist#exdef(...)
+    let query = ''
+    if empty(a:000)
+        let query = alchemist#lookup_name_under_cursor()
+    else
+        let query = a:000[0]
+    endif
+    if s:strip(query) == ''
+        echo "Alchemist: No module/function is provided"
+        return
+    endif
+    let req = alchemist#alchemist_format("DEFLX", query, "Elixir", [], [])
+    let result = alchemist#alchemist_client(req)
+    let source = filter(split(result, '\n'), 'v:val != "END-OF-DEFLX"')
+    if len(source) == 0
+        echo "Alchemist: Can not find any source for " . query
+        return
+    endif
+    let rel_path = substitute(source[0], getcwd() . '/' , '', '')
+    if !filereadable(rel_path)
+        echo "Alchemist: Can not open file " . rel_path
+        return
+    endif
+    execute 'e ' . rel_path
 endfunction
 
 function! s:strip(input_string)
