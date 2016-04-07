@@ -25,10 +25,3 @@ if exists('&omnifunc') && g:alchemist#omnifunc
 endif
 
 nnoremap <silent> K :call alchemist#lookup_name_under_cursor()<CR>
-command! -nargs=? -complete=customlist,elixircomplete#ExDocComplete ExDoc
-      \ call alchemist#exdoc(<f-args>)
-
-if !exists(':Mix')
-  command! -buffer -bar -nargs=? -complete=custom,alchemist#mix_complete Mix
-        \ call alchemist#mix(<q-args>)
-endif
