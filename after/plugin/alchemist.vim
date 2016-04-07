@@ -2,6 +2,14 @@ let s:buf_nr = -1
 let s:module_match = '[A-Za-z0-9\._]\+'
 let s:module_func_match = '[A-Za-z0-9\._?!]\+'
 
+if !exists('g:alchemist#alchemist_client')
+    let g:alchemist#alchemist_client = expand("<sfile>:p:h:h") . '/../alchemist_client'
+endif
+
+if !exists('g:alchemist#root')
+    let g:alchemist#root = getcwd()
+end
+
 function! alchemist#alchemist_client(req)
     let req = a:req . "\n"
     let ansi = ""
@@ -275,3 +283,22 @@ function! alchemist#get_import(line)
     end
     return ''
 endfunction
+
+function! alchemist#mix(...)
+  exe '!mix ' . join(copy(a:000), ' ')
+endfunction
+
+function! alchemist#mix_complete(ArgLead, CmdLine, CursorPos, ...)
+  if !exists('g:mix_tasks')
+    let g:mix_tasks = system("mix -h | awk '!/-S/ && $2 != \"#\" { print $2 }'")
+  endif
+  return g:mix_tasks
+endfunction
+
+command! -nargs=? -complete=customlist,elixircomplete#ExDocComplete ExDoc
+      \ call alchemist#exdoc(<f-args>)
+
+if !exists(':Mix')
+  command! -buffer -bar -nargs=? -complete=custom,alchemist#mix_complete Mix
+        \ call alchemist#mix(<q-args>)
+endif

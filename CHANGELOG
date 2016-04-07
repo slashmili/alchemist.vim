@@ -5,6 +5,8 @@ v 2.0.0
 	- detect project base dir based on running servers or locating mix.exs
 	- move autocomplete rules to python client
 	- set 10 seconds time while talking to alchemist server
+	- add mix support in command-line mode(enabled if you don't have any other mix plugin)
+	- auto complete for ExDoc in command-line mode
 
 
 Hydrogen (1.X.X)

@@ -328,8 +328,6 @@ class AlchemistClient:
          {'abbr': 'Logger', 'kind': 'm', 'word': 'Logger.'}]
         >>> pprint.pprint(alchemist.auto_complete('g', ['get_', 'get_in/2']))
         [{'abbr': 'get_in/2', 'kind': 'f', 'word': 'get_in'}]
-        >>> pprint.pprint(alchemist.auto_complete('g', ['get_in/2', 'get_in', 'get_in/2']))
-        [{'abbr': 'get_in/2', 'kind': 'f', 'word': 'get_in'}]
         >>> pprint.pprint(alchemist.auto_complete('List.f', ['List.f', 'first/1', 'flatten/1']))
         [{'abbr': 'first/1', 'kind': 'f', 'word': 'List.first'},
          {'abbr': 'flatten/1', 'kind': 'f', 'word': 'List.flatten'}]
@@ -346,11 +344,18 @@ class AlchemistClient:
           'kind': 'f',
           'word': ':gen_server.behaviour_info'},
          {'abbr': 'module_info/0', 'kind': 'f', 'word': ':gen_server.module_info'}]
+        >>> pprint.pprint(alchemist.auto_complete('Sys', ['System', 'SystemLimitError']))
+        [{'abbr': 'System', 'kind': 'm', 'word': 'System.'},
+         {'abbr': 'SystemLimitError', 'kind': 'm', 'word': 'SystemLimitError.'}]
+        >>> pprint.pprint(alchemist.auto_complete('System.get_', ['get_pid/0', 'get_env/0', 'get_env/1']))
+        [{'abbr': 'get_pid/0', 'kind': 'f', 'word': 'System.get_pid'},
+         {'abbr': 'get_env/0', 'kind': 'f', 'word': 'System.get_env'},
+         {'abbr': 'get_env/1', 'kind': 'f', 'word': 'System.get_env'}]
         """
         if len(suggestions) == 0: return None
         return_list = []
         first_item = suggestions[0]
-        if suggestions[0][-1] != '.':
+        if first_item == base and suggestions[0][-1] != '.':
             suggestions.pop(0)
         for sug in suggestions:
             if len(sug) == 0:

@@ -13,6 +13,18 @@ let s:erlang_module= ':\<'
 let s:elixir_fun_w_arity = '.*/[0-9]$'
 let s:elixir_module = '[A-Z][[:alnum:]_]\+\([A_Z][[:alnum:]_]+\)*'
 
+function! elixircomplete#ExDocComplete(ArgLead, CmdLine, CursorPos, ...)
+  let suggestions = elixircomplete#Complete(0, a:ArgLead)
+  if type(suggestions) != type([])
+    return []
+  endif
+  return map(suggestions, 's:strip_dot(v:val.word)')
+endfunction
+
+function! s:strip_dot(input_string)
+    return substitute(a:input_string, '^\s*\(.\{-}\)\.*$', '\1', '')
+endfunction
+
 function! elixircomplete#Complete(findstart, base_or_suggestions)
     if a:findstart
         return s:FindStart()
