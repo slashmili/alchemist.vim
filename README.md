@@ -47,7 +47,7 @@ Go to your elixir project directory and run `vim`
 ### Shortkeys:
 
   * Auto completion: `<C-x><C-o>` while your are in `INSERT` mode
-  * Documention: `K` while your are in `NORMAL` mode (it's capital k)
+  * Documention: Press `K` while cursor is under a module or function in `NORMAL` mode or execute `:ExDoc <module/function>` command
 
 ### Demo
 
