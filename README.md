@@ -1,6 +1,6 @@
 # alchemist.vim
 
-<img src="https://github.com/slashmili/alchemist.vim/raw/develop/logo.png" width="200" align="right">
+<img src="https://github.com/slashmili/alchemist.vim/raw/master/logo.png" width="200" align="right">
 
 [![License GPL 3](https://img.shields.io/badge/license-GPL_3-green.svg)](http://www.gnu.org/licenses/gpl-3.0)
 [![Build Status](https://travis-ci.org/slashmili/alchemist.vim.svg?branch=develop)](https://travis-ci.org/slashmili/alchemist.vim)
