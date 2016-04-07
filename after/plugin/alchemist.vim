@@ -173,12 +173,20 @@ function! alchemist#exdef(...)
         echo "Alchemist: Can not find any source for " . query
         return
     endif
-    let rel_path = substitute(source[0], getcwd() . '/' , '', '')
+    let source = source[0]
+    let line = 1
+    let source_line = matchlist(source, '\(.*\):\([0-9]\+\)')
+    if len(source_line) > 0
+        let source = source_line[1]
+        let line = source_line[2]
+    endif
+    let rel_path = substitute(source, getcwd() . '/' , '', '')
     if !filereadable(rel_path)
         echo "Alchemist: Can not open file " . rel_path
         return
     endif
     execute 'e ' . rel_path
+    execute line
 endfunction
 
 function! s:strip(input_string)

@@ -160,11 +160,26 @@ class AlchemistClient:
         cmd = cmd.replace('DEFLX', 'DEFL')
         base_match = self.re_x_base.match(cmd)
         base = base_match.group('base')
-        cmd = cmd.replace(base, self._defl_extract_module_func(base), 1)
-        result = self._send_command(sock, cmd_type, cmd)
-        result = result.replace('END-OF-DEFL', 'END-OF-DEFLX')
+        module_func = self._defl_extract_module_func(base)
+        cmd = cmd.replace(base, module_func, 1)
+        result = self._send_command(sock, cmd_type, cmd).strip()
+        result = result.replace('END-OF-DEFL', '')
+        line = 1
+        module_func_list = module_func.split(",")
+        if len(module_func_list) == 2:
+            if module_func_list[1] != "nil":
+                line = self._find_function_line(result.strip(), module_func_list[1])
+        result = "%s:%i\n%s" %(result.strip(), line, 'END-OF-DEFLX')
         return result
 
+    def _find_function_line(self, filename, function):
+        if not os.path.isfile(filename) or not os.access(filename, os.R_OK):
+            return 1
+        lines = open(filename, "r").readlines()
+        for line_num, line_str in enumerate(lines):
+            if line_str.find("def %s" % function) != -1:
+                return line_num + 1
+        return 1
     def _defl_extract_module_func(self, query):
         """
         >>> alchemist = AlchemistClient()
