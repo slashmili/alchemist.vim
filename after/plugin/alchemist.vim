@@ -25,6 +25,19 @@ function! alchemist#get_doc(word)
     return result
 endfunction
 
+function! alchemist#Credo()
+  if exists(':Neomake')
+    execute "Neomake credo"
+    return
+  endif
+  let credo_cmd = "cd " . g:alchemist#root . " && mix credo " . expand("%:p") . " --format=flycheck"
+  let old_efm = &errorformat
+  let &errorformat = '%f:%l:%c: %m, %f:%l: %m'
+  lexpr systemlist(credo_cmd)
+  lopen
+  let &errorformat = old_efm
+endfunction
+
 function! alchemist#alchemist_format(cmd, arg, context, imports, aliases)
     " context: Module
     " imports: List(Module)
