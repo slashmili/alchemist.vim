@@ -18,7 +18,11 @@ function! elixircomplete#ExDocComplete(ArgLead, CmdLine, CursorPos, ...)
   if type(suggestions) != type([])
     return []
   endif
-  return map(suggestions, 'v:val.word')
+  return map(suggestions, 's:strip_dot(v:val.word)')
+endfunction
+
+function! s:strip_dot(input_string)
+    return substitute(a:input_string, '^\s*\(.\{-}\)\.*$', '\1', '')
 endfunction
 
 function! elixircomplete#Complete(findstart, base_or_suggestions)
