@@ -239,3 +239,14 @@ function! alchemist#get_import(line)
     end
     return ''
 endfunction
+
+function! alchemist#mix(...)
+  exe '!mix ' . join(copy(a:000), ' ')
+endfunction
+
+function! alchemist#mix_complete(ArgLead, CmdLine, CursorPos, ...)
+  if !exists('g:mix_tasks')
+    let g:mix_tasks = system("mix -h | awk '!/-S/ && $2 != \"#\" { print $2 }'")
+  endif
+  return g:mix_tasks
+endfunction
