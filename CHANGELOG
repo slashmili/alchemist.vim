@@ -1,5 +1,8 @@
 Helium (2.X.X)
 
+v 2.0.1
+	- Mix command is available on all buffers (bugfix)
+
 v 2.0.0
 	- use absolute path of project directory
 	- detect project base dir based on running servers or locating mix.exs
