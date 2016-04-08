@@ -169,7 +169,10 @@ class AlchemistClient:
         if len(module_func_list) == 2:
             if module_func_list[1] != "nil":
                 line = self._find_function_line(result.strip(), module_func_list[1])
-        result = "%s:%i\n%s" %(result.strip(), line, 'END-OF-DEFLX')
+        if result.strip() != '':
+            result = "%s:%i\n%s" %(result.strip(), line, 'END-OF-DEFLX')
+        else:
+            result = 'END-OF-DEFLX'
         return result
 
     def _find_function_line(self, filename, function):
