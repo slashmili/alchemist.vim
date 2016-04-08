@@ -25,17 +25,32 @@ function! alchemist#get_doc(word)
     return result
 endfunction
 
-function! alchemist#Credo()
-  if exists(':Neomake')
-    execute "Neomake credo"
-    return
-  endif
-  let credo_cmd = "cd " . g:alchemist#root . " && mix credo " . expand("%:p") . " --format=flycheck"
+function! alchemist#Credo(args)
+  let root_dir = g:alchemist#root
+  " set error format for location list
   let old_efm = &errorformat
   let &errorformat = '%f:%l:%c: %m, %f:%l: %m'
-  lexpr systemlist(credo_cmd)
-  lopen
+  " run mix credo
+  let target = expand("%:p")
+  if !empty(a:args)
+    let target = expand(a:args)
+  endif
+  let credo_cmd = "mix credo " . target . " --format=flycheck"
+  let cd_cmd = "cd " . root_dir
+  echom "Alchemist: " . credo_cmd
+  redraw
+  let report = systemlist(cd_cmd . " && " . credo_cmd)
+  " filter out any output from 'mix deps.compile'
+  let credo = filter(report, "v:val =~ '^\\(.\\+\\)/\\([^/]\\+\\):'")
+  " populate the location list
+  " open the location window if there are errors
+  lexpr credo
+  lwindow
+  " restore old errorformat
   let &errorformat = old_efm
+  if len(credo) == 0
+    echom "Alchemist: no errors/warnings"
+  endif
 endfunction
 
 function! alchemist#alchemist_format(cmd, arg, context, imports, aliases)
@@ -279,3 +294,5 @@ if !exists(':Mix')
   command! -buffer -bar -nargs=? -complete=custom,alchemist#mix_complete Mix
         \ call alchemist#mix(<q-args>)
 endif
+
+command! -nargs=? -complete=file Credo call alchemist#Credo(<q-args>)
