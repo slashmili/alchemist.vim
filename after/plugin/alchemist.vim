@@ -171,26 +171,26 @@ function! alchemist#exdef(...)
         let query = a:000[0]
     endif
     if s:strip(query) == ''
-        echo "Alchemist: No module/function is provided"
+        call s:echo_error('E426: tag not found: ')
         return
     endif
     let req = alchemist#alchemist_format("DEFLX", query, "Elixir", [], [])
     let result = alchemist#alchemist_client(req)
-    let source = filter(split(result, '\n'), 'v:val != "END-OF-DEFLX"')
-    if len(source) == 0
-        echo "Alchemist: Can not find any source for " . query
+    let source_match = filter(split(result, '\n'), 'v:val != "END-OF-DEFLX"')
+    if len(source_match) == 0
+        call s:echo_error('E426: tag not found: ' . query)
         return
     endif
-    let source = source[0]
+    let source_file = source_match[0]
     let line = 1
-    let source_line = matchlist(source, '\(.*\):\([0-9]\+\)')
-    if len(source_line) > 0
-        let source = source_line[1]
-        let line = source_line[2]
+    let source_and_line = matchlist(source_file, '\(.*\):\([0-9]\+\)')
+    if len(source_and_line) > 0
+        let source_file = source_and_line[1]
+        let line = source_and_line[2]
     endif
-    let rel_path = substitute(source, getcwd() . '/' , '', '')
+    let rel_path = substitute(source_file, getcwd() . '/' , '', '')
     if !filereadable(rel_path)
-        echo "Alchemist: Can not open file " . rel_path
+        call s:echo_error("E484: Can't open file: " . rel_path)
         return
     endif
     execute 'e ' . rel_path
@@ -199,6 +199,12 @@ endfunction
 
 function! s:strip(input_string)
     return substitute(a:input_string, '^\s*\(.\{-}\)\s*$', '\1', '')
+endfunction
+
+function! s:echo_error(text)
+	echohl ErrorMsg
+	echo a:text
+	echohl None
 endfunction
 
 function! alchemist#get_current_module_details()
