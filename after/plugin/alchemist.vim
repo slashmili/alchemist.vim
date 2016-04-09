@@ -248,6 +248,55 @@ function! alchemist#get_import(line)
     return ''
 endfunction
 
+if !exists('g:alchemist_iex_term_size')
+  let g:alchemist_iex_term_size = 15
+endif
+if !exists('g:alchemist_iex_term_split')
+  let g:alchemist_iex_term_split = "split"
+endif
+if exists('g:ConqueTerm_Loaded')
+  let s:alchemist_iex_runner = "ConqueTerm"
+elseif has('nvim')
+  let s:alchemist_iex_runner = "terminal"
+endif
+
+function! alchemist#open_iex(command)
+  if !exists('s:alchemist_iex_runner')
+    echom "IEx requires either Neovim or ConqueShell"
+    return ""
+  endif
+  let iex_open_cmd = "botright " . g:alchemist_iex_term_size . g:alchemist_iex_term_split
+  if exists('g:alchemist_iex_buffer') && bufexists(g:alchemist_iex_buffer)
+    if bufwinnr(g:alchemist_iex_buffer) != -1
+      exec bufwinnr(g:alchemist_iex_buffer) . "wincmd w"
+      call feedkeys("i" . (empty(a:command) ? "" : a:command . "\<CR>"))
+    else
+      exec iex_open_cmd . " +buffer" . g:alchemist_iex_buffer
+      call feedkeys("i" . (empty(a:command) ? "" : a:command . "\<CR>"))
+    endif
+  else
+    exec iex_open_cmd
+    exec s:alchemist_iex_runner . " iex -S mix"
+    let g:alchemist_iex_buffer = bufnr("%")
+    call feedkeys((empty(a:command) ? "" : a:command . "\<CR>"))
+  endif
+endfunction
+
+function! alchemist#hide_iex()
+  if exists('s:alchemist_iex_runner') && exists('g:alchemist_iex_buffer')
+    if bufwinnr(g:alchemist_iex_buffer) != -1
+      if s:alchemist_iex_runner == 'terminal'
+        exec bufwinnr(g:alchemist_iex_buffer) . "hide"
+      else
+        let current_window = winnr()
+        exec bufwinnr(g:alchemist_iex_buffer) . "wincmd w"
+        hide
+        exec current_window . "wincmd w"
+      endif
+    endif
+  endif
+endfunction
+
 function! alchemist#mix(...)
   exe '!mix ' . join(copy(a:000), ' ')
 endfunction
@@ -266,3 +315,7 @@ if !exists(':Mix')
   command! -buffer -bar -nargs=? -complete=custom,alchemist#mix_complete Mix
         \ call alchemist#mix(<q-args>)
 endif
+
+command! -nargs=? -complete=customlist,elixircomplete#ExDocComplete IEx
+      \ call alchemist#open_iex(<q-args>)
+command! -nargs=0 IExHide call alchemist#hide_iex()
