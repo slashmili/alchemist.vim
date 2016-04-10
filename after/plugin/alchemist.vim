@@ -248,6 +248,8 @@ function! alchemist#get_import(line)
     return ''
 endfunction
 
+" {{{ IEx
+
 if !exists('g:alchemist_iex_term_size')
   let g:alchemist_iex_term_size = 15
 endif
@@ -260,42 +262,71 @@ elseif has('nvim')
   let s:alchemist_iex_runner = "terminal"
 endif
 
+function! s:iex_open_cmd()
+  return "botright " . g:alchemist_iex_term_size . g:alchemist_iex_term_split
+endfunction
+
+function! s:iex_buffer_exists()
+  return exists('s:alchemist_iex_buffer') && bufexists(s:alchemist_iex_buffer)
+endfunction
+
+function! s:iex_enter_user_command(command, mode)
+  if empty(a:command)
+    startinsert
+  else
+    call feedkeys(a:mode. a:command . "\<CR>")
+  endif
+endfunction
+
+
 function! alchemist#open_iex(command)
   if !exists('s:alchemist_iex_runner')
     echom "IEx requires either Neovim or ConqueShell"
     return ""
   endif
-  let iex_open_cmd = "botright " . g:alchemist_iex_term_size . g:alchemist_iex_term_split
-  if exists('g:alchemist_iex_buffer') && bufexists(g:alchemist_iex_buffer)
-    if bufwinnr(g:alchemist_iex_buffer) != -1
-      exec bufwinnr(g:alchemist_iex_buffer) . "wincmd w"
-      call feedkeys("i" . (empty(a:command) ? "" : a:command . "\<CR>"))
+  if s:iex_buffer_exists()
+    let bufno = bufwinnr(s:alchemist_iex_buffer)
+    " if IEx is the current buffer and no command was passed, hide it
+    if bufno == bufnr("%") && empty(a:command)
+      call alchemist#hide_iex()
+
+    " if the buffer is in an open window, switch to it
+    elseif bufno != -1
+      exec bufno . "wincmd w"
+      call s:iex_enter_user_command(a:command, 'i')
+
+    " otherwise the buffer is hidden, open it in a new window
     else
-      exec iex_open_cmd . " +buffer" . g:alchemist_iex_buffer
-      call feedkeys("i" . (empty(a:command) ? "" : a:command . "\<CR>"))
+      exec s:iex_open_cmd() . " +buffer" . s:alchemist_iex_buffer
+      call s:iex_enter_user_command(a:command, 'i')
     endif
   else
-    exec iex_open_cmd
+    " no IEx buffer exists, open a new one
+    exec s:iex_open_cmd()
     exec s:alchemist_iex_runner . " iex -S mix"
-    let g:alchemist_iex_buffer = bufnr("%")
-    call feedkeys((empty(a:command) ? "" : a:command . "\<CR>"))
+    let s:alchemist_iex_buffer = bufnr("%")
+    call s:iex_enter_user_command(a:command, '')
   endif
 endfunction
 
 function! alchemist#hide_iex()
-  if exists('s:alchemist_iex_runner') && exists('g:alchemist_iex_buffer')
-    if bufwinnr(g:alchemist_iex_buffer) != -1
+  if exists('s:alchemist_iex_runner') && exists('s:alchemist_iex_buffer')
+    " only hide the window if it is open
+    if bufwinnr(s:alchemist_iex_buffer) != -1
+      " Neovim has :{winnr}hide whereas Vim doesn't
       if s:alchemist_iex_runner == 'terminal'
-        exec bufwinnr(g:alchemist_iex_buffer) . "hide"
+        exec bufwinnr(s:alchemist_iex_buffer) . "hide"
       else
         let current_window = winnr()
-        exec bufwinnr(g:alchemist_iex_buffer) . "wincmd w"
+        exec bufwinnr(s:alchemist_iex_buffer) . "wincmd w"
         hide
         exec current_window . "wincmd w"
       endif
     endif
   endif
 endfunction
+
+" }}}
 
 function! alchemist#mix(...)
   exe '!mix ' . join(copy(a:000), ' ')
@@ -316,6 +347,6 @@ if !exists(':Mix')
         \ call alchemist#mix(<q-args>)
 endif
 
-command! -nargs=? -complete=customlist,elixircomplete#ExDocComplete IEx
+command! -nargs=* -complete=customlist,elixircomplete#ExDocComplete IEx
       \ call alchemist#open_iex(<q-args>)
 command! -nargs=0 IExHide call alchemist#hide_iex()
