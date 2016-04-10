@@ -182,7 +182,10 @@ class AlchemistClient:
         for line_num, line_str in enumerate(lines):
             if line_str.find("def %s" % function) != -1:
                 return line_num + 1
+            if line_str.find("defp %s" % function) != -1:
+                return line_num + 1
         return 1
+
     def _defl_extract_module_func(self, query):
         """
         >>> alchemist = AlchemistClient()
