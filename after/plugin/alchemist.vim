@@ -285,14 +285,14 @@ function! alchemist#open_iex(command)
     return ""
   endif
   if s:iex_buffer_exists()
-    let bufno = bufwinnr(s:alchemist_iex_buffer)
+    let winno = bufwinnr(s:alchemist_iex_buffer)
     " if IEx is the current buffer and no command was passed, hide it
-    if bufno == bufnr("%") && empty(a:command)
+    if s:alchemist_iex_buffer == bufnr("%") && empty(a:command)
       call alchemist#hide_iex()
 
     " if the buffer is in an open window, switch to it
-    elseif bufno != -1
-      exec bufno . "wincmd w"
+    elseif winno != -1
+      exec winno . "wincmd w"
       call s:iex_enter_user_command(a:command, 'i')
 
     " otherwise the buffer is hidden, open it in a new window
