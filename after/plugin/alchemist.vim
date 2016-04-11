@@ -256,10 +256,10 @@ endif
 if !exists('g:alchemist_iex_term_split')
   let g:alchemist_iex_term_split = "split"
 endif
-if exists('g:ConqueTerm_Loaded')
-  let s:alchemist_iex_runner = "ConqueTerm"
-elseif has('nvim')
+if has('nvim')
   let s:alchemist_iex_runner = "terminal"
+elseif exists('g:ConqueTerm_Loaded')
+  let s:alchemist_iex_runner = "ConqueTerm"
 endif
 
 function! s:iex_open_cmd()
@@ -303,7 +303,11 @@ function! alchemist#open_iex(command)
   else
     " no IEx buffer exists, open a new one
     exec s:iex_open_cmd()
-    exec s:alchemist_iex_runner . " iex -S mix"
+    if filereadable('mix.exs')
+      exec s:alchemist_iex_runner . " iex -S mix"
+    else
+      exec s:alchemist_iex_runner . " iex"
+    endif
     let s:alchemist_iex_buffer = bufnr("%")
     call s:iex_enter_user_command(a:command, '')
   endif
