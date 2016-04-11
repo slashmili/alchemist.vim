@@ -224,9 +224,9 @@ function! s:strip(input_string)
 endfunction
 
 function! s:echo_error(text)
-	echohl ErrorMsg
-	echo a:text
-	echohl None
+    echohl ErrorMsg
+    echo a:text
+    echohl None
 endfunction
 
 function! alchemist#get_current_module_details()
