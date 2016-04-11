@@ -26,5 +26,15 @@ endif
 
 nnoremap <silent> K :call alchemist#exdoc()<CR>
 
-nnoremap <silent> <c-]> :call alchemist#exdef()<CR>
 command! -nargs=? ExDef call alchemist#exdef(<f-args>)
+
+if !exists('g:alchemist_tag_disable')
+    if !exists('g:alchemist_tag_map') | let g:alchemist_tag_map = '<C-]>' | en
+    if !exists('g:alchemist_tag_stack_map') | let g:alchemist_tag_stack_map = '<C-T>' | en
+    if g:alchemist_tag_map != '' && !hasmapto('alchemist#exdef()')
+        exe 'nnoremap <silent> ' . g:alchemist_tag_map . ' :call alchemist#exdef()<CR>'
+    endif
+    if g:alchemist_tag_stack_map != '' && !hasmapto('alchemist#jump_tag_stack()')
+        exe 'nnoremap <silent> ' . g:alchemist_tag_stack_map . ' :call alchemist#jump_tag_stack()<CR>'
+    endif
+endif
