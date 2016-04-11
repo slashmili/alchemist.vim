@@ -72,7 +72,8 @@ function! alchemist#lookup_name_under_cursor()
 
     let before_cursor = strpart(getline('.'), 0, col('.'))
     let after_cursor = strpart(getline('.'), col('.'))
-    let before_match = matchlist(before_cursor, s:module_func_match . '$')
+    let elixir_erlang_module_func_match = ':\?' . s:module_func_match
+    let before_match = matchlist(before_cursor, elixir_erlang_module_func_match . '$')
     let after_match = matchlist(after_cursor, '^' . s:module_func_match)
     let query = ''
     let before = ''
