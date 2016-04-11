@@ -14,11 +14,15 @@ end
 
 function! alchemist#alchemist_client(req)
     let req = a:req . "\n"
-    let ansi = ""
+    let cmd = g:alchemist#alchemist_client
     if !alchemist#ansi_enabled()
-        let ansi = '--colors=false'
+        let cmd = cmd . ' --colors=false '
     endif
-    return system(g:alchemist#alchemist_client. ' ' . ansi  . ' -d ' . g:alchemist#root, req)
+    if exists('g:alchemist#elixir_erlang_src')
+        let cmd = cmd . ' -s ' . g:alchemist#elixir_erlang_src
+    endif
+    let cmd = cmd . ' -d ' . g:alchemist#root
+    return system(cmd, req)
 endfunction
 
 function! alchemist#get_doc(word)
