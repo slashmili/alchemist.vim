@@ -1,5 +1,5 @@
 let s:buf_nr = -1
-let s:module_match = '[A-Za-z0-9\._]\+'
+let s:module_match = '[:A-Za-z0-9\._]\+'
 let s:module_func_match = '[A-Za-z0-9\._?!]\+'
 let g:alchemist_tag_stack = []
 let g:alchemist_tag_stack_is_used = 0
@@ -50,8 +50,8 @@ function! alchemist#alchemist_format(cmd, arg, context, imports, aliases)
     "remove '
     let aliases_str = substitute(aliases_str, "'", '', 'g')
     let imports_str = substitute(imports_str, "'", '', 'g')
-    "replace : to ,
-    let aliases_str = substitute(aliases_str, ":", ',', 'g')
+    "replace key: to key,
+    let aliases_str = substitute(aliases_str, ": ", ', ', 'g')
 
     return a:cmd. " { \"" . a:arg . "\", [ context: ". a:context.
                           \ ", imports: ". imports_str .
