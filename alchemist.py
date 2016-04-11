@@ -16,10 +16,13 @@ class AlchemistClient:
         self._ansi = kw.get('ansi', True)
         self._debug = kw.get('debug', False)
         self._alchemist_script = kw.get('alchemist_script', None)
+        self._source = kw.get('source', None)
         self.re_elixir_fun_with_arity = re.compile(r'(?P<func>.*)/[0-9]+$')
         self.re_erlang_module = re.compile(r'^\:(?P<module>.*)')
         self.re_elixir_module = re.compile(r'^(?P<module>[A-Z][A-Za-z0-9\._]+)')
-        self.re_compx_base = re.compile(r'^.*{\s*"(?P<base>.*)"\s*')
+        self.re_x_base = re.compile(r'^.*{\s*"(?P<base>.*)"\s*')
+        self.re_elixir_src = re.compile(r'.*(/lib/elixir/lib.*)')
+        self.re_erlang_src = re.compile(r'.*otp.*(/lib/.*\.erl)')
 
 
     def process_command(self, cmd, cmd_type=None):
@@ -43,6 +46,8 @@ class AlchemistClient:
 
         if cmd_type == 'COMPX':
             result = self._send_compx(sock, cmd)
+        elif cmd_type == 'DEFLX':
+            result = self._send_deflx(sock, cmd)
         else:
             result = self._send_command(sock, cmd_type, cmd)
 
@@ -140,8 +145,10 @@ class AlchemistClient:
 
     def _send_compx(self, sock, cmd):
         cmd_type = 'COMP'
+        self._log(cmd)
         cmd = cmd.replace('COMPX', 'COMP')
-        base_match = self.re_compx_base.match(cmd)
+        self._log(cmd)
+        base_match = self.re_x_base.match(cmd)
         if base_match:
             base = base_match.group('base')
         result = self._send_command(sock, cmd_type, cmd)
@@ -153,6 +160,99 @@ class AlchemistClient:
         r.append('END-OF-COMPX')
         return "\n".join(r)
 
+    def _send_deflx(self, sock, cmd):
+        cmd_type = 'DEFL'
+        self._log(cmd)
+        cmd = cmd.replace('DEFLX', 'DEFL')
+        base_match = self.re_x_base.match(cmd)
+        base = base_match.group('base')
+        module_func = self._defl_extract_module_func(base)
+        cmd = cmd.replace(base, module_func, 1)
+        self._log(cmd)
+        result = self._send_command(sock, cmd_type, cmd).strip()
+        result = result.replace('END-OF-DEFL', '')
+
+        filename, line = (result.strip(), 1)
+        if filename.strip() == '': return 'END-OF-DEFLX'
+        module_func_list = module_func.split(",")
+        if len(module_func_list) == 2:
+            filename = self._find_elixir_erlang_src(filename)
+            if module_func_list[1] == 'nil':
+                line = self._find_module_line(filename, module_func_list[0])
+            else:
+                line = self._find_function_line(filename, module_func_list[1])
+        return "%s:%i\n%s" %(filename, line, 'END-OF-DEFLX')
+
+    def _find_elixir_erlang_src(self, filename):
+        if self._is_readable(filename):
+            return filename
+        if self.re_elixir_src.match(filename):
+            elixir_src_file = "%s/elixir/%s" % (self._source, self.re_elixir_src.match(filename).group(1))
+            if self._is_readable(elixir_src_file):
+                return os.path.realpath(elixir_src_file)
+        elif self.re_erlang_src.match(filename):
+            erlang_src_file = "%s/otp/%s" % (self._source, self.re_erlang_src.match(filename).group(1))
+            if self._is_readable(erlang_src_file):
+                return os.path.realpath(erlang_src_file)
+        return filename
+
+    def _find_module_line(self, filename, module):
+        return self._find_pattern_in_file(
+                filename,
+                ["defmodule %s" % module, "-module(%s)." % module[1:]])
+
+    def _find_function_line(self, filename, function):
+        return self._find_pattern_in_file(
+                filename,
+                ["def %s" % function, "defp %s" % function, "-spec %s" % function])
+
+    def _find_pattern_in_file(self, filename, patterns):
+        if not os.path.isfile(filename) or not os.access(filename, os.R_OK):
+            return 1
+        lines = open(filename, "r").readlines()
+        for line_num, line_str in enumerate(lines):
+            if len(filter(lambda p: p in line_str, patterns)) > 0:
+                return line_num + 1
+        return 1
+
+    def _is_readable(self, filename):
+        if os.path.isfile(filename) and os.access(filename, os.R_OK):
+            return True
+        return False
+
+    def _defl_extract_module_func(self, query):
+        """
+        >>> alchemist = AlchemistClient()
+        >>> alchemist._defl_extract_module_func("System")
+        'System,nil'
+        >>> alchemist._defl_extract_module_func("System.put_env")
+        'System,put_env'
+        >>> alchemist._defl_extract_module_func("ExGuard.Guard")
+        'ExGuard.Guard,nil'
+        >>> alchemist._defl_extract_module_func("ExGuard.Guard.guard")
+        'ExGuard.Guard,guard'
+        >>> alchemist._defl_extract_module_func("execute")
+        ',execute'
+        >>> alchemist._defl_extract_module_func(":timer.sleep")
+        ':timer,sleep'
+        >>> alchemist._defl_extract_module_func(":timer")
+        ':timer,nil'
+        """
+        func = 'nil'
+        module = query
+        func_match = re.compile(r'(?P<module>.*)\.(?P<func>[a-z_!?]+)$')
+        match = func_match.match(query)
+        if match:
+            func = match.group('func')
+            module = match.group('module')
+        elif query.islower():
+            func = query
+            module = ''
+        if func[0] == ':':
+            #TODO: to improve this part
+            module, func = func, 'nil'
+
+        return '%s,%s' % (module, func)
 
     def _sock_readlines(self, sock, recv_buffer=4096, delim='\n', timeout=10):
         buffer = ''

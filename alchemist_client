@@ -16,6 +16,7 @@ def alchemist_help():
     -t, --command-type=""      Command type, if it's not provided, extract it from command
     -d, --directory=           Directory that alchemist server should process code from
     -a, --alchemist-server=""  Path to alchemist server `run.exs`, if it's not provided load it from alchemist-server/run.exs
+    -s, --source=""            Path to source code for Erlang and Elixir. It's used to find the path in DEFLX command
     --colors=true              Enable/Disable ansi
     """
 
@@ -25,8 +26,9 @@ def main(argv):
     cwd = ""
     alchemist_script = ""
     ansi = True
+    source = ""
     try:
-        opts, args = getopt.getopt(argv,"hc:t:d:a:",["type=","command-type=", "directory=", "alchemist-server=", "colors="])
+        opts, args = getopt.getopt(argv,"hc:t:d:a:s:",["type=","command-type=", "directory=", "alchemist-server=", "colors=", "source="])
     except getopt.GetoptError:
         print(alchemist_help())
         sys.exit(2)
@@ -42,6 +44,8 @@ def main(argv):
             cwd = arg
         elif opt in ("-a", "--alchemist-server"):
             alchemist_script = arg
+        elif opt in ("-s", "--source"):
+            source = arg
         elif opt in ("--colors"):
             if arg == "false":
                 ansi = False
@@ -62,7 +66,7 @@ def main(argv):
         print(alchemist_help())
         sys.exit(2)
 
-    a = AlchemistClient(debug=debug, cwd=cwd, ansi=ansi, alchemist_script=alchemist_script)
+    a = AlchemistClient(debug=debug, cwd=cwd, ansi=ansi, alchemist_script=alchemist_script, source=source)
     print(a.process_command(cmd), end="")
 
 

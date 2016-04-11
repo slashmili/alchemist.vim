@@ -1,6 +1,8 @@
 let s:buf_nr = -1
-let s:module_match = '[A-Za-z0-9\._]\+'
+let s:module_match = '[:A-Za-z0-9\._]\+'
 let s:module_func_match = '[A-Za-z0-9\._?!]\+'
+let g:alchemist_tag_stack = []
+let g:alchemist_tag_stack_is_used = 0
 
 if !exists('g:alchemist#alchemist_client')
     let g:alchemist#alchemist_client = expand("<sfile>:p:h:h") . '/../alchemist_client'
@@ -12,11 +14,15 @@ end
 
 function! alchemist#alchemist_client(req)
     let req = a:req . "\n"
-    let ansi = ""
+    let cmd = g:alchemist#alchemist_client
     if !alchemist#ansi_enabled()
-        let ansi = '--colors=false'
+        let cmd = cmd . ' --colors=false '
     endif
-    return system(g:alchemist#alchemist_client. ' ' . ansi  . ' -d ' . g:alchemist#root, req)
+    if exists('g:alchemist#elixir_erlang_src')
+        let cmd = cmd . ' -s ' . g:alchemist#elixir_erlang_src
+    endif
+    let cmd = cmd . ' -d ' . g:alchemist#root
+    return system(cmd, req)
 endfunction
 
 function! alchemist#get_doc(word)
@@ -44,8 +50,8 @@ function! alchemist#alchemist_format(cmd, arg, context, imports, aliases)
     "remove '
     let aliases_str = substitute(aliases_str, "'", '', 'g')
     let imports_str = substitute(imports_str, "'", '', 'g')
-    "replace : to ,
-    let aliases_str = substitute(aliases_str, ":", ',', 'g')
+    "replace key: to key,
+    let aliases_str = substitute(aliases_str, ": ", ', ', 'g')
 
     return a:cmd. " { \"" . a:arg . "\", [ context: ". a:context.
                           \ ", imports: ". imports_str .
@@ -70,7 +76,8 @@ function! alchemist#lookup_name_under_cursor()
 
     let before_cursor = strpart(getline('.'), 0, col('.'))
     let after_cursor = strpart(getline('.'), col('.'))
-    let before_match = matchlist(before_cursor, s:module_func_match . '$')
+    let elixir_erlang_module_func_match = ':\?' . s:module_func_match
+    let before_match = matchlist(before_cursor, elixir_erlang_module_func_match . '$')
     let after_match = matchlist(after_cursor, '^' . s:module_func_match)
     let query = ''
     let before = ''
@@ -95,7 +102,7 @@ function! alchemist#lookup_name_under_cursor()
     else
         let query = before . after
     endif
-    call s:open_doc_window(query, 'new', 'split')
+    return query
 endfunction
 
 function! s:open_doc_window(query, newposition, position)
@@ -104,7 +111,7 @@ function! s:open_doc_window(query, newposition, position)
     let lines = split(content, '\n')
     if len(lines) < 3
         redraw
-        echom "No matches for '" . a:query . "'!"
+        echo "Alchemist: No matches for '" . a:query . "'!"
         return
     endif
 
@@ -154,15 +161,77 @@ function! s:close_doc_win()
 endfunction
 
 function! alchemist#exdoc(...)
+    let query = ''
     if empty(a:000)
-        call alchemist#lookup_name_under_cursor()
+        let query = alchemist#lookup_name_under_cursor()
+    else
+        let query = a:000[0]
+    endif
+    call s:open_doc_window(query, "new", "split")
+endfunction
+
+function! alchemist#exdef(...)
+    let query = ''
+    if empty(a:000)
+        let query = alchemist#lookup_name_under_cursor()
+    else
+        let query = a:000[0]
+    endif
+    if s:strip(query) == ''
+        call s:echo_error('E426: tag not found: ')
         return
     endif
-    call s:open_doc_window(a:000[0], "new", "split")
+    let req = alchemist#alchemist_format("DEFLX", query, "Elixir", [], [])
+    let result = alchemist#alchemist_client(req)
+    let source_match = filter(split(result, '\n'), 'v:val != "END-OF-DEFLX"')
+    if len(source_match) == 0
+        call s:echo_error('E426: tag not found: ' . query)
+        return
+    endif
+    let source_file = source_match[0]
+    let line = 1
+    let source_and_line = matchlist(source_file, '\(.*\):\([0-9]\+\)')
+    if len(source_and_line) > 0
+        let source_file = source_and_line[1]
+        let line = source_and_line[2]
+    endif
+    let rel_path = substitute(source_file, getcwd() . '/' , '', '')
+    if !filereadable(rel_path)
+        call s:echo_error("E484: Can't open file: " . rel_path)
+        return
+    endif
+    call add(g:alchemist_tag_stack, [bufnr('%'), line('.'), col('.')])
+    execute 'e ' . rel_path
+    execute line
+endfunction
+
+function! alchemist#jump_tag_stack()
+    if len(g:alchemist_tag_stack) == 0
+        if g:alchemist_tag_stack_is_used == 1
+            call s:echo_error('E555: at bottom of tag stack')
+            return
+        endif
+        call s:echo_error('E73: tag stack empty')
+        return
+    endif
+    let stack_size = len(g:alchemist_tag_stack)
+    let stack_item = remove(g:alchemist_tag_stack, stack_size - 1)
+    let buf_nr = stack_item[0]
+    if bufexists(stack_item[0])
+        execute stack_item[0] . 'buffer'
+        call cursor(stack_item[1], stack_item[2])
+    end
+    let g:alchemist_tag_stack_is_used = 1
 endfunction
 
 function! s:strip(input_string)
     return substitute(a:input_string, '^\s*\(.\{-}\)\s*$', '\1', '')
+endfunction
+
+function! s:echo_error(text)
+    echohl ErrorMsg
+    echo a:text
+    echohl None
 endfunction
 
 function! alchemist#get_current_module_details()
