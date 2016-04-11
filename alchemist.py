@@ -199,6 +199,10 @@ class AlchemistClient:
         'ExGuard.Guard,guard'
         >>> alchemist._defl_extract_module_func("execute")
         ',execute'
+        >>> alchemist._defl_extract_module_func(":timer.sleep")
+        ':timer,sleep'
+        >>> alchemist._defl_extract_module_func(":timer")
+        ':timer,nil'
         """
         func = 'nil'
         module = query
@@ -210,6 +214,10 @@ class AlchemistClient:
         elif query.islower():
             func = query
             module = ''
+        if func[0] == ':':
+            #TODO: to improve this part
+            module, func = func, 'nil'
+
         return '%s,%s' % (module, func)
 
     def _sock_readlines(self, sock, recv_buffer=4096, delim='\n', timeout=10):
