@@ -197,6 +197,8 @@ class AlchemistClient:
         'ExGuard.Guard,nil'
         >>> alchemist._defl_extract_module_func("ExGuard.Guard.guard")
         'ExGuard.Guard,guard'
+        >>> alchemist._defl_extract_module_func("execute")
+        ',execute'
         """
         func = 'nil'
         module = query
@@ -205,6 +207,9 @@ class AlchemistClient:
         if match:
             func = match.group('func')
             module = match.group('module')
+        elif query.islower():
+            func = query
+            module = ''
         return '%s,%s' % (module, func)
 
     def _sock_readlines(self, sock, recv_buffer=4096, delim='\n', timeout=10):
