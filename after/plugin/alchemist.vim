@@ -1,6 +1,8 @@
 let s:buf_nr = -1
 let s:module_match = '[A-Za-z0-9\._]\+'
 let s:module_func_match = '[A-Za-z0-9\._?!]\+'
+let g:alchemist_tag_stack = []
+let g:alchemist_tag_stack_is_used = 0
 
 if !exists('g:alchemist#alchemist_client')
     let g:alchemist#alchemist_client = expand("<sfile>:p:h:h") . '/../alchemist_client'
@@ -193,8 +195,28 @@ function! alchemist#exdef(...)
         call s:echo_error("E484: Can't open file: " . rel_path)
         return
     endif
+    call add(g:alchemist_tag_stack, [bufnr('%'), line('.'), col('.')])
     execute 'e ' . rel_path
     execute line
+endfunction
+
+function! alchemist#jump_tag_stack()
+    if len(g:alchemist_tag_stack) == 0
+        if g:alchemist_tag_stack_is_used == 1
+            call s:echo_error('E555: at bottom of tag stack')
+            return
+        endif
+        call s:echo_error('E73: tag stack empty')
+        return
+    endif
+    let stack_size = len(g:alchemist_tag_stack)
+    let stack_item = remove(g:alchemist_tag_stack, stack_size - 1)
+    let buf_nr = stack_item[0]
+    if bufexists(stack_item[0])
+        execute stack_item[0] . 'buffer'
+        call cursor(stack_item[1], stack_item[2])
+    end
+    let g:alchemist_tag_stack_is_used = 1
 endfunction
 
 function! s:strip(input_string)
