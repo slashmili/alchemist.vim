@@ -16,6 +16,7 @@ This plugin uses [alchemist-server](https://github.com/tonini/alchemist-server) 
 
 * Completion for Modules and functions.
 * Documentation lookup for Modules and functions.
+* Jump to the definition.
 
 [More supports will come soon](https://github.com/slashmili/alchemist.vim/issues/1)
 
@@ -48,11 +49,14 @@ Go to your elixir project directory and run `vim`
 
   * Auto completion: `<C-x><C-o>` while your are in `INSERT` mode.
   * Documention: Press `K` while cursor is under a module or function in `NORMAL` mode.
+  * Jump to the definition: Press `<C-]>` while cursor is under the keyword in `NORMAL` mode.
+  * Jump through tag stack: Press `<C-T>` to jump between tag stack in `NORMAL` mode.
 
 ### Commands:
 
   * ExDoc: `ExDoc [module/function]` provides document (press TAB to get autocomplete).
   * Mix: `Mix [command]` run mix command (press TAB to get commands autocomplete). If you already have an existing `Mix` command, alchemist won't define this command.
+  * ExDef: `ExDef [module/function]` jumps to the definition.
 
 ### Demo
 
