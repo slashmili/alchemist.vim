@@ -17,59 +17,27 @@ This plugin uses [alchemist-server](https://github.com/tonini/alchemist-server) 
 * Completion for Modules and functions.
 * Documentation lookup for Modules and functions.
 * Jump to the definition.
+* Mix integration.
+* IEx integration.
 
-[More supports will come soon](https://github.com/slashmili/alchemist.vim/issues/1)
-
-## Dependencies
-
-You need these dependencies on the same machine you run vim
-
-* **Elixir** > v1.0.4 to run alchemist-server
-* **Python** `alchemist_client` is the script that talks to _alchemist-server_
-* **AnsiEsc** (optional) to show documents in color in vim otherwise documents will be shown as _markdown_
-
-## Installation
-
-You can use your favourite VIM plugin mannger for installation, in this doc we use [Vundle](https://github.com/VundleVim/Vundle.vim)
+### Installation
+You can use your favourite VIM plugin mannger for installation, in this doc we use Vundle
 
 Add this line to your `.vimrc`
+
 ```
 Plugin 'slashmili/alchemist.vim'
 ```
 
-To show the documents in color you need [AnsiEsc](https://github.com/powerman/vim-plugin-AnsiEsc) plugin as well
-```
-Plugin 'powerman/vim-plugin-AnsiEsc'
-```
+## Documents
 
-## Usage
-Go to your elixir project directory and run `vim`
-
-### Shortkeys:
-
-  * Auto completion: `<C-x><C-o>` while your are in `INSERT` mode.
-  * Documention: Press `K` while cursor is under a module or function in `NORMAL` mode.
-  * Jump to the definition: Press `<C-]>` while cursor is under the keyword in `NORMAL` mode.
-  * Jump through tag stack: Press `<C-T>` to jump between tag stack in `NORMAL` mode.
-
-### Commands:
-
-  * ExDoc: `ExDoc [module/function]` provides document (press TAB to get autocomplete).
-  * Mix: `Mix [command]` run mix command (press TAB to get commands autocomplete). If you already have an existing `Mix` command, alchemist won't define this command.
-  * ExDef: `ExDef [module/function]` jumps to the definition.
-  * IEx: `IEx [command]` opens a new IEx session if none exists (iex -S mix). If one already exists, it switches to that window.
-
-### Demo
-
-#### Vanilla vim
-<a href="https://asciinema.org/a/e23f0el00vlg0s5z9nrwp6kba"><img src="https://asciinema.org/a/e23f0el00vlg0s5z9nrwp6kba.png" height="400"></a>
-
-##### Autocomplete with deoplete
-<a href="https://asciinema.org/a/9uupb79bp90p9ji4jbfolvzuk"><img src="https://asciinema.org/a/9uupb79bp90p9ji4jbfolvzuk.png" height="300"></a>
+You can find more about short keys, commands and configs [here](https://github.com/slashmili/alchemist.vim/wiki).
 
 ## Issues
 
 If you faced any problem, create a new issue [in the issue tracker](https://github.com/slashmili/alchemist.vim/issues).
+
+## [Contributors](https://github.com/slashmili/alchemist.vim/graphs/contributors)
 
 ## Contributing
 
