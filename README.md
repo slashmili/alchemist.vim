@@ -1,6 +1,6 @@
 # alchemist.vim
 
-<img src="https://github.com/slashmili/alchemist.vim/raw/develop/logo.png" width="200" align="right">
+<img src="https://github.com/slashmili/alchemist.vim/raw/master/logo.png" width="200" align="right">
 
 [![License GPL 3](https://img.shields.io/badge/license-GPL_3-green.svg)](http://www.gnu.org/licenses/gpl-3.0)
 [![Build Status](https://travis-ci.org/slashmili/alchemist.vim.svg?branch=develop)](https://travis-ci.org/slashmili/alchemist.vim)
@@ -55,7 +55,7 @@ Go to your elixir project directory and run `vim`
 ### Commands:
 
   * ExDoc: `ExDoc [module/function]` provides document (press TAB to get autocomplete).
-  * Mix: `Mix [command]` run mix command (press TAB to get commands autocomplete). If you already have an existing `Mix` command, alchemist doesn't define this command.
+  * Mix: `Mix [command]` run mix command (press TAB to get commands autocomplete). If you already have an existing `Mix` command, alchemist won't define this command.
   * ExDef: `ExDef [module/function]` jumps to the definition.
 
 ### Demo
