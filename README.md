@@ -57,6 +57,7 @@ Go to your elixir project directory and run `vim`
   * ExDoc: `ExDoc [module/function]` provides document (press TAB to get autocomplete).
   * Mix: `Mix [command]` run mix command (press TAB to get commands autocomplete). If you already have an existing `Mix` command, alchemist won't define this command.
   * ExDef: `ExDef [module/function]` jumps to the definition.
+  * IEx: `IEx [command]` opens a new IEx session if none exists (iex -S mix). If one already exists, it switches to that window.
 
 ### Demo
 

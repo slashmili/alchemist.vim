@@ -5,6 +5,7 @@ v 2.1.0
 	- map CTRL-] to jump to the definition of the keyword under the cursor
 	- map CTRL-T Jump to older entry in the tag stack.
 	- support alias for erlang modules.
+	- IEx Integration
 
 v 2.0.1
 	- Mix command is available on all buffers (bugfix)
