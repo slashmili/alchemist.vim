@@ -1,5 +1,11 @@
 Helium (2.X.X)
 
+v 2.1.0
+	- implement ExDef to jump to the definition.
+	- map CTRL-] to jump to the definition of the keyword under the cursor
+	- map CTRL-T Jump to older entry in the tag stack.
+	- support alias for erlang modules.
+
 v 2.0.0
 	- use absolute path of project directory
 	- detect project base dir based on running servers or locating mix.exs
