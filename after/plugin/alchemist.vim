@@ -28,6 +28,10 @@ endfunction
 function! alchemist#get_doc(word)
     let req = alchemist#alchemist_format("DOCL", a:word, "Elixir", [], [])
     let result = alchemist#alchemist_client(req)
+    " fix heading colors
+    let result = substitute(result, '\e\[7m\e\[33m', '[1m[33m', 'g')
+    " fix code example colors
+    let result = substitute(result, '\e\[36m\e\[1m', '[1m[36m', 'g')
     return result
 endfunction
 
