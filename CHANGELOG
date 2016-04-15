@@ -1,5 +1,8 @@
 Helium (2.X.X)
 
+v 2.2.0
+	- Python3 compatibility
+
 v 2.1.1
 	- fix the ansi colors in ExDoc lookup
 
