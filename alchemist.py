@@ -211,7 +211,8 @@ class AlchemistClient:
             return 1
         lines = open(filename, "r").readlines()
         for line_num, line_str in enumerate(lines):
-            if len(filter(lambda p: p in line_str, patterns)) > 0:
+            matched_p = list(filter(lambda p: p in line_str, patterns))
+            if len(matched_p) > 0:
                 return line_num + 1
         return 1
 
