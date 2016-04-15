@@ -152,7 +152,7 @@ class AlchemistClient:
         if base_match:
             base = base_match.group('base')
         result = self._send_command(sock, cmd_type, cmd)
-        suggestions = filter(lambda x: x != 'END-OF-COMP', result.split("\n"))
+        suggestions = list(filter(lambda x: x != 'END-OF-COMP', result.split("\n")))
         auto_completes = self.auto_complete(base, suggestions)
         r = []
         for ac in auto_completes:
