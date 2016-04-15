@@ -129,7 +129,7 @@ class AlchemistClient:
         return False
 
     def _send_command(self, sock, cmd_type, cmd):
-        sock.sendall("%s\n" % cmd)
+        sock.sendall(("%s\n" % cmd).encode('utf-8'))
         result = ''
         try:
             for line in self._sock_readlines(sock):
@@ -261,7 +261,10 @@ class AlchemistClient:
         while data:
             select.select([sock], [], [], timeout)
             data = sock.recv(recv_buffer)
-            buffer += data
+            if type(data) == str:
+                buffer += data
+            else:
+                buffer += data.decode('UTF-8')
 
             while buffer.find(delim) != -1:
                 line, buffer = buffer.split('\n', 1)

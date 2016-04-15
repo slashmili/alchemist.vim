@@ -1,5 +1,9 @@
 Helium (2.X.X)
 
+v 2.2.0
+	- use python3 compatible function to read from stdin
+	- use python3 compatible socket params
+
 v 2.1.1
 	- fix the ansi colors in ExDoc lookup
 

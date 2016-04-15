@@ -5,6 +5,7 @@ from alchemist import AlchemistClient
 
 debug = False
 
+read_stdin = vars(__builtins__).get('raw_input',input)
 
 def alchemist_help():
     return """Usage: alchemist_client -c <command> -t <command_type> -d <working_directory> -a <alchemist_script>
@@ -55,7 +56,7 @@ def main(argv):
     cwd = a.get_project_base_dir(os.path.abspath(arg))
     cwd = os.path.abspath(arg)
     if cmd == "":
-        cmd = raw_input()
+        cmd = read_stdin()
     if alchemist_script == "":
         alchemist_script = "%s/alchemist-server/run.exs" % where_am_i()
     if cmd_type == "":
