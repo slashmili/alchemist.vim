@@ -51,7 +51,6 @@ function! s:FindStart()
     set isk+=:
     let pos = searchpos('\<', 'bnW', line('.'))[1] - 1
     let &isk = l:isk_bak
-    echo pos
     return pos
 endfunction
 
