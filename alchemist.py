@@ -18,6 +18,7 @@ class AlchemistClient:
         self._alchemist_script = kw.get('alchemist_script', None)
         self._source = kw.get('source', None)
         self.re_elixir_fun_with_arity = re.compile(r'(?P<func>.*)/[0-9]+$')
+        self.re_elixir_module_and_fun = re.compile(r'^(?P<module>[A-Z][A-Za-z0-9\._]+)\.(?P<func>[a-z_?!]+)')
         self.re_erlang_module = re.compile(r'^\:(?P<module>.*)')
         self.re_elixir_module = re.compile(r'^(?P<module>[A-Z][A-Za-z0-9\._]+)')
         self.re_x_base = re.compile(r'^.*{\s*"(?P<base>.*)"\s*')
@@ -408,12 +409,24 @@ class AlchemistClient:
         [{'abbr': 'get_pid/0', 'kind': 'f', 'word': 'System.get_pid'},
          {'abbr': 'get_env/0', 'kind': 'f', 'word': 'System.get_env'},
          {'abbr': 'get_env/1', 'kind': 'f', 'word': 'System.get_env'}]
+        >>> pprint.pprint(alchemist.auto_complete('IO.ins', ['IO.inspect', 'inspect/2', 'inspect/3']))
+        [{'abbr': 'inspect/2', 'kind': 'f', 'word': 'IO.inspect'},
+         {'abbr': 'inspect/3', 'kind': 'f', 'word': 'IO.inspect'}]
+        >>> pprint.pprint(alchemist.auto_complete('List.Chars.to_', ['List.Chars.to_char_list', 'to_char_list/1']))
+        [{'abbr': 'to_char_list/1', 'kind': 'f', 'word': 'List.Chars.to_char_list'}]
+        >>> pprint.pprint(alchemist.auto_complete('List.Chars.', ['List.Chars.', 'Atom', 'impl_for/1']))
+        [{'abbr': 'List.Chars.', 'kind': 'm', 'word': 'List.Chars.'},
+         {'abbr': 'Atom', 'kind': 'm', 'word': 'List.Chars.Atom.'},
+         {'abbr': 'impl_for/1', 'kind': 'f', 'word': 'List.Chars.impl_for'}]
         """
         if len(suggestions) == 0: return None
         return_list = []
         first_item = suggestions[0]
-        if first_item == base and suggestions[0][-1] != '.':
+        if first_item == base and first_item[-1] != '.':
             suggestions.pop(0)
+        elif self.re_elixir_module_and_fun.match(first_item) is not None:
+            suggestions.pop(0)
+
         for sug in suggestions:
             if len(sug) == 0:
                 continue
