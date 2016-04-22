@@ -11,32 +11,33 @@ defmodule Alchemist.Helpers.ProcessCommands do
 
   alias Alchemist.API
 
-  def process(line, env, device) do
+  def process(line, env) do
     loaded = all_loaded
 
     paths = load_paths(env)
     apps  = load_apps(env)
 
-    read_input(line, device)
+    result = execute_input(line)
     purge_modules(loaded)
     purge_paths(paths)
     purge_apps(apps)
+    result
   end
 
-  defp read_input(line, device) do
+  defp execute_input(line) do
     case line |> String.split(" ", parts: 2) do
       ["COMP", args] ->
-        API.Comp.request(args, device)
+        API.Comp.request(args)
       ["DOCL", args] ->
-        API.Docl.request(args, device)
+        API.Docl.request(args)
       ["INFO", args] ->
-        API.Info.request(args, device)
+        API.Info.request(args)
       ["EVAL", args] ->
-        API.Eval.request(args, device)
+        API.Eval.request(args)
       ["DEFL", args] ->
-        API.Defl.request(args, device)
+        API.Defl.request(args)
       ["PING"] ->
-        API.Ping.request(device)
+        API.Ping.request()
       _ ->
         nil
     end

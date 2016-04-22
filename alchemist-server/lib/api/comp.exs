@@ -1,27 +1,29 @@
 Code.require_file "../helpers/complete.exs", __DIR__
+Code.require_file "../helpers/response.exs", __DIR__
 
 defmodule Alchemist.API.Comp do
 
   @moduledoc false
 
   alias Alchemist.Helpers.Complete
+  alias Alchemist.Helpers.Response
 
-  def request(args, device) do
+  def request(args) do
     args
     |> normalize
-    |> process(device)
+    |> process
   end
 
-  def process([nil, _, imports, _], device) do
+  def process([nil, _, imports, _]) do
     Complete.run('', imports) ++ Complete.run('')
-    |> print(device)
+    |> response
   end
 
-  def process([hint, _context, imports, aliases], device) do
+  def process([hint, _context, imports, aliases]) do
     Application.put_env(:"alchemist.el", :aliases, aliases)
 
     Complete.run(hint, imports) ++ Complete.run(hint)
-    |> print(device)
+    |> response
   end
 
   defp normalize(request) do
@@ -31,11 +33,11 @@ defmodule Alchemist.API.Comp do
     [hint, context, imports, aliases]
   end
 
-  defp print(result, device) do
+  defp response(result) do
     result
     |> Enum.uniq
-    |> Enum.map(&IO.puts(device, &1))
-
-    IO.puts device, "END-OF-COMP"
+    |> Enum.join("\n")
+    |> Response.endmark("COMP")
   end
+
 end

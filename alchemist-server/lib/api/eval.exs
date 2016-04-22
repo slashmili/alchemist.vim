@@ -1,61 +1,71 @@
+Code.require_file "../helpers/response.exs", __DIR__
+
 defmodule Alchemist.API.Eval do
 
   @moduledoc false
 
-  def request(args, device) do
+  alias Alchemist.Helpers.CaptureIO
+  alias Alchemist.Helpers.Response
+
+  def request(args) do
     args
     |> normalize
-    |> process(device)
-
-    IO.puts device, "END-OF-EVAL"
+    |> process
+    |> Response.endmark("EVAL")
   end
 
-  def process({:eval, file}, device) do
-    try do
-      eval = File.read!("#{file}")
-              |> Code.eval_string
-              |> Tuple.to_list
-              |> List.first
-
-      IO.inspect device, eval, []
-    rescue
-      e -> IO.inspect device, e, []
-    end
+  def process({:eval, file}) do
+    CaptureIO.capture_io(fn ->
+      try do
+        File.read!("#{file}")
+        |> Code.eval_string
+        |> Tuple.to_list
+        |> List.first
+        |> IO.inspect
+      rescue
+        e -> IO.inspect e
+      end
+    end)
   end
 
-  def process({:quote, file}, device) do
-    try do
-      quot = File.read!("#{file}")
-      |> Code.string_to_quoted
-      |> Tuple.to_list
-      |> List.last
-
-      IO.inspect device, quot, []
-    rescue
-      e -> IO.inspect device, e, []
-    end
+  def process({:quote, file}) do
+    CaptureIO.capture_io(fn ->
+      try do
+        File.read!("#{file}")
+        |> Code.string_to_quoted
+        |> Tuple.to_list
+        |> List.last
+        |> IO.inspect
+      rescue
+        e -> IO.inspect e
+      end
+    end)
   end
 
-  def process({:expand, file}, device) do
-    try do
-      {_, expr} = File.read!("#{file}")
-      |> Code.string_to_quoted
-      res = Macro.expand(expr, __ENV__)
-      IO.puts device, Macro.to_string(res)
-    rescue
-      e -> IO.inspect device, e, []
-    end
+  def process({:expand, file}) do
+    CaptureIO.capture_io(fn ->
+      try do
+        {_, expr} = File.read!("#{file}")
+                    |> Code.string_to_quoted
+        res = Macro.expand(expr, __ENV__)
+        IO.puts Macro.to_string(res)
+      rescue
+        e -> IO.inspect e
+      end
+    end)
   end
 
-  def process({:expand_once, file}, device) do
-    try do
-      {_, expr} = File.read!("#{file}")
-      |> Code.string_to_quoted
-      res = Macro.expand_once(expr, __ENV__)
-      IO.puts device, Macro.to_string(res)
-    rescue
-      e -> IO.inspect e
-    end
+  def process({:expand_once, file}) do
+    CaptureIO.capture_io(fn ->
+      try do
+        {_, expr} = File.read!("#{file}")
+                    |> Code.string_to_quoted
+        res = Macro.expand_once(expr, __ENV__)
+        IO.puts Macro.to_string(res)
+      rescue
+        e -> IO.inspect e
+      end
+    end)
   end
 
   def normalize(request) do

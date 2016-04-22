@@ -1,5 +1,8 @@
 Helium (2.X.X)
 
+v 2.3.0
+	- updated alchemist server to the latest version
+
 v 2.2.1
 	- Fix a bug in autocomplete <module>.<func> with only one match
 

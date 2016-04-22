@@ -1,13 +1,12 @@
+Code.require_file "../helpers/response.exs", __DIR__
+
 defmodule Alchemist.API.Ping do
 
   @moduledoc false
 
-  def request(device) do
-    process(device)
-  end
+  alias Alchemist.Helpers.Response
 
-  def process(device) do
-    IO.puts device, "PONG"
-    IO.puts device, "END-OF-PING"
+  def request do
+    Response.endmark("PONG", "PING")
   end
 end
