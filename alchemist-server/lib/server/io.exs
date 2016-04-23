@@ -18,7 +18,8 @@ defmodule Alchemist.Server.IO do
   end
 
   def handle_info(:timeout, env) do
-    ProcessCommands.process(read_line, env, Process.group_leader)
+    ProcessCommands.process(read_line, env)
+    |> IO.write
     {:noreply, env, 0}
   end
 

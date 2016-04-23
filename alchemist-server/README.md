@@ -49,10 +49,7 @@ responds by sending information back to the opened connection
 Example for a completion request:
 
 ```
-$ telnet localhost 55580
-Trying 127.0.0.1...
-Connected to localhost.
-Escape character is '^]'.
+$ nc localhost 55580
 COMP { "def", [ context: Elixir, imports: [Enum], aliases: [{MyList, List}] ] }
 ```
 

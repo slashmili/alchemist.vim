@@ -1,6 +1,7 @@
 Code.require_file "../helpers/module_info.exs", __DIR__
 Code.require_file "../helpers/complete.exs", __DIR__
 Code.require_file "../helpers/capture_io.exs", __DIR__
+Code.require_file "../helpers/response.exs", __DIR__
 
 defmodule Alchemist.API.Info do
 
@@ -11,14 +12,16 @@ defmodule Alchemist.API.Info do
   alias Alchemist.Helpers.ModuleInfo
   alias Alchemist.Helpers.Complete
   alias Alchemist.Helpers.CaptureIO
+  alias Alchemist.Helpers.Response
 
-  def request(args, device) do
+  def request(args) do
     args
     |> normalize
-    |> process(device)
+    |> process
+    |> Response.endmark("INFO")
   end
 
-  def process(:modules, device) do
+  def process(:modules) do
     modules = ModuleInfo.all_applications_modules
     |> Enum.uniq
     |> Enum.reject(&is_nil/1)
@@ -28,12 +31,10 @@ defmodule Alchemist.API.Info do
 
     modules ++ functions
     |> Enum.uniq
-    |> Enum.map(&IO.puts(device, &1))
-
-    IO.puts device, "END-OF-INFO"
+    |> Enum.join("\n")
   end
 
-  def process(:mixtasks, device) do
+  def process(:mixtasks) do
     # append things like hex or phoenix archives to the load_path
     Mix.Local.append_archives
 
@@ -41,40 +42,31 @@ defmodule Alchemist.API.Info do
     |> Mix.Task.load_tasks
     |> Enum.map(&Mix.Task.task_name/1)
     |> Enum.sort
-    |> Enum.map(&IO.puts(device, &1))
-
-    IO.puts device, "END-OF-INFO"
+    |> Enum.join("\n")
   end
 
-  def process({:info, arg}, device) do
+  def process({:info, arg}) do
     try do
-      info = CaptureIO.capture_io(fn ->
+      CaptureIO.capture_io(fn ->
         Code.eval_string("i(#{arg})", [], __ENV__)
       end)
-      IO.write device, info
     rescue
       _e -> nil
     end
-
-    IO.puts device, "END-OF-INFO"
   end
 
-  def process({:types, arg}, device) do
+  def process({:types, arg}) do
     try do
-      type = CaptureIO.capture_io(fn ->
+      CaptureIO.capture_io(fn ->
         Code.eval_string("t(#{arg})", [], __ENV__)
       end)
-
-      IO.write device, type
     rescue
       _e -> nil
     end
-
-    IO.puts device, "END-OF-INFO"
   end
 
-  def process(nil, device) do
-   IO.puts device, "END-OF-INFO"
+  def process(nil) do
+   nil
   end
 
   def normalize(request) do

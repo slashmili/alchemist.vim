@@ -15,7 +15,7 @@ defmodule Alchemist.Server.Socket do
       worker(Task, [__MODULE__, :accept, [env, port]])
     ]
 
-    opts = [strategy: :one_for_one, name: KVServer.Supervisor]
+    opts = [strategy: :one_for_one, name: Alchemist.Server.Socket.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
@@ -35,22 +35,24 @@ defmodule Alchemist.Server.Socket do
   end
 
   defp serve(socket, env) do
-    {:ok, io_string} = StringIO.open("")
-    socket
-    |> read_line
-    |> String.strip
-    |> ProcessCommands.process(env, io_string)
+    case read_line(socket) do
+      :closed -> {:stop, :closed}
+      data when is_binary(data) ->
 
-    {:ok, {_, output}} = StringIO.close(io_string)
-    write_line(output, socket)
+        data
+        |> String.strip
+        |> ProcessCommands.process(env)
+        |> write_line(socket)
 
-    serve(socket, env)
+        serve(socket, env)
+    end
   end
 
   defp read_line(socket) do
-    #TODO: handle {:error, :closed}
-    {:ok, data} = :gen_tcp.recv(socket, 0)
-    data
+    case :gen_tcp.recv(socket, 0) do
+      {:ok, data} -> data
+      {:error, :closed} -> :closed
+    end
   end
 
   defp write_line(line, socket) do

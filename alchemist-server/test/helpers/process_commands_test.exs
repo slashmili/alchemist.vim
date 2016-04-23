@@ -120,7 +120,7 @@ defmodule ServerTest do
 
   defp send_signal(signal) do
     capture_io(fn ->
-      Alchemist.Helpers.ProcessCommands.process(signal, "env", Process.group_leader)
+      Alchemist.Helpers.ProcessCommands.process(signal, "env") |> IO.write
     end)
   end
 end
