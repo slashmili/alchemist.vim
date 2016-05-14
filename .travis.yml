@@ -1,3 +1,5 @@
 sudo: false
 script:
   - python ./alchemist.py
+notifications:
+  irc: "irc.freenode.org#vim-elixir"
