@@ -6,7 +6,7 @@
 [![Build Status](https://travis-ci.org/slashmili/alchemist.vim.svg?branch=develop)](https://travis-ci.org/slashmili/alchemist.vim)
 
 
-This plugin uses [alchemist-server](https://github.com/tonini/alchemist-server) to give inside about your elixir project in vim.
+This plugin uses [alchemist-server](https://github.com/tonini/alchemist-server) to give inside information about your elixir project in vim.
 
 **alchemist.vim** supports:
 
