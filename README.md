@@ -17,7 +17,7 @@ This plugin uses [alchemist-server](https://github.com/tonini/alchemist-server) 
 * IEx integration.
 
 ### Installation
-You can use your favourite VIM plugin mannger for installation, in this doc we use Vundle
+You can use your favourite VIM plugin manager for installation, in this doc we use Vundle
 
 Add this line to your `.vimrc`
 
