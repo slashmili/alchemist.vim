@@ -82,6 +82,7 @@ class AlchemistClient:
     def _get_running_server_log(self):
         dir_tmp = self._get_tmp_dir()
         log_tmp = "%s/%s" % (dir_tmp, self._get_path_unique_name(self._cwd))
+        self._log("Load server settings from: %s" % (log_tmp))
         if os.path.exists(dir_tmp) == False:
             return None
 
@@ -142,6 +143,7 @@ class AlchemistClient:
             else:
                 raise e
 
+        self._log("response for %s: %s" % (cmd.split(" ")[0], result.replace('\n', '\\n')))
         return result
 
     def _send_compx(self, sock, cmd):
@@ -377,6 +379,11 @@ class AlchemistClient:
         >>> alchemist = AlchemistClient()
         >>> pprint.pprint(alchemist.auto_complete('Li', []))
         None
+        >>> pprint.pprint(alchemist.auto_complete('TryOut.M', ['TryOut.Multi.run_me', 'run_me/0']))
+        [{'abbr': 'run_me/0', 'kind': 'f', 'word': 'TryOut.Multi.run_me'}]
+        """
+
+        """
         >>> pprint.pprint(alchemist.auto_complete('Li', ['List.', 'Chars', 'first/1']))
         [{'abbr': 'List.', 'kind': 'm', 'word': 'List.'},
          {'abbr': 'Chars', 'kind': 'm', 'word': 'List.Chars.'},
