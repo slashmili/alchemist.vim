@@ -389,6 +389,9 @@ class AlchemistClient:
         >>> pprint.pprint(alchemist.auto_complete('List.f', ['List.f', 'first/1', 'flatten/1']))
         [{'abbr': 'first/1', 'kind': 'f', 'word': 'List.first'},
          {'abbr': 'flatten/1', 'kind': 'f', 'word': 'List.flatten'}]
+        >>> pprint.pprint(alchemist.auto_complete('Phoenix.C', ['Phoenix.C', 'Channel', 'ChannelTest']))
+        [{'abbr': 'Channel', 'kind': 'm', 'word': 'Phoenix.Channel.'},
+         {'abbr': 'ChannelTest', 'kind': 'm', 'word': 'Phoenix.ChannelTest.'}]
         >>> pprint.pprint(alchemist.auto_complete(':gen', [':gen', 'gen', 'gen_event']))
         [{'abbr': ':gen', 'kind': 'm', 'word': ':gen'},
          {'abbr': ':gen_event', 'kind': 'm', 'word': ':gen_event'}]
@@ -419,6 +422,7 @@ class AlchemistClient:
          {'abbr': 'Atom', 'kind': 'm', 'word': 'List.Chars.Atom.'},
          {'abbr': 'impl_for/1', 'kind': 'f', 'word': 'List.Chars.impl_for'}]
         """
+        self._log("auto_complete args: base: [%s], suggestions: [%s]" % (base, ", ".join(suggestions)))
         if len(suggestions) == 0: return None
         return_list = []
         first_item = suggestions[0]
@@ -482,6 +486,10 @@ class AlchemistClient:
     def elixir_mod_auto_complete(self, base, first, suggestion):
         """
         >>> alchemist = AlchemistClient()
+        >>> pprint.pprint(alchemist.elixir_mod_auto_complete('List.C', 'List.Chars.', 'List.Chars.'))
+        {'abbr': 'List.Chars.', 'kind': 'm', 'word': 'List.Chars.'}
+        >>> pprint.pprint(alchemist.elixir_mod_auto_complete('Phoenix.C', 'Channel', 'Channel'))
+        {'abbr': 'Channel', 'kind': 'm', 'word': 'Phoenix.Channel.'}
         >>> pprint.pprint(alchemist.elixir_mod_auto_complete('Li', 'List.', 'List.'))
         {'abbr': 'List.', 'kind': 'm', 'word': 'List.'}
         >>> pprint.pprint(alchemist.elixir_mod_auto_complete('Li', 'List.', 'Chars'))
@@ -489,7 +497,13 @@ class AlchemistClient:
         >>> pprint.pprint(alchemist.elixir_mod_auto_complete('L', 'L', 'List'))
         {'abbr': 'List', 'kind': 'm', 'word': 'List.'}
         """
+        self._log("elixir_mod_auto_complete args: base: [%s], first: [%s], suggestion: [%s]" %( base, first, suggestion))
         mod_dict = {'kind': 'm', 'abbr': suggestion}
+        p_re = re.compile(base)
+        #for test case Phoenix.C
+        if not p_re.match(first):
+            first = ".".join(base.split(".")[:-1])
+            first = "%s." % first
         if first == suggestion:
             mod_dict['word'] = '%s.' % suggestion.strip('.')
         elif first[-1] == '.':
