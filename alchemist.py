@@ -377,6 +377,9 @@ class AlchemistClient:
         >>> alchemist = AlchemistClient()
         >>> pprint.pprint(alchemist.auto_complete('Li', []))
         None
+        >>> pprint.pprint(alchemist.auto_complete('Phoenix.Ch', ['Phoenix.Channel', 'Channel', 'ChannelTest']))
+        [{'abbr': 'Channel', 'kind': 'm', 'word': 'Phoenix.Channel.'},
+         {'abbr': 'ChannelTest', 'kind': 'm', 'word': 'Phoenix.ChannelTest.'}]
         >>> pprint.pprint(alchemist.auto_complete('Li', ['List.', 'Chars', 'first/1']))
         [{'abbr': 'List.', 'kind': 'm', 'word': 'List.'},
          {'abbr': 'Chars', 'kind': 'm', 'word': 'List.Chars.'},
@@ -405,6 +408,9 @@ class AlchemistClient:
           'kind': 'f',
           'word': ':gen_server.behaviour_info'},
          {'abbr': 'module_info/0', 'kind': 'f', 'word': ':gen_server.module_info'}]
+        >>> pprint.pprint(alchemist.auto_complete('Int', ['Integer', 'Interface']))
+        [{'abbr': 'Integer', 'kind': 'm', 'word': 'Integer.'},
+         {'abbr': 'Interface', 'kind': 'm', 'word': 'Interface.'}]
         >>> pprint.pprint(alchemist.auto_complete('Sys', ['System', 'SystemLimitError']))
         [{'abbr': 'System', 'kind': 'm', 'word': 'System.'},
          {'abbr': 'SystemLimitError', 'kind': 'm', 'word': 'SystemLimitError.'}]
@@ -430,6 +436,8 @@ class AlchemistClient:
             suggestions.pop(0)
         elif self.re_elixir_module_and_fun.match(first_item) is not None:
             suggestions.pop(0)
+        elif first_item != base and first_item[-1] != '.' and self.re_elixir_module.match(first_item) and len(first_item.split(".")) > 1:
+           suggestions.pop(0)
 
         for sug in suggestions:
             if len(sug) == 0:
@@ -497,7 +505,7 @@ class AlchemistClient:
         >>> pprint.pprint(alchemist.elixir_mod_auto_complete('L', 'L', 'List'))
         {'abbr': 'List', 'kind': 'm', 'word': 'List.'}
         """
-        self._log("elixir_mod_auto_complete args: base: [%s], first: [%s], suggestion: [%s]" %( base, first, suggestion))
+        self._log("elixir_mod_auto_complete args: base: [%s], first: [%s], suggestion: [%s]" %(base, first, suggestion))
         mod_dict = {'kind': 'm', 'abbr': suggestion}
         p_re = re.compile(base)
         #for test case Phoenix.C
