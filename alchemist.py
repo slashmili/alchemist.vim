@@ -377,6 +377,8 @@ class AlchemistClient:
         >>> alchemist = AlchemistClient()
         >>> pprint.pprint(alchemist.auto_complete('Li', []))
         None
+        >>> pprint.pprint(alchemist.auto_complete('TryOut.M', ['TryOut.Multi.run_me', 'run_me/0']))
+        [{'abbr': 'run_me/0', 'kind': 'f', 'word': 'TryOut.Multi.run_me'}]
         >>> pprint.pprint(alchemist.auto_complete('Phoenix.Ch', ['Phoenix.Channel', 'Channel', 'ChannelTest']))
         [{'abbr': 'Channel', 'kind': 'm', 'word': 'Phoenix.Channel.'},
          {'abbr': 'ChannelTest', 'kind': 'm', 'word': 'Phoenix.ChannelTest.'}]
@@ -435,7 +437,7 @@ class AlchemistClient:
         if first_item == base and first_item[-1] != '.':
             suggestions.pop(0)
         elif self.re_elixir_module_and_fun.match(first_item) is not None:
-            suggestions.pop(0)
+            base = suggestions.pop(0)
         elif first_item != base and first_item[-1] != '.' and self.re_elixir_module.match(first_item) and len(first_item.split(".")) > 1:
            suggestions.pop(0)
 
@@ -443,6 +445,7 @@ class AlchemistClient:
             if len(sug) == 0:
                 continue
             if self.re_elixir_fun_with_arity.match(sug):
+                #print('"%s", "%s", "%s"' % (base, suggestions[0], sug))
                 return_list.append(self.func_auto_complete(base, suggestions[0], sug))
             elif self.re_elixir_module.match(sug):
                 return_list.append(self.elixir_mod_auto_complete(base, suggestions[0], sug))
@@ -455,6 +458,10 @@ class AlchemistClient:
     def func_auto_complete(self, base, first, suggestion):
         """
         >>> alchemist = AlchemistClient()
+        >>> pprint.pprint(alchemist.func_auto_complete("IO.inspect", "inspect/2", "inspect/2"))
+        {'abbr': 'inspect/2', 'kind': 'f', 'word': 'IO.inspect'}
+        >>> pprint.pprint(alchemist.func_auto_complete("TryOut.M", "TryOut.Multi.", "run_me/0"))
+        {'abbr': 'run_me/0', 'kind': 'f', 'word': 'TryOut.Multi.run_me'}
         >>> pprint.pprint(alchemist.func_auto_complete("Li", "List.", "first/1"))
         {'abbr': 'first/1', 'kind': 'f', 'word': 'List.first'}
         >>> pprint.pprint(alchemist.func_auto_complete("List.f", "List.first", "first/1"))
@@ -466,7 +473,10 @@ class AlchemistClient:
         func_name = self.re_elixir_fun_with_arity.match(suggestion).group('func')
         word = "%s%s" % (first, func_name)
 
-        func_parts = base.split('.')
+        if first[-1] == ".":
+            func_parts = first.split('.')
+        else:
+            func_parts = base.split('.')
         if len(func_parts) > 1:
             word = ".".join(func_parts[:len(func_parts)-1])
             word = "%s.%s" % (word, func_name)
