@@ -1,5 +1,8 @@
 Helium (2.X.X)
 
+v 2.3.1
+	- fix autocomplete #52
+	
 v 2.3.0
 	- updated alchemist server to the latest version
 
