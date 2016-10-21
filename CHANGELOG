@@ -2,6 +2,7 @@ Helium (2.X.X)
 
 v 2.3.2
 	- fix mappings to be buffer local #58
+	- show documentation for erlang modules #49
 
 v 2.3.1
 	- fix autocomplete #52
