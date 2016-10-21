@@ -26,8 +26,6 @@ endif
 
 nnoremap <buffer> <silent> K :call alchemist#exdoc()<CR>
 
-command! -nargs=? ExDef call alchemist#exdef(<f-args>)
-
 if !exists('g:alchemist_tag_disable')
     if !exists('g:alchemist_tag_map') | let g:alchemist_tag_map = '<C-]>' | en
     if !exists('g:alchemist_tag_stack_map') | let g:alchemist_tag_stack_map = '<C-T>' | en
