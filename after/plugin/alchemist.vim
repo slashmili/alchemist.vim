@@ -434,6 +434,9 @@ endfunction
 command! -nargs=? -complete=customlist,elixircomplete#ExDocComplete ExDoc
       \ call alchemist#exdoc(<f-args>)
 
+command! -nargs=? -complete=customlist,elixircomplete#ExDocComplete ExDef
+      \ call alchemist#exdef(<f-args>)
+
 if !exists(':Mix')
   command! -bar -nargs=? -complete=custom,alchemist#mix_complete Mix
         \ call alchemist#mix(<q-args>)
