@@ -27,7 +27,12 @@ endfunction
 
 function! alchemist#get_doc(word)
     if match(a:word, "^:") ==# 0
-        return alchemist#get_doc_erl(strpart(a:word, 1))
+        " strip `:` and function name since erlang offers man pages on the
+        " module only
+        " eg. translate `:gen_server.cast()` into `gen_server`
+        let query = strpart(a:word, 1)
+        let query = split(query, '\.')[0]
+        return alchemist#get_doc_erl(query)
     endif
     return alchemist#get_doc_ex(a:word)
 endfunction
