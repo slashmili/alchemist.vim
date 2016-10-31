@@ -13,6 +13,7 @@ class AlchemistClient:
 
     def __init__(self, **kw):
         self._cwd = kw.get('cwd', '')
+        self._cwd = self.get_project_base_dir()
         self._ansi = kw.get('ansi', True)
         self._debug = kw.get('debug', False)
         self._alchemist_script = kw.get('alchemist_script', None)
@@ -354,6 +355,17 @@ class AlchemistClient:
         >>> alchemist = AlchemistClient(cwd=p01_lib_dir)
         >>> alchemist.get_project_base_dir([]) == p01_dir
         True
+        >>> #find directory of parent when running inside a nested project
+        >>> apps = os.path.join(p01_dir, "apps")
+        >>> os.mkdir(apps)
+        >>> nested = os.path.join(apps, "nested_project")
+        >>> os.mkdir(nested)
+        >>> nested_lib = os.path.join(nested, "lib")
+        >>> os.mkdir(nested_lib)
+        >>> open(os.path.join(nested, "mix.exs"), 'a').close()
+        >>> alchemist = AlchemistClient(cwd=nested_lib)
+        >>> alchemist.get_project_base_dir([]) == p01_dir
+        True
         """
 
         if running_servers_logs == None:
@@ -363,14 +375,14 @@ class AlchemistClient:
         for i in range(len(paths)):
             project_dir = os.sep.join(paths[:len(paths)-i])
             log_tmp = "%s" % project_dir.replace("/", "zS")
-            if log_tmp in running_servers_logs:
+            if log_tmp and log_tmp in running_servers_logs:
                 return project_dir
 
             if os.path.exists(os.path.join(project_dir, "mix.exs")):
                 mix_dir.append(project_dir)
 
         if len(mix_dir):
-            return mix_dir.pop(0)
+            return mix_dir.pop()
 
         return self._cwd
 

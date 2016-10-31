@@ -52,9 +52,7 @@ def main(argv):
                 ansi = False
     if os.path.exists(cwd.strip()) == False:
         raise Exception("working directory [%s] doesn't exist" % cwd)
-    a = AlchemistClient()
-    cwd = a.get_project_base_dir(os.path.abspath(arg))
-    cwd = os.path.abspath(arg)
+    cwd = os.path.abspath(cwd)
     if cmd == "":
         cmd = read_stdin()
     if alchemist_script == "":
@@ -76,8 +74,4 @@ def where_am_i():
 
 
 if __name__ == "__main__":
-    try:
-        main(sys.argv[1:])
-    except Exception as e:
-        print("error: %s" % e.message)
-        sys.exit(1)
+    main(sys.argv[1:])
