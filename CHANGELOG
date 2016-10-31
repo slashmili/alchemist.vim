@@ -1,12 +1,16 @@
 Helium (2.X.X)
 
+v 2.4.0
+	- Don't run alchemist server if it's already running on parent dir #48
+	- Support for umbrella project #53
+
 v 2.3.2
 	- fix mappings to be buffer local #58
 	- add autocomplete to :ExDef command #50
 
 v 2.3.1
 	- fix autocomplete #52
-	
+
 v 2.3.0
 	- updated alchemist server to the latest version
 
