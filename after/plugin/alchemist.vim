@@ -8,10 +8,6 @@ if !exists('g:alchemist#alchemist_client')
     let g:alchemist#alchemist_client = expand("<sfile>:p:h:h") . '/../alchemist_client'
 endif
 
-if !exists('g:alchemist#root')
-    let g:alchemist#root = getcwd()
-end
-
 function! alchemist#alchemist_client(req)
     let req = a:req . "\n"
     let cmd = g:alchemist#alchemist_client
@@ -21,7 +17,8 @@ function! alchemist#alchemist_client(req)
     if exists('g:alchemist#elixir_erlang_src')
         let cmd = cmd . ' -s ' . g:alchemist#elixir_erlang_src
     endif
-    let cmd = cmd . ' -d ' . g:alchemist#root
+    let cmd = cmd . ' -d ' . expand('%:p:h')
+
     return system(cmd, req)
 endfunction
 
