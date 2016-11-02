@@ -13,7 +13,7 @@ class AlchemistClient:
 
     def __init__(self, **kw):
         self._cwd = kw.get('cwd', '')
-        self._cwd = self.get_project_base_dir()
+        #self._cwd = self.get_project_base_dir()
         self._ansi = kw.get('ansi', True)
         self._debug = kw.get('debug', False)
         self._alchemist_script = kw.get('alchemist_script', None)
