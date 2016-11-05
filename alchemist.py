@@ -12,10 +12,10 @@ class AlchemistClient:
 
 
     def __init__(self, **kw):
-        self._cwd = kw.get('cwd', '')
-        #self._cwd = self.get_project_base_dir()
-        self._ansi = kw.get('ansi', True)
         self._debug = kw.get('debug', False)
+        self._cwd = kw.get('cwd', '')
+        self._cwd = self.get_project_base_dir()
+        self._ansi = kw.get('ansi', True)
         self._alchemist_script = kw.get('alchemist_script', None)
         self._source = kw.get('source', None)
         self.re_elixir_fun_with_arity = re.compile(r'(?P<func>.*)/[0-9]+$')
@@ -374,13 +374,17 @@ class AlchemistClient:
         mix_dir = []
         for i in range(len(paths)):
             project_dir = os.sep.join(paths[:len(paths)-i])
+            if not project_dir:
+                continue
             log_tmp = "%s" % project_dir.replace("/", "zS")
-            if log_tmp and log_tmp in running_servers_logs:
+            if log_tmp in running_servers_logs:
+                self._log("project_dir(matched): "+str(project_dir))
                 return project_dir
 
             if os.path.exists(os.path.join(project_dir, "mix.exs")):
                 mix_dir.append(project_dir)
 
+        self._log("mix_dir: "+str(mix_dir))
         if len(mix_dir):
             return mix_dir.pop()
 
