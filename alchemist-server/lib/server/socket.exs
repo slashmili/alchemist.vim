@@ -1,4 +1,5 @@
 Code.require_file "../helpers/process_commands.exs", __DIR__
+Code.require_file "../self_destruct_timer.ex", __DIR__
 
 defmodule Alchemist.Server.Socket do
 
@@ -12,7 +13,8 @@ defmodule Alchemist.Server.Socket do
 
     children = [
       supervisor(Task.Supervisor, [[name: Alchemist.Server.Socket.TaskSupervisor]]),
-      worker(Task, [__MODULE__, :accept, [env, port]])
+      worker(Task, [__MODULE__, :accept, [env, port]]),
+      worker(SelfDestructTimer, []),
     ]
 
     opts = [strategy: :one_for_one, name: Alchemist.Server.Socket.Supervisor]
@@ -44,6 +46,7 @@ defmodule Alchemist.Server.Socket do
         |> ProcessCommands.process(env)
         |> write_line(socket)
 
+        SelfDestructTimer.reset
         serve(socket, env)
     end
   end
