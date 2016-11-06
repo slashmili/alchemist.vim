@@ -107,9 +107,10 @@ class AlchemistClient:
         arg = shlex.split(alchemist_script)
         log_file = open(server_log, "w")
         subprocess.Popen(arg, stdout=log_file, stderr=log_file, cwd=self._cwd)
-        for t in range(1, 5):
-            time.sleep(t/10.1)
-            if len(open(server_log).readlines()) > 0:
+        for t in range(0, 50):
+            time.sleep(0.1)
+            r = open(server_log).readlines()
+            if len(r) > 0:
                 break
 
     def _connect(self, host_port):
