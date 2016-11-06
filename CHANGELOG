@@ -1,5 +1,8 @@
 Helium (2.X.X)
 
+v 2.5.0
+	- show documentation for erlang modules #49
+
 v 2.4.0
 	- Don't run alchemist server if it's already running on parent dir #48
 	- Support for umbrella project #53

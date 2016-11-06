@@ -26,6 +26,18 @@ function! alchemist#alchemist_client(req)
 endfunction
 
 function! alchemist#get_doc(word)
+    if match(a:word, "^:") ==# 0
+        " strip `:` and function name since erlang offers man pages on the
+        " module only
+        " eg. translate `:gen_server.cast()` into `gen_server`
+        let query = strpart(a:word, 1)
+        let query = split(query, '\.')[0]
+        return alchemist#get_doc_erl(query)
+    endif
+    return alchemist#get_doc_ex(a:word)
+endfunction
+
+function! alchemist#get_doc_ex(word)
     let req = alchemist#alchemist_format("DOCL", a:word, "Elixir", [], [])
     let result = alchemist#alchemist_client(req)
     " fix heading colors
@@ -33,6 +45,10 @@ function! alchemist#get_doc(word)
     " fix code example colors
     let result = substitute(result, '\e\[36m\e\[1m', '[1m[36m', 'g')
     return result
+endfunction
+
+function! alchemist#get_doc_erl(word)
+    return system("erl -man " . shellescape(a:word))
 endfunction
 
 function! alchemist#alchemist_format(cmd, arg, context, imports, aliases)
@@ -134,10 +150,6 @@ function! s:open_doc_window(query, newposition, position)
         execute bufwinnr(s:buf_nr) . 'wincmd w'
     endif
 
-    if !alchemist#ansi_enabled()
-        setlocal ft=markdown
-    endif
-
     setlocal bufhidden=delete
     setlocal buftype=nofile
     setlocal noswapfile
@@ -148,6 +160,7 @@ function! s:open_doc_window(query, newposition, position)
     setlocal iskeyword-=-
 
     setlocal modifiable
+    setlocal noreadonly
     %delete _
     call append(0, split(content, "\n"))
     sil $delete _
@@ -157,6 +170,13 @@ function! s:open_doc_window(query, newposition, position)
     endif
     normal gg
     setlocal nomodifiable
+
+    if match(a:query, "^:") ==# 0
+        setlocal ft=man
+    elseif !alchemist#ansi_enabled()
+        setlocal ft=markdown
+    endif
+
     noremap <silent> <buffer> q :call <SID>close_doc_win()<cr>
 endfunction
 
