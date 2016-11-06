@@ -36,7 +36,7 @@ defmodule SelfDestructTimer do
   defp destroy, do: System.halt(42)
 
   defp schedule_tick do
-    :timer.apply_after(500, __MODULE__, :tick, [])
+    :timer.apply_after(60_000, __MODULE__, :tick, [])
     :ok
   end
 
