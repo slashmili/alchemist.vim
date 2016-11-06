@@ -8,10 +8,6 @@ if !exists('g:alchemist#alchemist_client')
     let g:alchemist#alchemist_client = expand("<sfile>:p:h:h") . '/../alchemist_client'
 endif
 
-if !exists('g:alchemist#root')
-    let g:alchemist#root = getcwd()
-end
-
 if !executable(g:alchemist#alchemist_client)
     finish
 endif
