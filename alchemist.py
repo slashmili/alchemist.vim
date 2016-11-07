@@ -14,6 +14,7 @@ class AlchemistClient:
     def __init__(self, **kw):
         self._debug = kw.get('debug', False)
         self._cwd = kw.get('cwd', '')
+        self.__create_tmp_dir()
         self._cwd = self.get_project_base_dir()
         self._ansi = kw.get('ansi', True)
         self._alchemist_script = kw.get('alchemist_script', None)
@@ -27,6 +28,10 @@ class AlchemistClient:
         self.re_erlang_src = re.compile(r'.*otp.*(/lib/.*\.erl)')
 
 
+    def __create_tmp_dir(self):
+        dir_tmp = self._get_tmp_dir()
+        if os.path.exists(dir_tmp) == False:
+            os.makedirs(self._get_tmp_dir())
     def process_command(self, cmd, cmd_type=None):
         if cmd_type == None:
             cmd_type = cmd.split(" ")[0]
