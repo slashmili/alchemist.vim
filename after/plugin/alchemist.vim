@@ -191,6 +191,24 @@ function! alchemist#exdoc(...)
     call s:open_doc_window(query, "new", "split")
 endfunction
 
+function! alchemist#exref(...)
+    let query = ''
+    if empty(a:000)
+        let query = alchemist#lookup_name_under_cursor()
+    else
+        let query = a:000[0]
+    endif
+    let result = alchemist#alchemist_client('XREF ' . query)
+
+    let errorformat = &errorformat
+    try
+        let &errorformat = '%A%f:%l: %m'
+        cex result
+    finally
+        let &errorformat = errorformat
+    endtry
+endfunction
+
 function! alchemist#exdef(...)
     let query = ''
     if empty(a:000)
@@ -438,6 +456,9 @@ command! -nargs=? -complete=customlist,elixircomplete#ExDocComplete ExDoc
 
 command! -nargs=? -complete=customlist,elixircomplete#ExDocComplete ExDef
       \ call alchemist#exdef(<f-args>)
+
+command! -nargs=? -complete=customlist,elixircomplete#ExDocComplete ExRef
+      \ call alchemist#exref(<f-args>)
 
 if !exists(':Mix')
   command! -bar -nargs=? -complete=custom,alchemist#mix_complete Mix

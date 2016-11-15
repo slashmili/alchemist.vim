@@ -30,6 +30,22 @@ class AlchemistClient:
     def process_command(self, cmd, cmd_type=None):
         if cmd_type == None:
             cmd_type = cmd.split(" ")[0]
+
+        if cmd_type == 'XREF':
+            x = shlex.split('mix xref callers '+cmd.split(" ")[1])
+            return subprocess.check_output(x, cwd=self._cwd, universal_newlines=True)
+
+        sock = self._sock()
+        if cmd_type == 'COMPX':
+            result = self._send_compx(sock, cmd)
+        elif cmd_type == 'DEFLX':
+            result = self._send_deflx(sock, cmd)
+        else:
+            result = self._send_command(sock, cmd_type, cmd)
+
+        return result
+
+    def _sock(self):
         server_log = self._get_running_server_log()
         if server_log == None:
             server_log = self._create_server_log()
@@ -45,15 +61,7 @@ class AlchemistClient:
             self._run_alchemist_server(server_log)
             connection = self._extract_connection_settings(server_log)
             sock = self._connect(connection)
-
-        if cmd_type == 'COMPX':
-            result = self._send_compx(sock, cmd)
-        elif cmd_type == 'DEFLX':
-            result = self._send_deflx(sock, cmd)
-        else:
-            result = self._send_command(sock, cmd_type, cmd)
-
-        return result
+        return sock
 
     def _log(self, text):
         if self._debug == False:
