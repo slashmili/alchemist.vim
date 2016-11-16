@@ -2,6 +2,9 @@ Helium (2.X.X)
 
 v 2.5.0
 	- show documentation for erlang modules #49
+	- stop alchemist server being 10 min idle
+	- Improve waiting time for alchemist_server to start
+	- fix a bug related to running alchemist.vim for the first time #64
 
 v 2.4.0
 	- Don't run alchemist server if it's already running on parent dir #48
