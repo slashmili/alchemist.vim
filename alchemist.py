@@ -38,7 +38,11 @@ class AlchemistClient:
 
         if cmd_type == 'XREF':
             x = shlex.split('mix xref callers '+cmd.split(" ")[1])
-            return subprocess.check_output(x, cwd=self._cwd, universal_newlines=True)
+            result = subprocess.check_output(x, cwd=self._cwd, universal_newlines=True)
+            # mix might compile the project; so we filter out any message that doesn't
+            # look like xref callers output
+            matched_lines = [line for line in result.split('\n') if re.match(r'^[\w/\.]+:\d+: ', line)]
+            return "\n".join(matched_lines)
 
         sock = self._sock()
         if cmd_type == 'COMPX':
