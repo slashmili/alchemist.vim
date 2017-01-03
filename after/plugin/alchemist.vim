@@ -422,13 +422,49 @@ endfunction
 
 " }}}
 
+function! alchemist#findMixDirectory() "{{{
+    let fName = expand("%:p:h")
+
+    while 1
+        let mixFileName = fName . "/mix.exs"
+        if file_readable(mixFileName)
+            return fName
+        endif
+
+        let fNameNew = fnamemodify(fName, ":h")
+        " after we reached top of heirarchy
+        if fNameNew == fName
+            return ''
+        endif
+        let fName = fNameNew
+    endwhile
+endfunction "}}}
+
 function! alchemist#mix(...)
+  let mixDir = alchemist#findMixDirectory()
+
+  let old_cwd = getcwd()
+  if mixDir != ''
+    execute 'lcd ' . fnameescape(mixDir)
+  endif
+
   exe '!mix ' . join(copy(a:000), ' ')
+
+  execute 'lcd ' . fnameescape(old_cwd)
 endfunction
 
 function! alchemist#mix_complete(ArgLead, CmdLine, CursorPos, ...)
   if !exists('g:mix_tasks')
+    let mixDir = alchemist#findMixDirectory()
+
+    let old_cwd = getcwd()
+    if mixDir != ''
+      execute 'lcd ' . fnameescape(mixDir)
+    endif
+
     let g:mix_tasks = system("mix -h | awk '!/-S/ && $2 != \"#\" { print $2 }'")
+
+    execute 'lcd ' . fnameescape(old_cwd)
   endif
   return g:mix_tasks
 endfunction
