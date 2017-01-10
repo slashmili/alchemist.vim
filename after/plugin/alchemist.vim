@@ -256,12 +256,36 @@ function! s:echo_error(text)
 endfunction
 
 function! alchemist#get_current_module_details()
+    " matchit exists and vim-elixir is loaded with correct settings
+    let can_trust_matchit = exists("g:loaded_matchit") && &l:indentexpr == "elixir#indent()"
     let def_module_match = '\s*defmodule\s\+\(' . s:module_match . '\)'
     let lines = reverse(getline(1, line('.')))
     let matched_line = line('.')
+    let original_line = matched_line
     let result = {'module' : {}, 'aliases': [], 'imports': []}
     for l in lines
         let module = alchemist#get_module_name(l)
+        if module != {} && can_trust_matchit
+          " validate that we really reached intended module
+          " and not got fooled by nested modules
+
+          let first_line = matched_line
+
+          " Save cursor position
+          let l:save = winsaveview()
+          " Try to use matchit to find module's 'end' keyword
+          call cursor(first_line, 1)
+          call search(def_module_match . ".*do", 'ceW', first_line)
+          normal %
+          let last_line = line('.')
+          " Move cursor to original position
+          call winrestview(l:save)
+
+          " ignore module if original line is not in its range
+          if (original_line <= first_line || original_line >= last_line)
+            let module = {}
+          endif
+        endif
         if module != {}
             let module.line = matched_line
             let result.module =  module
