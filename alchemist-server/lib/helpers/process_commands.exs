@@ -12,7 +12,7 @@ defmodule Alchemist.Helpers.ProcessCommands do
   alias Alchemist.API
 
   def process(line, env) do
-    loaded = all_loaded
+    loaded = all_loaded()
 
     paths = load_paths(env)
     apps  = load_apps(env)
