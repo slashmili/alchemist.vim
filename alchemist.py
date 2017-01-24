@@ -49,6 +49,9 @@ class AlchemistClient:
         if sock == None:
             self._run_alchemist_server(server_log)
             connection = self._extract_connection_settings(server_log)
+            if connection == None:
+                self._log("Couldn't find the connection settings from server_log: %s" % (server_log))
+                return  None
             sock = self._connect(connection)
 
         if cmd_type == 'COMPX':
@@ -119,6 +122,7 @@ class AlchemistClient:
                 break
 
     def _connect(self, host_port):
+        if host_port == None: return None
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         try:
@@ -455,9 +459,10 @@ class AlchemistClient:
          {'abbr': 'impl_for/1', 'kind': 'f', 'word': 'List.Chars.impl_for'}]
         """
         self._log("auto_complete args: base: [%s], suggestions: [%s]" % (base, ", ".join(suggestions)))
-        if len(suggestions) == 0: return None
+        if len(suggestions) == 0: return []
         return_list = []
         first_item = suggestions[0]
+        if len(first_item) == 0: return []
         if first_item == base and first_item[-1] != '.':
             suggestions.pop(0)
         elif self.re_elixir_module_and_fun.match(first_item) is not None:

@@ -3,8 +3,6 @@ Code.require_file "server/socket.exs", __DIR__
 
 defmodule Alchemist.Server do
 
-  @version "0.1.0-beta"
-
   @moduledoc """
   The Alchemist-Server operates as an informant for a specific desired
   Elixir Mix project and serves with informations as the following:
