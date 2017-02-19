@@ -1,4 +1,6 @@
 Helium (2.X.X)
+v 2.6.0
+	  add g:alchemist_compile_basepath option #78
 
 v 2.5.0
 	- show documentation for erlang modules #49
