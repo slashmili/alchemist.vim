@@ -216,7 +216,8 @@ function! alchemist#exdef(...)
         let source_file = source_and_line[1]
         let line = source_and_line[2]
     endif
-    let rel_path = substitute(source_file, getcwd() . '/' , '', '')
+    let current_working_dir = get(g:, 'alchemist_current_working_dir', getcwd() . '/')
+    let rel_path = substitute(source_file, current_working_dir, '', '')
     if !filereadable(rel_path)
         call s:echo_error("E484: Can't open file: " . rel_path)
         return
