@@ -2,6 +2,9 @@ Helium (2.X.X)
 v 2.6.0
 	  add g:alchemist_compile_basepath option #78
 
+v 2.5.1
+	- Fix remote code execution vulnerability
+
 v 2.5.0
 	- show documentation for erlang modules #49
 	- stop alchemist server being 10 min idle
