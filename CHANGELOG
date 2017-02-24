@@ -1,5 +1,8 @@
 Helium (2.X.X)
 
+v 2.6.2
+	- Allow to jump through navigation in ExDoc buffer #82
+
 v 2.6.1
 	- Fix remote code execution vulnerability
 

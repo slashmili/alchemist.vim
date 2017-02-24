@@ -137,6 +137,7 @@ function! s:open_doc_window(query, newposition, position)
         execute a:newposition
         sil file `="[ExDoc]"`
         let s:buf_nr = bufnr('%')
+        nnoremap <buffer> <silent> K :call alchemist#exdoc()<CR>
         if alchemist#ansi_enabled()
             AnsiEsc
         endif
