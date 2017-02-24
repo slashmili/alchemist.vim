@@ -32,8 +32,8 @@ defmodule Alchemist.Helpers.ProcessCommands do
         API.Docl.request(args)
       ["INFO", args] ->
         API.Info.request(args)
-      ["EVAL", args] ->
-        API.Eval.request(args)
+      #["EVAL", args] ->
+        #API.Eval.request(args)
       ["DEFL", args] ->
         API.Defl.request(args)
       ["PING"] ->

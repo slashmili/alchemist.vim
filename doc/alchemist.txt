@@ -1,0 +1,117 @@
+*alchemist.txt* Elixir Integration Into Vim
+
+           _      _                    _     _   ~
+     /\   | |    | |                  (_)   | |  ~
+    /  \  | | ___| |__   ___ _ __ ___  _ ___| |_ ~
+   / /\ \ | |/ __| '_ \ / _ \ '_ ` _ \| / __| __|~
+  / ____ \| | (__| | | |  __/ | | | | | \__ \ |_ ~
+ /_/    \_\_|\___|_| |_|\___|_| |_| |_|_|___/\__|~
+                                                 ~
+
+==============================================================================
+CONTENTS                                                   *AlchemistContents*
+
+    1. Introduction..............|AlchemistIntro|
+    2. Usage.....................|AlchemistUsage|
+    3. Mappings..................|AlchemistMappings|
+    4. Configuration.............|AlchemistConfig|
+      4.1 g:alchemist_compile_basepath
+      4.2 g:alchemist_tag_disable
+      4.3 g:alchemist_tag_map
+      4.4 g:alchemist_tag_stack_map
+      4.5 g:alchemist#elixir_erlang_src
+      4.6 g:alchemist_iex_term_size
+      4.7 g:alchemist_iex_term_split
+    5. License...................|AlchemistLicense|
+    6. Bugs......................|AlchemistBugs|
+    7. Contributing..............|AlchemistContributing|
+    8. Changelog.................|AlchemistChangelog|
+    9. Credits...................|AlchemistCredits|
+
+
+==============================================================================
+1. Introduction                                               *AlchemistIntro*
+
+TODO
+
+==============================================================================
+2. Usage                                                      *AlchemistUsage*
+
+TODO
+
+==============================================================================
+3. Mappings                                                *AlchemistMappings*
+
+TODO
+
+==============================================================================
+4. Confgiguration                                            *AlchemistConfig*
+
+The following settings affect how Alchemist.vim works:
+
+------------------------------------------------------------------------------
+4.1 g:alchemist_compile_basepath
+
+If the project is compiled in a different system than the one running vim,
+then the path of the source file used when Jumping to Definitions (C-])
+will be the one from the system where the code was compiled, instead of
+the local path where vim is running.
+
+This is usually the case when you are running your project inside a Docker
+container and mounting the files inside the container or when you are
+mounting a remote filesystem locally with FUSE
+
+setting g:alchemist_compile_basepath to the base dir where your project was
+compiled will allow us to translate it correctly to a relative path in the
+local file system.
+
+    let g:alchemist_compile_basepath = '/app/'
+
+Default: current directory
+
+------------------------------------------------------------------------------
+4.2 g:alchemist_tag_disable
+
+------------------------------------------------------------------------------
+4.3 g:alchemist_tag_map
+
+------------------------------------------------------------------------------
+4.4 g:alchemist_tag_stack_map
+
+------------------------------------------------------------------------------
+4.5 g:alchemist#elixir_erlang_src
+
+------------------------------------------------------------------------------
+4.6 g:alchemist_iex_term_size
+
+------------------------------------------------------------------------------
+4.7 g:alchemist_iex_term_split
+
+
+==============================================================================
+5. License                                                  *AlchemistLicense*
+
+Alchemist.vim is released under GPL-3.0
+
+https://github.com/slashmili/alchemist.vim/blob/master/LICENSE
+https://opensource.org/licenses/GPL-3.0
+
+==============================================================================
+6. Bugs                                                        *AlchemistBugs*
+
+TODO
+
+==============================================================================
+7. Contributing                                        *AlchemistContributing*
+
+TODO
+
+==============================================================================
+8. Changelog                                              *AlchemistChangelog*
+
+TODO
+
+==============================================================================
+9. Credits                                                  *AlchemistCredits*
+
+TODO
