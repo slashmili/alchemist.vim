@@ -172,7 +172,7 @@ function! s:open_doc_window(query, newposition, position)
     if match(a:query, "^:") ==# 0
         setlocal ft=man
     elseif !alchemist#ansi_enabled()
-        setlocal ft=markdown
+        setlocal ft=exdoc
     endif
 
     noremap <silent> <buffer> q :call <SID>close_doc_win()<cr>
