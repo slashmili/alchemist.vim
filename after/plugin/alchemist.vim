@@ -268,6 +268,10 @@ function! alchemist#get_current_module_details()
     let matched_line = line('.')
     let original_line = matched_line
     let result = {'module' : {}, 'aliases': [], 'imports': []}
+
+    let aliases_in_multi_lines = 0
+    let multi_lines = ''
+
     for l in lines
         let module = alchemist#get_module_name(l)
         if module != {} && can_trust_matchit
@@ -297,10 +301,30 @@ function! alchemist#get_current_module_details()
             "we reached the top of the module
             return result
         endif
-        let aliases = alchemist#get_aliases(l)
-        if aliases != []
-            let result.aliases += aliases
+
+        if match(l, '{') < 0 && match(l, '}') >0
+            let aliases_in_multi_lines = 1
+            let multi_lines = ''
         endif
+        if aliases_in_multi_lines == 1
+            let multi_lines =  l . multi_lines
+            if match(l, '{') >= 0
+                let aliases_in_multi_lines = 0
+                if match(l, '^\s*alias\s\+') >= 0
+                    let aliases = alchemist#get_aliases(multi_lines)
+                    if aliases != []
+                        let result.aliases += aliases
+                    endif
+                endif
+                let multi_lines = ''
+            endif
+        else
+            let aliases = alchemist#get_aliases(l)
+            if aliases != []
+                let result.aliases += aliases
+            endif
+        endif
+
         let import = alchemist#get_import(l)
         if import != ''
             let result.imports += [import]
