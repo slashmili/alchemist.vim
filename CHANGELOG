@@ -1,5 +1,10 @@
 Helium (2.X.X)
 
+v 2.7.0
+	- Multiline alias support #46
+	- Fix some error in Elixir 1.2
+	- Allow disabling and redefining mapping #91
+
 v 2.6.2
 	- Allow to jump through navigation in ExDoc buffer #82
 
