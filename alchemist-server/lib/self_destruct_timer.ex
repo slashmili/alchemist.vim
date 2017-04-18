@@ -2,7 +2,10 @@ defmodule SelfDestructTimer do
 
   def start_link do
     {:ok, pid} = Agent.start_link(&now/0, name: __MODULE__ )
-    schedule_tick()
+    case Code.ensure_loaded(DateTime) do
+      {:error, _} -> :noop
+      _ -> schedule_tick()
+    end
     {:ok, pid}
   end
 
