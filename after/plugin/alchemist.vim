@@ -137,7 +137,10 @@ function! s:open_doc_window(query, newposition, position)
         execute a:newposition
         sil file `="[ExDoc]"`
         let s:buf_nr = bufnr('%')
-        nnoremap <buffer> <silent> K :call alchemist#exdoc()<CR>
+        if !exists('g:alchemist_mappings_disable')
+            if !exists('g:alchemist_keyword_map') | let g:alchemist_keyword_map = 'K' | en
+            exe 'nnoremap <buffer> <silent> ' . g:alchemist_keyword_map . ' :call alchemist#exdoc()<CR>'
+        endif
         if alchemist#ansi_enabled()
             AnsiEsc
         endif

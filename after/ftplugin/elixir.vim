@@ -21,7 +21,11 @@ if exists('&omnifunc') && g:alchemist#omnifunc
 endif
 
 runtime! ftplugin/man.vim
-nnoremap <buffer> <silent> K :call alchemist#exdoc()<CR>
+
+if !exists('g:alchemist_mappings_disable')
+    if !exists('g:alchemist_keyword_map') | let g:alchemist_keyword_map = 'K' | en
+    exe 'nnoremap <buffer> <silent> ' . g:alchemist_keyword_map . ' :call alchemist#exdoc()<CR>'
+endif
 
 if !exists('g:alchemist_tag_disable')
     if !exists('g:alchemist_tag_map') | let g:alchemist_tag_map = '<C-]>' | en

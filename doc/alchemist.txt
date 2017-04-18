@@ -22,6 +22,8 @@ CONTENTS                                                   *AlchemistContents*
       4.5 g:alchemist#elixir_erlang_src
       4.6 g:alchemist_iex_term_size
       4.7 g:alchemist_iex_term_split
+      4.8 g:alchemist_mappings_disable
+      4.9 g:alchemist_keyword_map
     5. License...................|AlchemistLicense|
     6. Bugs......................|AlchemistBugs|
     7. Contributing..............|AlchemistContributing|
@@ -87,6 +89,17 @@ Default: current directory
 ------------------------------------------------------------------------------
 4.7 g:alchemist_iex_term_split
 
+------------------------------------------------------------------------------
+4.8 g:alchemist_mappings_disable
+
+Do not add a mapping for the documentation lookup functionality.
+
+------------------------------------------------------------------------------
+4.9 g:alchemist_keyword_map
+
+Sets the normal mode mapping for opening the documentation. Example:
+
+    let g:alchemist_keyword_map = '<leader>K'
 
 ==============================================================================
 5. License                                                  *AlchemistLicense*
