@@ -4,6 +4,8 @@ v 2.7.0
 	- Multiline alias support #46
 	- Fix some error in Elixir 1.2
 	- Allow disabling and redefining mapping #91
+	- adds syntax highlights to ExDoc buffers when `!alchemist#ansi_enabled()`
+	- use colours as opposed to highlight groups
 
 v 2.6.2
 	- Allow to jump through navigation in ExDoc buffer #82
