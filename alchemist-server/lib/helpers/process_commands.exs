@@ -39,7 +39,7 @@ defmodule Alchemist.Helpers.ProcessCommands do
       ["PING"] ->
         API.Ping.request()
       _ ->
-        nil
+        raise "Encountered unexpected input"
     end
   end
 

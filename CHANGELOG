@@ -1,5 +1,8 @@
 Helium (2.X.X)
 
+v 2.7.1
+	- Process Commands raises on unexpected input(security patch)
+
 v 2.7.0
 	- Multiline alias support #46
 	- Fix some error in Elixir 1.2
