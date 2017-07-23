@@ -123,7 +123,12 @@ class AlchemistClient:
 
     def _connect(self, host_port):
         if host_port == None: return None
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        (host, port) = host_port
+        if isinstance(port, str):
+            sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            host_port = port
+        else:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         try:
             sock.connect(host_port)
@@ -298,11 +303,13 @@ class AlchemistClient:
         None
         """
         for line in open(server_log, "r").readlines():
-            match = re.search(r'ok\|(?P<host>\w+):(?P<port>\d+)', line)
+            match = re.search(r'ok\|(?P<host>\w+):(?P<port>.*\.sock)', line)
             if match:
                 (host, port) = match.groups()
-                return (host, int(port))
-                break
+                try :
+                    return (host, int(port))
+                except :
+                    return (host, port)
         return None
 
     def _get_tmp_dir(self):

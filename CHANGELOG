@@ -1,5 +1,8 @@
 Helium (2.X.X)
 
+v 2.8.0
+	- Server listens using unix socket(security patch)
+
 v 2.7.1
 	- Process Commands raises on unexpected input(security patch)
 
