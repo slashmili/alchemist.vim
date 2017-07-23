@@ -29,7 +29,7 @@ class Source(Base):
         with Popen([client, cwd_opt], stdin=PIPE, stdout=PIPE) as proc:
             results = proc.communicate(input=request)[0].decode()
 
-        return self.__get_suggestions__(results.split('\n')[:-2])
+        return self.__get_suggestions__(results.split('\n')[:-1])
 
     # Private implementation
     ########################
