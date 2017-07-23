@@ -1,5 +1,8 @@
 Helium (2.X.X)
 
+v 2.8.1
+	- Deoplete remote plugin truncates the last completion
+
 v 2.8.0
 	- Server listens using unix socket(security patch)
 
