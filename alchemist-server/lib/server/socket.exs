@@ -1,5 +1,4 @@
 Code.require_file "../helpers/process_commands.exs", __DIR__
-Code.require_file "../self_destruct_timer.ex", __DIR__
 
 defmodule Alchemist.Server.Socket do
 
@@ -10,20 +9,22 @@ defmodule Alchemist.Server.Socket do
 
     env = Keyword.get(opts, :env)
     port = Keyword.get(opts, :port, 0)
+    socket_file = opts
+                  |> Keyword.get( :socket_file, socket_file())
+                  |> String.to_charlist
 
     children = [
       supervisor(Task.Supervisor, [[name: Alchemist.Server.Socket.TaskSupervisor]]),
-      worker(Task, [__MODULE__, :accept, [env, port]]),
-      worker(SelfDestructTimer, []),
+      worker(Task, [__MODULE__, :accept, [env, port, socket_file]])
     ]
 
     opts = [strategy: :one_for_one, name: Alchemist.Server.Socket.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
-  def accept(env, port) do
+  def accept(env, port, socket_file) do
     {:ok, socket} = :gen_tcp.listen(port,
-                    [:binary, packet: :line, active: false, reuseaddr: true])
+                    [:binary, packet: :line, active: false, reuseaddr: true, ifaddr: {:local, socket_file}])
     {:ok, port} = :inet.port(socket)
     IO.puts "ok|localhost:#{port}"
     loop_acceptor(socket, env)
@@ -46,7 +47,6 @@ defmodule Alchemist.Server.Socket do
         |> ProcessCommands.process(env)
         |> write_line(socket)
 
-        SelfDestructTimer.reset
         serve(socket, env)
     end
   end
@@ -60,5 +60,10 @@ defmodule Alchemist.Server.Socket do
 
   defp write_line(line, socket) do
     :gen_tcp.send(socket, line)
+  end
+
+  defp socket_file do
+    sock_id = :erlang.system_time()
+    "/tmp/alchemist-server-#{sock_id}.sock"
   end
 end
