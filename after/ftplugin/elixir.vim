@@ -17,7 +17,7 @@ if !exists('g:alchemist#omnifunc')
 endif
 
 if exists('&omnifunc') && g:alchemist#omnifunc
-  setl omnifunc=elixircomplete#Complete
+  setl omnifunc=elixircomplete#auto_complete
 endif
 
 runtime! ftplugin/man.vim

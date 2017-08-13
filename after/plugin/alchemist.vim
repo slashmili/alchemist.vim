@@ -8,18 +8,19 @@ if !exists('g:alchemist#alchemist_client')
     let g:alchemist#alchemist_client = expand("<sfile>:p:h:h") . '/../alchemist_client'
 endif
 
-function! alchemist#alchemist_client(req)
-    let req = a:req . "\n"
+function! alchemist#alchemist_client(req, lnum, cnum, lines)
+    echom "alchemist_client"
+    let req = a:req
     let cmd = g:alchemist#alchemist_client
-    if !alchemist#ansi_enabled()
-        let cmd = cmd . ' --colors=false '
-    endif
-    if exists('g:alchemist#elixir_erlang_src')
-        let cmd = cmd . ' -s ' . g:alchemist#elixir_erlang_src
-    endif
+    "if exists('g:alchemist#elixir_erlang_src')
+    "    let cmd = cmd . ' -s ' . g:alchemist#elixir_erlang_src
+    "endif
     let cmd = cmd . ' -d "' . expand('%:p:h') . '"'
-
-    return system(cmd, req)
+    let cmd = cmd . ' --line=' . a:lnum
+    let cmd = cmd . ' --column=' . a:cnum
+    let cmd = cmd . ' --request=' . a:req
+    echom cmd
+    return system(cmd, join(a:lines, "\n"))
 endfunction
 
 function! alchemist#get_doc(word)
