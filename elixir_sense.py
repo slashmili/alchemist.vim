@@ -118,12 +118,13 @@ class ElixirSenseClient:
         return result
 
     def _log(self, text):
+        if self._debug == False:
+            return
+
         f = open("/tmp/log.log", "a")
         f.write("%s\n" % text)
         f.close()
 
-        if self._debug == False:
-            return
         syslog.openlog("alchemist_client")
         syslog.syslog(syslog.LOG_ALERT, text)
 
