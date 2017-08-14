@@ -3,8 +3,8 @@ if !exists('g:alchemist#alchemist_client')
 endif
 
 
-function! elixircomplete#ExDocComplete(ArgLead, CmdLine, CursorPos, ...)
-  let suggestions = elixircomplete#Complete(0, a:ArgLead)
+function! elixircomplete#ex_doc_complete(ArgLead, CmdLine, CursorPos, ...)
+  let suggestions = elixircomplete#get_suggestions(a:ArgLead, 1, len(a:ArgLead) + 1, [a:ArgLead . "\n"])
   if type(suggestions) != type([])
     return []
   endif
@@ -20,7 +20,16 @@ function! elixircomplete#auto_complete(findstart, base_or_suggestions)
     if a:findstart
         return s:find_start()
     end
-    let suggestions = elixircomplete#get_suggestions(a:base_or_suggestions)
+    let lnum = line('.')
+    let cnum = col('.') + len(a:base_or_suggestions)
+    let blines = getline(1, lnum -1)
+    let cline = getline('.')
+    let before_c = strpart(getline('.'), 0, col('.'))
+    let after_c = strpart(getline('.'), col('.'), len(getline('.')))
+    let cline = before_c . a:base_or_suggestions . after_c
+    let alines = getline(lnum +1 , '$')
+    let lines = blines + [cline] + alines
+    let suggestions = elixircomplete#get_suggestions(a:base_or_suggestions, lnum, cnum, lines)
     if len(suggestions) == 0
         return -1
     endif
@@ -49,18 +58,9 @@ function! s:find_start()
 endfunction
 
 
-function! elixircomplete#get_suggestions(base_or_suggestions)
+function! elixircomplete#get_suggestions(base_or_suggestions, lnum, cnum, lines)
     let req = 'suggestions'
-    let lnum = line('.')
-    let cnum = col('.') + len(a:base_or_suggestions)
-    let blines = getline(1, lnum -1)
-    let cline = getline('.')
-    let before_c = strpart(getline('.'), 0, col('.'))
-    let after_c = strpart(getline('.'), col('.'), len(getline('.')))
-    let cline = before_c . a:base_or_suggestions . after_c
-    let alines = getline(lnum +1 , '$')
-    let lines = blines + [cline] + alines
-    let result = alchemist#alchemist_client(req, lnum, cnum, lines)
+    let result = alchemist#alchemist_client(req, a:lnum, a:cnum, a:lines)
     let suggestions = split(result, '\n')
     let parsed_suggestion = []
     for sugg in suggestions
@@ -69,7 +69,8 @@ function! elixircomplete#get_suggestions(base_or_suggestions)
             if details[1] == 'f'
                 let word = details[2]
                 let sug_parts = split(a:base_or_suggestions, '\.')
-                if len(sug_parts) == 1 && a:base_or_suggestions[len(a:base_or_suggestions) -1] != '.'
+                let is_it_only_func = matchstr(a:base_or_suggestions, '\C^[a-z].*') != ''
+                if len(sug_parts) == 1 && a:base_or_suggestions[len(a:base_or_suggestions) -1] != '.' && is_it_only_func == 1
                     let word_parts = split(word, '\.')
                     let word_size = len(word_parts) - 1
                     let word = word_parts[word_size]
