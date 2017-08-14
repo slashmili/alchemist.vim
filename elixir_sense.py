@@ -121,13 +121,13 @@ class ElixirSenseClient:
         """
         >>> alchemist = ElixirSenseClient()
         >>> alchemist._get_path_unique_name("/Users/milad/dev/ex_guard/")
-        'zSUserszSmiladzSdevzSex_guard'
+        'zS2UserszS2miladzS2devzS2ex_guard'
         """
-        return os.path.abspath(path).replace("/", "zS")
+        return os.path.abspath(path).replace("/", "zS2")
 
     def _create_server_log(self):
         dir_tmp = self._get_tmp_dir()
-        log_tmp = "%s/%s" % (dir_tmp, self._cwd.replace("/", "zS"))
+        log_tmp = "%s/%s" % (dir_tmp, self._cwd.replace("/", "zS2"))
         if os.path.exists(dir_tmp) == False:
             os.makedirs(dir_tmp)
 
@@ -309,7 +309,7 @@ class ElixirSenseClient:
         >>> os.mkdir(p01_dir)
         >>> p01_lib_dir = os.path.join(p01_dir, "lib")
         >>> os.mkdir(p01_lib_dir)
-        >>> p01_log = p01_dir.replace("/", "zS")
+        >>> p01_log = p01_dir.replace("/", "zS2")
 
         >>> #detect that base dir is already running
         >>> alchemist = ElixirSenseClient(cwd=p01_dir)
@@ -354,7 +354,7 @@ class ElixirSenseClient:
             project_dir = os.sep.join(paths[:len(paths)-i])
             if not project_dir:
                 continue
-            log_tmp = "%s" % project_dir.replace("/", "zS")
+            log_tmp = "%s" % project_dir.replace("/", "zS2")
             if log_tmp in running_servers_logs:
                 self._log("project_dir(matched): "+str(project_dir))
                 return project_dir
