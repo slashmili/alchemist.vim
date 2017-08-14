@@ -88,22 +88,32 @@ class ElixirSenseClient:
         >>> alchemist = ElixirSenseClient()
         >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': 'Enum.ma'}, {'origin': 'Enum', 'arity': 2, 'name': 'map', 'args': 'enumerable,fun', 'type': 'function', 'spec': '@spec map(t, (element -> any)) :: list', 'summary': 'Returns a list where each item is the result of invoking`fun` on each corresponding item of `enumerable`.'}])
         'kind:f, word:Enum.map, abbr:map(enumerable,fun), menu: Enum\\n'
+        >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': 'Cloud.Event'}, {'subtype': 'struct', 'type': 'module', 'name': 'Event', 'summary': ''}, {'subtype': None, 'type': 'module', 'name': 'EventBroadcaster', 'summary': ''}, {'subtype': None, 'type': 'module', 'name': 'EventConsumer', 'summary': ''}, {'subtype': None, 'type': 'module', 'name': 'EventService', 'summary': ''}])
+        'kind:m, word:Cloud.Event, abbr:Event, menu: struct\\nkind:m, word:Cloud.EventBroadcaster, abbr:EventBroadcaster, menu: module\\nkind:m, word:Cloud.EventConsumer, abbr:EventConsumer, menu: module\\nkind:m, word:Cloud.EventService, abbr:EventService, menu: module\\n'
+        >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': 'Mix.'}, {'subtype': None, 'type': 'module', 'name': 'Mix', 'summary': ''}, {'subtype': None, 'type': 'module', 'name': 'Ecto', 'summary': ''},{'origin': 'Mix', 'arity': 0, 'name': 'compilers', 'args': '', 'type': 'function', 'spec': '', 'summary': 'Returns the default compilers used by Mix.'}])
+        'kind:m, word:Mix., abbr:Mix, menu: module\\nkind:m, word:Mix.Ecto, abbr:Ecto, menu: module\\nkind:f, word:Mix.compilers, abbr:compilers(), menu: Mix\\n'
+        >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': 'UserService.'}, {'subtype': None, 'type': 'module', 'name': 'UserService', 'summary': ''}, {'origin': 'Interface.UserService', 'arity': 0, 'name': 'all_pending_users', 'args': '', 'type': 'function', 'spec': '', 'summary': 'Returns all users that requested invitation'}])
+        'kind:m, word:UserService., abbr:UserService, menu: module\\nkind:f, word:UserService.all_pending_users, abbr:all_pending_users(), menu: Interface.UserService\\n'
         """
         result = ''
         prefix_module = ''
         for s in suggestions:
             if s['type'] == 'hint':
-                if s['value'][-1] == '.':
-                    prefix_module = s['value']
+                if '.' in s['value']:
+                    prefix_module = '.'.join(s['value'].split('.')[:-1]) + '.'
                 continue
             if s['type'] == 'module':
-                if ('%s.' % s['name']) == prefix_module:
-                    continue
                 mtype = s['subtype'] or s['type']
-                result = "%skind:%s, word:%s%s, abbr:%s, menu: %s\n" % (result, 'm', prefix_module, s['name'], s['name'], mtype)
+                if ('%s.' % s['name']) == prefix_module:
+                    result = "%skind:%s, word:%s, abbr:%s, menu: %s\n" % (result, 'm', prefix_module, s['name'], mtype)
+                else:
+                    result = "%skind:%s, word:%s%s, abbr:%s, menu: %s\n" % (result, 'm', prefix_module, s['name'], s['name'], mtype)
             if s['type'] == 'function':
                 args = '%s(%s)' % (s['name'], s['args'])
-                result = "%skind:%s, word:%s.%s, abbr:%s, menu: %s\n" % (result, 'f', s['origin'], s['name'], args, s['origin'])
+                if ('%s.' % s['origin'][((len(prefix_module) -1)*-1):]) == prefix_module:
+                    result = "%skind:%s, word:%s%s, abbr:%s, menu: %s\n" % (result, 'f', prefix_module, s['name'], args, s['origin'])
+                else:
+                    result = "%skind:%s, word:%s.%s, abbr:%s, menu: %s\n" % (result, 'f', s['origin'], s['name'], args, s['origin'])
 
         return result
 
