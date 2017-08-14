@@ -29,6 +29,11 @@ function! elixircomplete#auto_complete(findstart, base_or_suggestions)
     let cline = before_c . a:base_or_suggestions . after_c
     let alines = getline(lnum +1 , '$')
     let lines = blines + [cline] + alines
+    "Handle YouCompleteMe cases
+    if getline(lnum, lnum +1)[0] =~ a:base_or_suggestions . '$'
+        let cnum = col('.') + len(a:base_or_suggestions)
+        let lines = getline(1, '$')
+    endif
     let suggestions = elixircomplete#get_suggestions(a:base_or_suggestions, lnum, cnum, lines)
     if len(suggestions) == 0
         return -1
