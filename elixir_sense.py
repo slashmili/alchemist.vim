@@ -76,6 +76,12 @@ class ElixirSenseClient:
         self._log('ElixirSense: %s' % rep_py_struct)
         if request == "suggestions":
             return self.to_vim_suggestions(rep_py_struct['payload'])
+        elif request == "docs":
+            if rep_py_struct['payload']['docs']:
+                return rep_py_struct['payload']['docs']['docs']
+            return rep_py_struct['payload']
+        elif request == 'definition':
+            return rep_py_struct['payload']
 
     def to_vim_suggestions(self, suggestions):
         """

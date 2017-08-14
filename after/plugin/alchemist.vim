@@ -9,7 +9,6 @@ if !exists('g:alchemist#alchemist_client')
 endif
 
 function! alchemist#alchemist_client(req, lnum, cnum, lines)
-    echom "alchemist_client"
     let req = a:req
     let cmd = g:alchemist#alchemist_client
     "if exists('g:alchemist#elixir_erlang_src')
@@ -19,7 +18,6 @@ function! alchemist#alchemist_client(req, lnum, cnum, lines)
     let cmd = cmd . ' --line=' . a:lnum
     let cmd = cmd . ' --column=' . a:cnum
     let cmd = cmd . ' --request=' . a:req
-    echom cmd
     return system(cmd, join(a:lines, "\n"))
 endfunction
 
@@ -36,8 +34,11 @@ function! alchemist#get_doc(word)
 endfunction
 
 function! alchemist#get_doc_ex(word)
-    let req = alchemist#alchemist_format("DOCL", a:word, "Elixir", [], [])
-    let result = alchemist#alchemist_client(req)
+    let lnum = line('.')
+    let cnum = col('.')
+    let lines = getline(1, '$')
+    let result = alchemist#alchemist_client('docs', lnum, cnum, lines)
+
     " fix heading colors
     let result = substitute(result, '\e\[7m\e\[33m', '[1m[33m', 'g')
     " fix code example colors
@@ -207,10 +208,14 @@ function! alchemist#exdef(...)
         call s:echo_error('E426: tag not found: ')
         return
     endif
-    let req = alchemist#alchemist_format("DEFLX", query, "Elixir", [], [])
-    let result = alchemist#alchemist_client(req)
-    let source_match = filter(split(result, '\n'), 'v:val != "END-OF-DEFLX"')
-    if len(source_match) == 0
+    "let req = alchemist#alchemist_format("DEFLX", query, "Elixir", [], [])
+
+    let lnum = line('.')
+    let cnum = col('.')
+    let lines = getline(1, '$')
+    let result = alchemist#alchemist_client('definition', lnum, cnum, lines)
+    let source_match = split(result, '\n')
+    if len(source_match) == 0 || source_match[0] == 'non_existing:0'
         call s:echo_error('E426: tag not found: ' . query)
         return
     endif
