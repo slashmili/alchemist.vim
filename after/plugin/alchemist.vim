@@ -173,6 +173,9 @@ function! s:open_doc_window(query, newposition, position)
         setlocal ft=exdoc
     endif
 
+    if alchemist#ansi_enabled()
+        AnsiEsc!
+    endif
     noremap <silent> <buffer> q :call <SID>close_doc_win()<cr>
 endfunction
 
@@ -183,7 +186,12 @@ endfunction
 function! alchemist#exdoc(...)
     let query = ''
     if empty(a:000)
-        let query = ''
+        let name = alchemist#lookup_name_under_cursor()
+        if match(name, "^:") ==# 0
+            let query = name
+        else
+            let query = ''
+        end
     else
         let query = a:000[0]
     endif
@@ -200,7 +208,6 @@ function! alchemist#exdef(...)
     else
         let lnum = 1
         let cnum = len(a:000[0])
-        echom 'a:000[0]:'. a:000[0]
         let lines = [a:000[0]]
         let query = a:000[0]
     endif
@@ -263,6 +270,13 @@ function! s:echo_error(text)
     echohl ErrorMsg
     echo a:text
     echohl None
+endfunction
+
+function! alchemist#ansi_enabled()
+    if exists(':AnsiEsc')
+        return 1
+    endif
+    return 0
 endfunction
 
 function! alchemist#get_current_module_details()
