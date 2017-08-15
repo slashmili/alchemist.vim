@@ -1,5 +1,6 @@
 sudo: false
 script:
   - python ./elixir_sense.py
+  - python ./erl_terms.py
 notifications:
   irc: "irc.freenode.org#vim-elixir"
