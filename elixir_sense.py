@@ -23,7 +23,7 @@ class ElixirSenseClient:
         self._source = kw.get('source', None)
         self.re_elixir_fun_with_arity = re.compile(r'(?P<func>.*)/[0-9]+$')
         self.re_elixir_module_and_fun = re.compile(r'^(?P<module>[A-Z][A-Za-z0-9\._]+)\.(?P<func>[a-z_?!]+)')
-        self.re_erlang_module = re.compile(r'^\:(?P<module>.*)')
+        self.re_erlang_module = re.compile(r'^(?P<module>[a-z].*)')
         self.re_elixir_module = re.compile(r'^(?P<module>[A-Z][A-Za-z0-9\._]+)')
         self.re_x_base = re.compile(r'^.*{\s*"(?P<base>.*)"\s*')
         self.re_elixir_src = re.compile(r'.*(/lib/elixir/lib.*)')
@@ -87,13 +87,19 @@ class ElixirSenseClient:
         """
         >>> alchemist = ElixirSenseClient()
         >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': 'Enum.ma'}, {'origin': 'Enum', 'arity': 2, 'name': 'map', 'args': 'enumerable,fun', 'type': 'function', 'spec': '@spec map(t, (element -> any)) :: list', 'summary': 'Returns a list where each item is the result of invoking`fun` on each corresponding item of `enumerable`.'}])
-        'kind:f, word:Enum.map, abbr:map(enumerable,fun), menu: Enum\\n'
+        'kind:f, word:Enum.map, abbr:map(enumerable, fun), menu: Enum\\n'
         >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': 'Cloud.Event'}, {'subtype': 'struct', 'type': 'module', 'name': 'Event', 'summary': ''}, {'subtype': None, 'type': 'module', 'name': 'EventBroadcaster', 'summary': ''}, {'subtype': None, 'type': 'module', 'name': 'EventConsumer', 'summary': ''}, {'subtype': None, 'type': 'module', 'name': 'EventService', 'summary': ''}])
         'kind:m, word:Cloud.Event, abbr:Event, menu: struct\\nkind:m, word:Cloud.EventBroadcaster, abbr:EventBroadcaster, menu: module\\nkind:m, word:Cloud.EventConsumer, abbr:EventConsumer, menu: module\\nkind:m, word:Cloud.EventService, abbr:EventService, menu: module\\n'
         >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': 'Mix.'}, {'subtype': None, 'type': 'module', 'name': 'Mix', 'summary': ''}, {'subtype': None, 'type': 'module', 'name': 'Ecto', 'summary': ''},{'origin': 'Mix', 'arity': 0, 'name': 'compilers', 'args': '', 'type': 'function', 'spec': '', 'summary': 'Returns the default compilers used by Mix.'}])
         'kind:m, word:Mix., abbr:Mix, menu: module\\nkind:m, word:Mix.Ecto, abbr:Ecto, menu: module\\nkind:f, word:Mix.compilers, abbr:compilers(), menu: Mix\\n'
-        >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': 'UserService.'}, {'subtype': None, 'type': 'module', 'name': 'UserService', 'summary': ''}, {'origin': 'Interface.UserService', 'arity': 0, 'name': 'all_pending_users', 'args': '', 'type': 'function', 'spec': '', 'summary': 'Returns all users that requested invitation'}])
-        'kind:m, word:UserService., abbr:UserService, menu: module\\nkind:f, word:UserService.all_pending_users, abbr:all_pending_users(), menu: Interface.UserService\\n'
+        >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': 'UserService.'}, {'subtype': None, 'type': 'module', 'name': 'UserService', 'summary': ''}, {'origin': 'interface.UserService', 'arity': 0, 'name': 'all_pending_users', 'args': '', 'type': 'function', 'spec': '', 'summary': 'returns all users that requested invitation'}])
+        'kind:m, word:UserService., abbr:UserService, menu: module\\nkind:f, word:UserService.all_pending_users, abbr:all_pending_users(), menu: interface.UserService\\n'
+        >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': ':gen_'}, {'subtype': None, 'type': 'module', 'name': 'gen_event', 'summary': ''}, {'subtype': None, 'type': 'module', 'name': 'gen_fsm', 'summary': ''}])
+        'kind:m, word::gen_event, abbr::gen_event, menu: module\\nkind:m, word::gen_fsm, abbr::gen_fsm, menu: module\\n'
+        >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': ':gen_server.'}, {'origin': ':gen_server', 'arity': 1, 'name': 'behaviour_info', 'args': '', 'type': 'function', 'spec': None, 'summary': ''}])
+        'kind:f, word::gen_server.behaviour_info, abbr:behaviour_info/1, menu: :gen_server\\n'
+        >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': 'put_'}, {'origin': 'Plug.Conn', 'arity': 3, 'name': 'put_private', 'args': 'conn,key,value', 'type': 'function', 'spec': '@spec put_private(t, atom, term) :: t', 'summary': 'Assigns a new **private** key and value in the connection.'}])
+        'kind:f, word:Plug.Conn.put_private, abbr:put_private(conn, key, value), menu: Plug.Conn\\n'
         """
         result = ''
         prefix_module = ''
@@ -105,17 +111,34 @@ class ElixirSenseClient:
             if s['type'] == 'module':
                 mtype = s['subtype'] or s['type']
                 if ('%s.' % s['name']) == prefix_module:
-                    result = "%skind:%s, word:%s, abbr:%s, menu: %s\n" % (result, 'm', prefix_module, s['name'], mtype)
+                    word = "%s" % (prefix_module)
                 else:
-                    result = "%skind:%s, word:%s%s, abbr:%s, menu: %s\n" % (result, 'm', prefix_module, s['name'], s['name'], mtype)
+                    word = "%s%s" % (prefix_module, s['name'])
+                if self.re_erlang_module.match(s['name']):
+                    word = self.__erlang_pad(word)
+                    s['name'] = self.__erlang_pad(s['name'])
+                result = "%skind:%s, word:%s, abbr:%s, menu: %s\n" % \
+                        (result, 'm', word, s['name'], mtype)
             if s['type'] == 'function':
-                args = '%s(%s)' % (s['name'], s['args'])
                 if ('%s.' % s['origin'][((len(prefix_module) -1)*-1):]) == prefix_module:
-                    result = "%skind:%s, word:%s%s, abbr:%s, menu: %s\n" % (result, 'f', prefix_module, s['name'], args, s['origin'])
+                    word = '%s%s' % (prefix_module, s['name'])
                 else:
-                    result = "%skind:%s, word:%s.%s, abbr:%s, menu: %s\n" % (result, 'f', s['origin'], s['name'], args, s['origin'])
+                    word = '%s.%s' % (s['origin'], s['name'])
+                if word[0] == ':':
+                    args = '%s/%s' % (s['name'], s['arity'])
+                else:
+                    if s['args'] == None:
+                        s['args'] = ''
+                    args = '%s(%s)' % (s['name'], ", ".join(s['args'].split(',')))
+                result = "%skind:%s, word:%s, abbr:%s, menu: %s\n" % (result, 'f', word, args, s['origin'])
 
         return result
+
+    def __erlang_pad(self, module):
+        if self.re_erlang_module.match(module):
+            return ':%s' % module
+        else:
+            return module
 
     def _log(self, text):
         if self._debug == False:
