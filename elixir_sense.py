@@ -106,10 +106,13 @@ class ElixirSenseClient:
         """
         result = ''
         prefix_module = ''
+        hint = suggestions[0]
+        if '.' in hint['value']:
+            prefix_module = '.'.join(hint['value'].split('.')[:-1]) + '.'
+
+        suggestions = sorted(suggestions[1:], key=lambda s : s['name'])
         for s in suggestions:
             if s['type'] == 'hint':
-                if '.' in s['value']:
-                    prefix_module = '.'.join(s['value'].split('.')[:-1]) + '.'
                 continue
             if s['type'] == 'module':
                 mtype = s['subtype'] or s['type']
