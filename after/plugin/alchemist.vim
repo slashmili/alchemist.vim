@@ -239,7 +239,11 @@ function! alchemist#exdef(...)
         return
     endif
     call add(g:alchemist_tag_stack, [bufnr('%'), line('.'), col('.')])
-    execute 'e ' . rel_path
+    if matchlist(rel_path, 'deps/') != []
+        execute 'view ' . rel_path
+    else
+        execute 'e ' . rel_path
+    endif
     execute line
 endfunction
 
