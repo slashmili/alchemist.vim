@@ -70,9 +70,9 @@ class ElixirSenseClient:
             sock = self._connect(connection)
 
         resp_erl_struct = self._send_command(sock, req_erl_struct)
-        #f = open("/tmp/erl_bin.txt", "wb")
-        #f.write(resp_erl_struct)
         rep_py_struct = erl_terms.decode(resp_erl_struct)
+        if rep_py_struct['error']:
+            return 'error:%s' % rep_py_struct['error']
         self._log('ElixirSense: %s' % rep_py_struct)
         if request == "suggestions":
             return self.to_vim_suggestions(rep_py_struct['payload'])

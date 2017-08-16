@@ -18,7 +18,12 @@ function! alchemist#alchemist_client(req, lnum, cnum, lines)
     let cmd = cmd . ' --line=' . a:lnum
     let cmd = cmd . ' --column=' . a:cnum
     let cmd = cmd . ' --request=' . a:req
-    return system(cmd, join(a:lines, "\n"))
+    let result =  system(cmd, join(a:lines, "\n"))
+    if len(matchlist(result, '^error:')) > 0
+        call s:echo_error('alchemist.vim: failed with message ' . result)
+        return ''
+    endif
+    return result
 endfunction
 
 function! alchemist#get_doc(word)
