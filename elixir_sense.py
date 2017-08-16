@@ -87,21 +87,21 @@ class ElixirSenseClient:
         """
         >>> alchemist = ElixirSenseClient()
         >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': 'Enum.ma'}, {'origin': 'Enum', 'arity': 2, 'name': 'map', 'args': 'enumerable,fun', 'type': 'function', 'spec': '@spec map(t, (element -> any)) :: list', 'summary': 'Returns a list where each item is the result of invoking`fun` on each corresponding item of `enumerable`.'}])
-        'kind:f, word:Enum.map, abbr:map(enumerable, fun), menu: Enum\\n'
+        'kind:f, word:Enum.map, abbr:map(enumerable, fun), menu: Enum, info: @spec map(t, (element -> any)) :: list<n>Returns a list where each item is the result of invoking`fun` on each corresponding item of `enumerable`.\\n'
         >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': 'Cloud.Event'}, {'subtype': 'struct', 'type': 'module', 'name': 'Event', 'summary': ''}, {'subtype': None, 'type': 'module', 'name': 'EventBroadcaster', 'summary': ''}, {'subtype': None, 'type': 'module', 'name': 'EventConsumer', 'summary': ''}, {'subtype': None, 'type': 'module', 'name': 'EventService', 'summary': ''}])
-        'kind:m, word:Cloud.Event, abbr:Event, menu: struct\\nkind:m, word:Cloud.EventBroadcaster, abbr:EventBroadcaster, menu: module\\nkind:m, word:Cloud.EventConsumer, abbr:EventConsumer, menu: module\\nkind:m, word:Cloud.EventService, abbr:EventService, menu: module\\n'
+        'kind:m, word:Cloud.Event, abbr:Event, menu: struct, info: \\nkind:m, word:Cloud.EventBroadcaster, abbr:EventBroadcaster, menu: module, info: \\nkind:m, word:Cloud.EventConsumer, abbr:EventConsumer, menu: module, info: \\nkind:m, word:Cloud.EventService, abbr:EventService, menu: module, info: \\n'
         >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': 'Mix.'}, {'subtype': None, 'type': 'module', 'name': 'Mix', 'summary': ''}, {'subtype': None, 'type': 'module', 'name': 'Ecto', 'summary': ''},{'origin': 'Mix', 'arity': 0, 'name': 'compilers', 'args': '', 'type': 'function', 'spec': '', 'summary': 'Returns the default compilers used by Mix.'}])
-        'kind:m, word:Mix., abbr:Mix, menu: module\\nkind:m, word:Mix.Ecto, abbr:Ecto, menu: module\\nkind:f, word:Mix.compilers, abbr:compilers(), menu: Mix\\n'
+        'kind:m, word:Mix., abbr:Mix, menu: module, info: \\nkind:m, word:Mix.Ecto, abbr:Ecto, menu: module, info: \\nkind:f, word:Mix.compilers, abbr:compilers(), menu: Mix, info: Returns the default compilers used by Mix.\\n'
         >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': 'UserService.'}, {'subtype': None, 'type': 'module', 'name': 'UserService', 'summary': ''}, {'origin': 'interface.UserService', 'arity': 0, 'name': 'all_pending_users', 'args': '', 'type': 'function', 'spec': '', 'summary': 'returns all users that requested invitation'}])
-        'kind:m, word:UserService., abbr:UserService, menu: module\\nkind:f, word:UserService.all_pending_users, abbr:all_pending_users(), menu: interface.UserService\\n'
+        'kind:m, word:UserService., abbr:UserService, menu: module, info: \\nkind:f, word:UserService.all_pending_users, abbr:all_pending_users(), menu: interface.UserService, info: returns all users that requested invitation\\n'
         >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': ':gen_'}, {'subtype': None, 'type': 'module', 'name': 'gen_event', 'summary': ''}, {'subtype': None, 'type': 'module', 'name': 'gen_fsm', 'summary': ''}])
-        'kind:m, word::gen_event, abbr::gen_event, menu: module\\nkind:m, word::gen_fsm, abbr::gen_fsm, menu: module\\n'
+        'kind:m, word::gen_event, abbr::gen_event, menu: module, info: \\nkind:m, word::gen_fsm, abbr::gen_fsm, menu: module, info: \\n'
         >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': ':gen_server.'}, {'origin': ':gen_server', 'arity': 1, 'name': 'behaviour_info', 'args': '', 'type': 'function', 'spec': None, 'summary': ''}])
-        'kind:f, word::gen_server.behaviour_info, abbr:behaviour_info/1, menu: :gen_server\\n'
+        'kind:f, word::gen_server.behaviour_info, abbr:behaviour_info/1, menu: :gen_server, info: \\n'
         >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': 'put_'}, {'origin': 'Plug.Conn', 'arity': 3, 'name': 'put_private', 'args': 'conn,key,value', 'type': 'function', 'spec': '@spec put_private(t, atom, term) :: t', 'summary': 'Assigns a new **private** key and value in the connection.'}])
-        'kind:f, word:Plug.Conn.put_private, abbr:put_private(conn, key, value), menu: Plug.Conn\\n'
-        >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': 'MyApp.Service.'}, {'subtype': None, 'type': 'module', 'name': 'Service', 'summary': ''}, {'origin': 'MyApp.Service', 'arity': 0, 'name': 'blank_capabilities', 'args': '', 'type': 'function', 'spec': '', 'summary': ''}])
-        'kind:m, word:MyApp.Service., abbr:Service, menu: module\\nkind:f, word:MyApp.Service.blank_capabilities, abbr:blank_capabilities(), menu: MyApp.Service\\n'
+        'kind:f, word:Plug.Conn.put_private, abbr:put_private(conn, key, value), menu: Plug.Conn, info: @spec put_private(t, atom, term) :: t<n>Assigns a new **private** key and value in the connection.\\n'
+        >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': 'MyApp.Service.'}, {'subtype': None, 'type': 'module', 'name': 'Service', 'summary': ''}, {'origin': 'MyApp.Service', 'arity': 0, 'name': 'blank_capabilities', 'args': '', 'type': 'function', 'spec': '', 'summary': 'sum\\n'}])
+        'kind:m, word:MyApp.Service., abbr:Service, menu: module, info: \\nkind:f, word:MyApp.Service.blank_capabilities, abbr:blank_capabilities(), menu: MyApp.Service, info: sum\\n'
 
         """
         result = ''
@@ -123,8 +123,8 @@ class ElixirSenseClient:
                 if self.re_erlang_module.match(s['name']):
                     word = self.__erlang_pad(word)
                     s['name'] = self.__erlang_pad(s['name'])
-                result = "%skind:%s, word:%s, abbr:%s, menu: %s\n" % \
-                        (result, 'm', word, s['name'], mtype)
+                info = s['summary']
+                result = "%s%s" % (result, self.__suggestion_line('m', word, s['name'], mtype, info))
             if s['type'] == 'function':
                 if ('%s.' % s['origin'][((len(prefix_module) -1)*-1):]) == prefix_module:
                     word = '%s%s' % (prefix_module, s['name'])
@@ -136,9 +136,20 @@ class ElixirSenseClient:
                     if s['args'] == None:
                         s['args'] = ''
                     args = '%s(%s)' % (s['name'], ", ".join(s['args'].split(',')))
-                result = "%skind:%s, word:%s, abbr:%s, menu: %s\n" % (result, 'f', word, args, s['origin'])
+                info = s['summary']
+                if s['spec'] and s['summary'] != '':
+                    info = '%s\n%s' % (s['spec'].strip(), s['summary'].strip())
+                elif s['spec']:
+                    info = s['spec'].strip()
+
+
+                result = "%s%s" % (result, self.__suggestion_line('f', word, args, s['origin'], info))
 
         return result
+
+    def __suggestion_line(self, kind, word, abbr, menu, info):
+        info = info.strip().replace('\n', "<n>")
+        return "kind:%s, word:%s, abbr:%s, menu: %s, info: %s\n" % (kind, word, abbr, menu, info)
 
     def __erlang_pad(self, module):
         if self.re_erlang_module.match(module):

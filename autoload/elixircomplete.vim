@@ -15,6 +15,10 @@ function! s:strip_dot(input_string)
     return substitute(a:input_string, '^\s*\(.\{-}\)\.*$', '\1', '')
 endfunction
 
+function! s:strip(input_string)
+    return substitute(a:input_string, '^\s*\(.\{-}\)\s*$', '\1', '')
+endfunction
+
 function! elixircomplete#auto_complete(findstart, base_or_suggestions)
     let cnum = col('.')
     if a:findstart
@@ -69,7 +73,7 @@ function! elixircomplete#get_suggestions(base_or_suggestions, lnum, cnum, lines)
     let suggestions = split(result, '\n')
     let parsed_suggestion = []
     for sugg in suggestions
-        let details = matchlist(sugg, 'kind:\(.*\), word:\(.*\), abbr:\(.*\), menu:\(.*\)$')
+        let details = matchlist(sugg, 'kind:\(.*\), word:\(.*\), abbr:\(.*\), menu:\(.*\), info:\(.*\)$')
         if len(details) > 0
             if details[1] == 'f'
                 let word = details[2]
@@ -84,6 +88,11 @@ function! elixircomplete#get_suggestions(base_or_suggestions, lnum, cnum, lines)
             elseif details[1] == 'm' || details[1] == 'p' || details[1] == 'e' || details[1] == 's'
                 let word = details[2]
                 let a = {'kind': details[1], 'word':  word, 'menu': details[4], 'abbr': details[3]}
+            endif
+
+            if exists('g:alchemist#extended_autocomplete') && g:alchemist#extended_autocomplete == 1
+                let info = substitute(s:strip(details[5]) , '<n>', '\n', "g")
+                let a.info = info
             endif
             call add(parsed_suggestion, a)
         endif

@@ -16,7 +16,7 @@ class Source(Base):
         self.mark = '[alchemist]'
         self.filetypes = ['elixir']
         self.is_bytepos = False
-        self.re_suggestions = re.compile(r'kind:(?P<kind>.*), word:(?P<word>.*), abbr:(?P<abbr>.*), menu:(?P<menu>.*)$')
+        self.re_suggestions = re.compile(r'kind:(?P<kind>.*), word:(?P<word>.*), abbr:(?P<abbr>.*), menu:(?P<menu>.*), info:(?P<info>.*)$')
 
     def get_complete_position(self, context):
         return self.vim.call('elixircomplete#auto_complete', 1, '')
@@ -44,11 +44,15 @@ class Source(Base):
         suggestions = []
         for result in server_results:
             matches = self.re_suggestions.match(result)
-            suggestions.append({
+            sugg = {
                 'kind': matches.group('kind'),
                 'word': matches.group('word'),
                 'abbr': matches.group('abbr'),
                 'menu': matches.group('menu'),
-            })
+            }
+            if self.vim.funcs.exists('g:alchemist#extended_autocomplete'):
+                if self.vim.eval('g:alchemist#extended_autocomplete') == 1:
+                    sugg['info'] = matches.group('info').replace("<n>", "\n").strip()
+            suggestions.append(sugg)
 
         return suggestions
