@@ -100,6 +100,9 @@ class ElixirSenseClient:
         'kind:f, word::gen_server.behaviour_info, abbr:behaviour_info/1, menu: :gen_server\\n'
         >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': 'put_'}, {'origin': 'Plug.Conn', 'arity': 3, 'name': 'put_private', 'args': 'conn,key,value', 'type': 'function', 'spec': '@spec put_private(t, atom, term) :: t', 'summary': 'Assigns a new **private** key and value in the connection.'}])
         'kind:f, word:Plug.Conn.put_private, abbr:put_private(conn, key, value), menu: Plug.Conn\\n'
+        >>> alchemist.to_vim_suggestions([{'type': 'hint', 'value': 'MyApp.Service.'}, {'subtype': None, 'type': 'module', 'name': 'Service', 'summary': ''}, {'origin': 'MyApp.Service', 'arity': 0, 'name': 'blank_capabilities', 'args': '', 'type': 'function', 'spec': '', 'summary': ''}])
+        'kind:m, word:MyApp.Service., abbr:Service, menu: module\\nkind:f, word:MyApp.Service.blank_capabilities, abbr:blank_capabilities(), menu: MyApp.Service\\n'
+
         """
         result = ''
         prefix_module = ''
@@ -113,7 +116,10 @@ class ElixirSenseClient:
                 if ('%s.' % s['name']) == prefix_module:
                     word = "%s" % (prefix_module)
                 else:
-                    word = "%s%s" % (prefix_module, s['name'])
+                    if re.match(r'.*%s.$' %(s['name']), prefix_module):
+                        word = prefix_module
+                    else:
+                        word = "%s%s" % (prefix_module, s['name'])
                 if self.re_erlang_module.match(s['name']):
                     word = self.__erlang_pad(word)
                     s['name'] = self.__erlang_pad(s['name'])
