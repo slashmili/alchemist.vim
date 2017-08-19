@@ -178,9 +178,6 @@ function! s:open_doc_window(query, newposition, position)
         setlocal ft=exdoc
     endif
 
-    if alchemist#ansi_enabled()
-        AnsiEsc!
-    endif
     noremap <silent> <buffer> q :call <SID>close_doc_win()<cr>
 endfunction
 
@@ -279,13 +276,6 @@ function! s:echo_error(text)
     echohl ErrorMsg
     echo a:text
     echohl None
-endfunction
-
-function! alchemist#ansi_enabled()
-    if exists(':AnsiEsc')
-        return 1
-    endif
-    return 0
 endfunction
 
 function! alchemist#get_current_module_details()
