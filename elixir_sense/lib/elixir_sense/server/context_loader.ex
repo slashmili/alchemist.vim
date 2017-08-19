@@ -35,6 +35,7 @@ defmodule ElixirSense.Server.ContextLoader do
         purge_modules(loaded)
         purge_paths(paths)
         purge_apps(apps)
+        {load_paths("test", cwd), load_apps("test", cwd)}
         {load_paths(env, cwd), load_apps(env, cwd)}
       else
         {paths, apps}

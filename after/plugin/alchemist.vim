@@ -132,7 +132,7 @@ function! s:open_doc_window(query, newposition, position)
     let content = alchemist#get_doc(a:query)
 
     let lines = split(content, '\n')
-    if len(lines) < 3
+    if len(lines) < 2
         redraw
         echo "Alchemist: No matches for '" . a:query . "'!"
         return
