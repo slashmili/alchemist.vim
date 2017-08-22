@@ -15,7 +15,8 @@ defmodule ElixirSense.Server.TCPServer do
     children = [
       worker(Task, [__MODULE__, :listen, [socket_type, "localhost", port]]),
       supervisor(Task.Supervisor, [[name: @connection_handler_supervisor]]),
-      worker(ContextLoader, [env])
+      worker(ContextLoader, [env]),
+      worker(SelfDestructTimer, [env]),
     ]
 
     opts = [strategy: :one_for_one, name: __MODULE__]
@@ -73,6 +74,7 @@ defmodule ElixirSense.Server.TCPServer do
   end
 
   defp connection_handler(socket, auth_token) do
+    SelfDestructTimer.reset
     case :gen_tcp.recv(socket, 0) do
       {:error, :closed} ->
         IO.puts :stderr, "Client socket is closed"

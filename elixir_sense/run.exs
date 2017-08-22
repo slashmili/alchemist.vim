@@ -18,7 +18,8 @@ requires = [
   "elixir_sense/server/context_loader.ex",
   "elixir_sense/server/tcp_server.ex",
   "elixir_sense.ex",
-  "elixir_sense/server.ex"
+  "elixir_sense/server.ex",
+  "self_destruct_timer.ex",
 ]
 
 requires |> Enum.each(fn file ->
