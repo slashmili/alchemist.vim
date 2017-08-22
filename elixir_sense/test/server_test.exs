@@ -44,7 +44,7 @@ defmodule ElixirSense.ServerTest do
         "column" => 6
       }
     }
-    assert send_request(socket, request) =~ "enum.ex:2523"
+    assert send_request(socket, request) =~ "enum.ex:2576"
   end
 
   test "signature request", %{socket: socket, auth_token: auth_token} do

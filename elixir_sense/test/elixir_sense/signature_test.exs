@@ -129,13 +129,13 @@ defmodule ElixirSense.SignatureTest do
             name: "inspect",
             params: ["item", "opts \\\\ []"],
             documentation: "Inspects and writes the given `item` to the device.",
-            spec: "@spec inspect(item, Keyword.t) :: item when item: var"
+            spec: "@spec inspect(item, keyword) :: item when item: var"
           },
           %{
             name: "inspect",
             params: ["device", "item", "opts"],
             documentation: "Inspects `item` according to the given options using the IO `device`.",
-            spec: "@spec inspect(device, item, Keyword.t) :: item when item: var"
+            spec: "@spec inspect(device, item, keyword) :: item when item: var"
           }
         ]
       }

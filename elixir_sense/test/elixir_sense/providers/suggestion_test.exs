@@ -10,24 +10,14 @@ defmodule ElixirSense.Providers.SuggestionTest do
   end
 
   test "find definition of functions from Kernel" do
-      assert [
-        %{type: :hint, value: "List."},
-        %{name: "List", subtype: nil, summary: "" <> _, type: :module},
-        %{name: "Chars", subtype: :protocol, summary: "The List.Chars protocol" <> _, type: :module},
-        %{args: "", arity: 1, name: "__info__", origin: "List", spec: nil, summary: "", type: "function"},
-        %{args: "list", arity: 1, name: "first", origin: "List", spec: "@spec first([elem]) :: nil | elem when elem: var", summary: "Returns the first " <> _, type: "function"},
-        %{args: "list", arity: 1, name: "last", origin: "List", spec: "@spec last([elem]) :: nil | elem when elem: var", summary: "Returns the last element " <> _, type: "function"},
-        %{args: "charlist", arity: 1, name: "to_atom", origin: "List", spec: "@spec to_atom(charlist) :: atom", summary: "Converts a charlist to an atom.", type: "function"},
-        %{args: "charlist", arity: 1, name: "to_existing_atom", origin: "List", spec: "@spec to_existing_atom(charlist) :: atom", summary: "Converts a charlist" <> _, type: "function"},
-        %{args: "charlist", arity: 1, name: "to_float", origin: "List", spec: "@spec to_float(charlist) :: float", summary: "Returns the float " <> _, type: "function"},
-        %{args: "list", arity: 1, name: "to_string", origin: "List", spec: "@spec to_string(:unicode.charlist) :: String.t", summary: "Converts a list " <> _, type: "function"},
-        %{args: "list", arity: 1, name: "to_tuple", origin: "List", spec: "@spec to_tuple(list) :: tuple", summary: "Converts a list to a tuple.", type: "function"},
-        %{args: "list", arity: 1, name: "wrap", origin: "List", spec: "@spec wrap(list | any) :: list", summary: "Wraps the " <> _, type: "function"},
-        %{args: "list_of_lists", arity: 1, name: "zip", origin: "List", spec: "@spec zip([list]) :: [tuple]", summary: "Zips corresponding " <> _, type: "function"},
-        %{args: "", arity: 1, name: "module_info", origin: "List", spec: nil, summary: "", type: "function"},
-        %{args: "", arity: 0, name: "module_info", origin: "List", spec: nil, summary: "", type: "function"},
-        %{args: "list,item", arity: 2, name: "delete", origin: "List", spec: "@spec delete(list, any) :: list", summary: "Deletes the given " <> _, type: "function"}
-      | _] = Suggestion.find("List", [], [], [], [], [], SomeModule)
+    result = Suggestion.find("List", [], [], [], [], [], SomeModule) |> Enum.take(16)
+    assert result |> Enum.at(0) == %{type: :hint, value: "List."}
+    assert result |> Enum.at(1) == %{name: "List", subtype: nil, summary: "Functions that work on (linked) lists.", type: :module}
+    assert result |> Enum.at(3) == %{args: "", arity: 1, name: "__info__", origin: "List", spec: nil, summary: "", type: "function"}
+    assert result |> Enum.at(4) == %{args: "list", arity: 1, name: "first", origin: "List", spec: "@spec first([elem]) :: nil | elem when elem: var", summary: "Returns the first element in `list` or `nil` if `list` is empty.", type: "function"}
+    assert result |> Enum.at(5) == %{args: "list", arity: 1, name: "last", origin: "List", spec: "@spec last([elem]) :: nil | elem when elem: var", summary: "Returns the last element in `list` or `nil` if `list` is empty.", type: "function"}
+    assert result |> Enum.at(13) == %{args: "", arity: 1, name: "module_info", origin: "List", spec: nil, summary: "", type: "function"}
+    assert result |> Enum.at(15) == %{args: "list,item", arity: 2, name: "delete", origin: "List", spec: "@spec delete(list, any) :: list", summary: "Deletes the given `item` from the `list`. Returns a new list without\nthe item.", type: "function"}
   end
 
   test "return completion candidates for 'Str'" do

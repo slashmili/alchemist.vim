@@ -13,7 +13,7 @@ defmodule ElixirSense.Core.Ast do
   @max_expand_count 30_000
 
   def extract_use_info(use_ast, module) do
-    env = Map.put(__ENV__, :module, module)
+    env = Map.merge(__ENV__, %{module: module, function: nil})
     {expanded_ast, _requires} = Macro.prewalk(use_ast, {env, 1}, &do_expand/2)
     {_ast, env_info} = Macro.prewalk(expanded_ast, @empty_env_info, &pre_walk_expanded/2)
     env_info
@@ -26,7 +26,6 @@ defmodule ElixirSense.Core.Ast do
   def expand_partial(ast, env) do
     {expanded_ast, _} = Macro.prewalk(ast, {env, 1}, &do_expand_partial/2)
     expanded_ast
-  
   rescue
     _e -> ast
   catch
@@ -98,8 +97,13 @@ defmodule ElixirSense.Core.Ast do
     if count > @max_expand_count do
       throw {:expand_error, "Cannot expand recursive macro"}
     end
-    expanded_ast = Macro.expand(ast, env)
-    {expanded_ast, {env, count + 1}}
+    try do
+      expanded_ast = Macro.expand(ast, env)
+      {expanded_ast, {env, count + 1}}
+    rescue
+      _e ->
+        {ast, {env, count + 1}}
+    end
   end
 
   defp pre_walk_expanded({:__block__, _, _} = ast, acc) do

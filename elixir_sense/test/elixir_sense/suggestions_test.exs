@@ -27,7 +27,7 @@ defmodule ElixirSense.SuggestionsTest do
       arity: 2, origin: "Kernel.SpecialForms",
       spec: "", type: "macro", args: "module,opts",
       name: "require",
-      summary: "Requires a given module to be compiled and loaded."
+      summary: "Requires a module in order to use its macros."
     }
 
   end

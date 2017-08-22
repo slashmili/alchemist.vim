@@ -150,7 +150,7 @@ defmodule ElixirSense.DocsTest do
 
       ### Specs
 
-      `@spec create_file(Path.t, iodata, Keyword.t) :: any`
+      `@spec create_file(Path.t, iodata, keyword) :: any`
 
       Creates a file with the given contents.
       If the file already exists, asks for user confirmation.
@@ -158,6 +158,15 @@ defmodule ElixirSense.DocsTest do
       ## Options
 
         * `:force` - forces installation without a shell prompt.
+
+      ## Examples
+
+          iex> Mix.Generator.create_file \".gitignore\", \"_build
+      deps
+      \"
+          * creating .gitignore
+          :ok
+
       """
     end
 
@@ -176,6 +185,8 @@ defmodule ElixirSense.DocsTest do
       > Kernel.defmacro(call, expr \\\\\\\\ nil)
 
       Defines a macro with the given name and body.
+
+      Check `def/2` for rules on naming and default arguments.
 
       ## Examples
 
