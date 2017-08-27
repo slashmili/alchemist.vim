@@ -38,19 +38,21 @@ defmodule ElixirSense.Providers.Definition do
         source -> List.to_string(source)
       end
     end
-    file = if file && File.exists?(file) do
-      file
+    {file, exists?} = if file do
+      {file, File.exists?(file)}
     else
       erl_file = module |> :code.which |> to_string |> String.replace(~r/(.+)\/ebin\/([^\s]+)\.beam$/, "\\1/src/\\2.erl")
-      if File.exists?(erl_file) do
-        erl_file
-      end
+      {erl_file, File.exists?(erl_file)}
     end
-    {module, file}
+    {module, file, exists?}
   end
 
-  defp find_fun_line({_, file}, _fun) when file in ["non_existing", nil, ""] do
+  defp find_fun_line({_, file, _}, _fun) when file in ["non_existing", nil, ""] do
     {"non_existing", nil}
+  end
+
+  defp find_fun_line({_mod, file, false}, _fun) do
+    {file, 0}
   end
 
   defp find_fun_line({mod, file}, fun) do
