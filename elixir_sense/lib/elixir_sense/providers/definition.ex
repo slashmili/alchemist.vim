@@ -55,7 +55,7 @@ defmodule ElixirSense.Providers.Definition do
     {file, 0}
   end
 
-  defp find_fun_line({mod, file}, fun) do
+  defp find_fun_line({mod, file, _}, fun) do
     line = if String.ends_with?(file, ".erl") do
       find_fun_line_in_erl_file(file, fun)
     else
