@@ -5,7 +5,7 @@ let g:alchemist_tag_stack = []
 let g:alchemist_tag_stack_is_used = 0
 
 if !exists('g:alchemist#alchemist_client')
-    let g:alchemist#alchemist_client = expand("<sfile>:p:h:h") . '/../alchemist_client'
+    let g:alchemist#alchemist_client = expand("<sfile>:p:h:h") . '/../elixir_sense_client'
 endif
 
 function! alchemist#alchemist_client(req, lnum, cnum, lines)
