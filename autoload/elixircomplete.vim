@@ -1,5 +1,5 @@
 if !exists('g:alchemist#alchemist_client')
-    let g:alchemist#alchemist_client = expand("<sfile>:p:h:h") . '/../alchemist_client'
+    let g:alchemist#alchemist_client = expand("<sfile>:p:h:h") . '/../elixir_sense_client'
 endif
 
 
