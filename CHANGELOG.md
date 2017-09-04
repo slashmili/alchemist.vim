@@ -19,8 +19,10 @@
 
 # Helium (2.X.X)
 
-## v 2.8.1
+## v 2.8.2
+	- Use hi link for exdoc syntax rather than explicit colors
 
+## v 2.8.1
 	- Deoplete remote plugin truncates the last completion
 
 ## v 2.8.0

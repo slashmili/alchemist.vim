@@ -17,7 +17,9 @@ This plugin uses [ElixirSense](https://github.com/msaraiva/elixir_sense) to give
 * IEx integration.
 
 ### Installation
-You can use your favourite VIM plugin manager for installation, in this doc we use Vundle
+You need to have Erlang(OTP >= 19) and Elixir installed in your machine.
+
+Use your favourite VIM plugin manager for installation, in this doc we use Vundle
 
 Add this line to your `.vimrc`
 
