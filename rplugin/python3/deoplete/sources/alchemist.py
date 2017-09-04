@@ -2,12 +2,12 @@ import os
 import re
 from numbers import Number
 from subprocess import PIPE, Popen
+import shlex
 from .base import Base
 
 class Source(Base):
     ALCHEMIST_CLIENT   = 'g:alchemist#alchemist_client'
-    ALCHEMIST_FORMAT   = 'alchemist#alchemist_format'
-    ALCHEMIST_COMPLETE = 'elixircomplete#Complete'
+    ALCHEMIST_COMPLETE = 'elixircomplete#auto_complete'
 
     def __init__(self, vim):
         Base.__init__(self, vim)
@@ -16,20 +16,25 @@ class Source(Base):
         self.mark = '[alchemist]'
         self.filetypes = ['elixir']
         self.is_bytepos = False
-        self.re_suggestions = re.compile(r'kind:(?P<kind>.*), word:(?P<word>.*), abbr:(?P<abbr>.*)$')
+        self.re_suggestions = re.compile(r'kind:(?P<kind>.*), word:(?P<word>.*), abbr:(?P<abbr>.*), menu:(?P<menu>.*), info:(?P<info>.*)$')
+        self.re_is_only_func = re.compile(r'^[a-z].*')
 
     def get_complete_position(self, context):
-        return self.vim.call('elixircomplete#Complete', 1, '')
+        return self.vim.call('elixircomplete#auto_complete', 1, '')
 
     def gather_candidates(self, context):
+        lnum = self.vim.funcs.line('.')
+        cnum = self.vim.funcs.col('.')
+        lines = self.vim.funcs.getline(1, '$')
         client  = self.__get_client__()
-        request = self.__get_request__(context['complete_str']).encode()
-        cwd_opt = '-d{0}'.format(os.getcwd())
-
-        with Popen([client, cwd_opt], stdin=PIPE, stdout=PIPE) as proc:
-            results = proc.communicate(input=request)[0].decode()
-
-        return self.__get_suggestions__(results.split('\n')[:-1])
+        complete_str = context['complete_str']
+        cwd_opt = '-d{0} -c{1} -l{2} --request=suggestions'.format(os.getcwd(), cnum, lnum)
+        args = '%s %s' % (client, cwd_opt)
+        with Popen(shlex.split(args), stdin=PIPE, stdout=PIPE) as proc:
+            lines = "\n".join(lines)
+            (results, x) = proc.communicate(input=lines.encode())
+        results = results.decode()
+        return self.__get_suggestions__(complete_str, results.split('\n')[:-1])
 
     # Private implementation
     ########################
@@ -37,17 +42,24 @@ class Source(Base):
     def __get_client__(self):
         return self.vim.eval(self.ALCHEMIST_CLIENT)
 
-    def __get_request__(self, input):
-        return self.vim.call(self.ALCHEMIST_FORMAT, 'COMPX', input, 'Elixir', [], [])
-
-    def __get_suggestions__(self, server_results):
+    def __get_suggestions__(self, complete_str, server_results):
         suggestions = []
         for result in server_results:
             matches = self.re_suggestions.match(result)
-            suggestions.append({
-                'kind': matches.group('kind'),
-                'word': matches.group('word'),
-                'abbr': matches.group('abbr')
-            })
+            word = matches.group('word')
+            kind = matches.group('kind')
+            if  kind == "f" and self.re_is_only_func.match(complete_str):
+                word = word.split(".")[-1]
+
+            sugg = {
+                'kind': kind,
+                'word': word,
+                'abbr': matches.group('abbr'),
+                'menu': matches.group('menu'),
+            }
+            if self.vim.funcs.exists('g:alchemist#extended_autocomplete'):
+                if self.vim.eval('g:alchemist#extended_autocomplete') == 1:
+                    sugg['info'] = matches.group('info').replace("<n>", "\n").strip()
+            suggestions.append(sugg)
 
         return suggestions

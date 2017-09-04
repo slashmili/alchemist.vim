@@ -8,21 +8,34 @@ if !exists('g:alchemist#alchemist_client')
     let g:alchemist#alchemist_client = expand("<sfile>:p:h:h") . '/../alchemist_client'
 endif
 
-function! alchemist#alchemist_client(req)
-    let req = a:req . "\n"
+function! alchemist#alchemist_client(req, lnum, cnum, lines)
+    let req = a:req
     let cmd = g:alchemist#alchemist_client
-    if !alchemist#ansi_enabled()
-        let cmd = cmd . ' --colors=false '
-    endif
     if exists('g:alchemist#elixir_erlang_src')
-        let cmd = cmd . ' -s ' . g:alchemist#elixir_erlang_src
+        let cmd = cmd . ' -o ' . g:alchemist#elixir_erlang_src
     endif
     let cmd = cmd . ' -d "' . expand('%:p:h') . '"'
-
-    return system(cmd, req)
+    let cmd = cmd . ' --line=' . a:lnum
+    let cmd = cmd . ' --column=' . a:cnum
+    let cmd = cmd . ' --request=' . a:req
+    let result =  system(cmd, join(a:lines, "\n"))
+    if len(matchlist(result, '^error:')) > 0
+        call s:echo_error('alchemist.vim: failed with message ' . result)
+        return ''
+    endif
+    return result
 endfunction
 
 function! alchemist#get_doc(word)
+    if a:word == ''
+        let lnum = line('.')
+        let cnum = col('.')
+        let lines = getline(1, '$')
+    else
+        let lnum = 1
+        let cnum = len(a:word)
+        let lines = [a:word . "\n"]
+    endif
     if match(a:word, "^:") ==# 0
         " strip `:` and function name since erlang offers man pages on the
         " module only
@@ -31,12 +44,12 @@ function! alchemist#get_doc(word)
         let query = split(query, '\.')[0]
         return alchemist#get_doc_erl(query)
     endif
-    return alchemist#get_doc_ex(a:word)
+    return alchemist#get_doc_ex(lnum, cnum, lines)
 endfunction
 
-function! alchemist#get_doc_ex(word)
-    let req = alchemist#alchemist_format("DOCL", a:word, "Elixir", [], [])
-    let result = alchemist#alchemist_client(req)
+function! alchemist#get_doc_ex(lnum, cnum, lines)
+    let result = alchemist#alchemist_client('docs', a:lnum, a:cnum, a:lines)
+
     " fix heading colors
     let result = substitute(result, '\e\[7m\e\[33m', '[1m[33m', 'g')
     " fix code example colors
@@ -73,13 +86,6 @@ function! alchemist#alchemist_format(cmd, arg, context, imports, aliases)
     return a:cmd. " { \"" . a:arg . "\", [ context: ". a:context.
                           \ ", imports: ". imports_str .
                           \ ", aliases: ". aliases_str . "] }"
-endfunction
-
-function! alchemist#ansi_enabled()
-    if exists(':AnsiEsc')
-        return 1
-    endif
-    return 0
 endfunction
 
 function! alchemist#lookup_name_under_cursor()
@@ -126,7 +132,7 @@ function! s:open_doc_window(query, newposition, position)
     let content = alchemist#get_doc(a:query)
 
     let lines = split(content, '\n')
-    if len(lines) < 3
+    if len(lines) < 2
         redraw
         echo "Alchemist: No matches for '" . a:query . "'!"
         return
@@ -140,9 +146,6 @@ function! s:open_doc_window(query, newposition, position)
         if !exists('g:alchemist_mappings_disable')
             if !exists('g:alchemist_keyword_map') | let g:alchemist_keyword_map = 'K' | en
             exe 'nnoremap <buffer> <silent> ' . g:alchemist_keyword_map . ' :call alchemist#exdoc()<CR>'
-        endif
-        if alchemist#ansi_enabled()
-            AnsiEsc
         endif
     elseif bufwinnr(s:buf_nr) == -1
         execute a:position
@@ -166,15 +169,12 @@ function! s:open_doc_window(query, newposition, position)
     call append(0, split(content, "\n"))
     sil $delete _
     sil $delete _
-    if alchemist#ansi_enabled()
-        AnsiEsc!
-    endif
     normal gg
     setlocal nomodifiable
 
     if match(a:query, "^:") ==# 0
         setlocal ft=man
-    elseif !alchemist#ansi_enabled()
+    else
         setlocal ft=exdoc
     endif
 
@@ -188,7 +188,12 @@ endfunction
 function! alchemist#exdoc(...)
     let query = ''
     if empty(a:000)
-        let query = alchemist#lookup_name_under_cursor()
+        let name = alchemist#lookup_name_under_cursor()
+        if match(name, "^:") ==# 0
+            let query = name
+        else
+            let query = ''
+        end
     else
         let query = a:000[0]
     endif
@@ -199,17 +204,23 @@ function! alchemist#exdef(...)
     let query = ''
     if empty(a:000)
         let query = alchemist#lookup_name_under_cursor()
+        let lnum = line('.')
+        let cnum = col('.')
+        let lines = getline(1, '$')
     else
+        let lnum = 1
+        let cnum = len(a:000[0])
+        let lines = [a:000[0]]
         let query = a:000[0]
     endif
     if s:strip(query) == ''
         call s:echo_error('E426: tag not found: ')
         return
     endif
-    let req = alchemist#alchemist_format("DEFLX", query, "Elixir", [], [])
-    let result = alchemist#alchemist_client(req)
-    let source_match = filter(split(result, '\n'), 'v:val != "END-OF-DEFLX"')
-    if len(source_match) == 0
+
+    let result = alchemist#alchemist_client('definition', lnum, cnum, lines)
+    let source_match = split(result, '\n')
+    if len(source_match) == 0 || source_match[0] == 'non_existing:0'
         call s:echo_error('E426: tag not found: ' . query)
         return
     endif
@@ -230,7 +241,11 @@ function! alchemist#exdef(...)
         return
     endif
     call add(g:alchemist_tag_stack, [bufnr('%'), line('.'), col('.')])
-    execute 'e ' . rel_path
+    if matchlist(rel_path, 'deps/') != []
+        execute 'view ' . rel_path
+    else
+        execute 'e ' . rel_path
+    endif
     execute line
 endfunction
 
@@ -525,10 +540,10 @@ function! alchemist#mix_complete(ArgLead, CmdLine, CursorPos, ...)
   return g:mix_tasks
 endfunction
 
-command! -nargs=? -complete=customlist,elixircomplete#ExDocComplete ExDoc
+command! -nargs=? -complete=customlist,elixircomplete#ex_doc_complete ExDoc
       \ call alchemist#exdoc(<f-args>)
 
-command! -nargs=? -complete=customlist,elixircomplete#ExDocComplete ExDef
+command! -nargs=? -complete=customlist,elixircomplete#ex_doc_complete ExDef
       \ call alchemist#exdef(<f-args>)
 
 if !exists(':Mix')
@@ -536,6 +551,6 @@ if !exists(':Mix')
         \ call alchemist#mix(<q-args>)
 endif
 
-command! -nargs=* -complete=customlist,elixircomplete#ExDocComplete IEx
+command! -nargs=* -complete=customlist,elixircomplete#ex_doc_complete IEx
       \ call alchemist#open_iex(<q-args>)
 command! -nargs=0 IExHide call alchemist#hide_iex()

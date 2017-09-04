@@ -1,0 +1,81 @@
+#!/usr/bin/env python
+from __future__ import print_function
+import os, sys, getopt
+from elixir_sense import ElixirSenseClient
+
+debug = False
+
+read_stdin = vars(__builtins__).get('raw_input',input)
+
+def alchemist_help():
+    return """Usage: alchemist_client -c <command> -t <command_type> -d <working_directory> -a <alchemist_script>
+
+    a client that talks to alchemist_server through network socket
+
+    Options:
+    -c, --command=""           Command that is going to be sent to alchemist server if nothing is provided read a line from STDIN
+    -t, --command-type=""      Command type, if it's not provided, extract it from command
+    -d, --directory=           Directory that alchemist server should process code from
+    -a, --alchemist-server=""  Path to alchemist server `run.exs`, if it's not provided load it from alchemist-server/run.exs
+    -s, --source=""            Path to source code for Erlang and Elixir. It's used to find the path in DEFLX command
+    -o, --elixir-otp-src=""    Path to source code for Erlang and Elixir. It's used to find the path in DEFLX command
+    --colors=true              Enable/Disable ansi
+    """
+
+def main(argv):
+    request = ""
+    line = 0
+    column = 0
+    cwd = ""
+    alchemist_script = ""
+    ansi = True
+    elixir_otp_src = ""
+    source = ""
+    try:
+        opts, args = getopt.getopt(argv,"hr:l:c:d:o:",["request=","line=", "column=", "directory=", "alchemist-server=", "colors=", "elixir-otp-src="])
+    except getopt.GetoptError:
+        print(alchemist_help())
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print(alchemist_help())
+            sys.exit()
+        elif opt in ("-r", "--request"):
+            request = arg
+        elif opt in ("-l", "--line"):
+            line = arg
+        elif opt in ("-c", "--column"):
+            column = arg
+        elif opt in ("-d", "--directory"):
+            cwd = arg
+        elif opt in ("-a", "--alchemist-server"):
+            alchemist_script = arg
+        elif opt in ("-o", "--elixir-otp-src"):
+            elixir_otp_src = arg
+        elif opt in ("--colors"):
+            if arg == "false":
+                ansi = False
+    if os.path.exists(cwd.strip()) == False:
+        raise Exception("working directory [%s] doesn't exist" % cwd)
+    cwd = os.path.abspath(cwd)
+    source = sys.stdin.read()
+    if alchemist_script == "":
+        alchemist_script = "%s/elixir_sense/run.exs" % where_am_i()
+
+    if "" in [request, alchemist_script, request, line, column]:
+        print("Invalid command, alchemist_script or working directory")
+        print(alchemist_help())
+        sys.exit(2)
+
+    sense = ElixirSenseClient(debug=debug, cwd=cwd, ansi=ansi, elixir_sense_script=alchemist_script, elixir_otp_src=elixir_otp_src)
+    response = sense.process_command(request, source, line ,column)
+    sense._log("response:\n%s" % response)
+    print(response, end="")
+
+
+def where_am_i():
+    return os.path.dirname(os.path.realpath(__file__))
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
