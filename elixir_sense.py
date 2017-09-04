@@ -20,13 +20,13 @@ class ElixirSenseClient:
         self._cwd = self.get_project_base_dir()
         self._ansi = kw.get('ansi', True)
         self._alchemist_script = kw.get('elixir_sense_script', None)
-        self._source = kw.get('source', None)
+        self._elixir_otp_src = kw.get('elixir_otp_src', None)
         self.re_elixir_fun_with_arity = re.compile(r'(?P<func>.*)/[0-9]+$')
         self.re_elixir_module_and_fun = re.compile(r'^(?P<module>[A-Z][A-Za-z0-9\._]+)\.(?P<func>[a-z_?!]+)')
         self.re_erlang_module = re.compile(r'^(?P<module>[a-z].*)')
         self.re_elixir_module = re.compile(r'^(?P<module>[A-Z][A-Za-z0-9\._]+)')
         self.re_x_base = re.compile(r'^.*{\s*"(?P<base>.*)"\s*')
-        self.re_elixir_src = re.compile(r'.*(/lib/elixir/lib.*)')
+        self.re_elixir_src = re.compile(r'.*(/elixir.*/lib.*)')
         self.re_erlang_src = re.compile(r'.*otp.*(/lib/.*\.erl)')
 
 
@@ -81,7 +81,16 @@ class ElixirSenseClient:
                 return rep_py_struct['payload']['docs']['docs']
             return rep_py_struct['payload']
         elif request == 'definition':
-            return rep_py_struct['payload']
+            return self.to_vim_definition(rep_py_struct['payload'])
+
+    def to_vim_definition(self, source):
+        filename = source.split(":")[0]
+
+        if filename == "non_existing": return source
+        if type(filename) == str and self._is_readable(filename): return source
+
+        filename = self._find_elixir_erlang_src(filename)
+        return "%s:%i" %(filename, 0)
 
     def to_vim_suggestions(self, suggestions):
         """
@@ -257,11 +266,12 @@ class ElixirSenseClient:
         if self._is_readable(filename):
             return filename
         if self.re_elixir_src.match(filename):
-            elixir_src_file = "%s/elixir/%s" % (self._source, self.re_elixir_src.match(filename).group(1))
+            elixir_src_file = "%s/elixir/lib/%s" % (self._elixir_otp_src, self.re_elixir_src.match(filename).group(1))
+            print(elixir_src_file)
             if self._is_readable(elixir_src_file):
                 return os.path.realpath(elixir_src_file)
         elif self.re_erlang_src.match(filename):
-            erlang_src_file = "%s/otp/%s" % (self._source, self.re_erlang_src.match(filename).group(1))
+            erlang_src_file = "%s/otp/%s" % (self._elixir_otp_src, self.re_erlang_src.match(filename).group(1))
             if self._is_readable(erlang_src_file):
                 return os.path.realpath(erlang_src_file)
         return filename

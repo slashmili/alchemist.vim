@@ -52,7 +52,7 @@ defmodule ElixirSense.Providers.Definition do
   end
 
   defp find_fun_line({_mod, file, false}, _fun) do
-    {file, 0}
+    {file, -1}
   end
 
   defp find_fun_line({mod, file, _}, fun) do

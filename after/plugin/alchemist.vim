@@ -11,9 +11,9 @@ endif
 function! alchemist#alchemist_client(req, lnum, cnum, lines)
     let req = a:req
     let cmd = g:alchemist#alchemist_client
-    "if exists('g:alchemist#elixir_erlang_src')
-    "    let cmd = cmd . ' -s ' . g:alchemist#elixir_erlang_src
-    "endif
+    if exists('g:alchemist#elixir_erlang_src')
+        let cmd = cmd . ' -o ' . g:alchemist#elixir_erlang_src
+    endif
     let cmd = cmd . ' -d "' . expand('%:p:h') . '"'
     let cmd = cmd . ' --line=' . a:lnum
     let cmd = cmd . ' --column=' . a:cnum

@@ -18,6 +18,7 @@ def alchemist_help():
     -d, --directory=           Directory that alchemist server should process code from
     -a, --alchemist-server=""  Path to alchemist server `run.exs`, if it's not provided load it from alchemist-server/run.exs
     -s, --source=""            Path to source code for Erlang and Elixir. It's used to find the path in DEFLX command
+    -o, --elixir-otp-src=""    Path to source code for Erlang and Elixir. It's used to find the path in DEFLX command
     --colors=true              Enable/Disable ansi
     """
 
@@ -28,10 +29,10 @@ def main(argv):
     cwd = ""
     alchemist_script = ""
     ansi = True
-    elixir_erlang_source_dir = ""
+    elixir_otp_src = ""
     source = ""
     try:
-        opts, args = getopt.getopt(argv,"hr:l:c:d:",["request=","line=", "column=", "directory=", "alchemist-server=", "colors=", "source_dir="])
+        opts, args = getopt.getopt(argv,"hr:l:c:d:o:",["request=","line=", "column=", "directory=", "alchemist-server=", "colors=", "elixir-otp-src="])
     except getopt.GetoptError:
         print(alchemist_help())
         sys.exit(2)
@@ -49,8 +50,8 @@ def main(argv):
             cwd = arg
         elif opt in ("-a", "--alchemist-server"):
             alchemist_script = arg
-        elif opt in ("-s", "--source"):
-            elixir_erlang_source_dir = arg
+        elif opt in ("-o", "--elixir-otp-src"):
+            elixir_otp_src = arg
         elif opt in ("--colors"):
             if arg == "false":
                 ansi = False
@@ -66,8 +67,10 @@ def main(argv):
         print(alchemist_help())
         sys.exit(2)
 
-    s = ElixirSenseClient(debug=debug, cwd=cwd, ansi=ansi, elixir_sense_script=alchemist_script)
-    print(s.process_command(request, source, line ,column), end="")
+    sense = ElixirSenseClient(debug=debug, cwd=cwd, ansi=ansi, elixir_sense_script=alchemist_script, elixir_otp_src=elixir_otp_src)
+    response = sense.process_command(request, source, line ,column)
+    sense._log("response:\n%s" % response)
+    print(response, end="")
 
 
 def where_am_i():
