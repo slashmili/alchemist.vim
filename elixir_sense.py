@@ -267,7 +267,6 @@ class ElixirSenseClient:
             return filename
         if self.re_elixir_src.match(filename):
             elixir_src_file = "%s/elixir/lib/%s" % (self._elixir_otp_src, self.re_elixir_src.match(filename).group(1))
-            print(elixir_src_file)
             if self._is_readable(elixir_src_file):
                 return os.path.realpath(elixir_src_file)
         elif self.re_erlang_src.match(filename):
