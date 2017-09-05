@@ -1,3 +1,31 @@
-Before creating issue please check Debugging page and make sure your basic setup works
+If autocomplete/docs or etc doesn't work for you
+before creating issue please check Debugging page and make sure your basic setup works
 
 https://github.com/slashmili/alchemist.vim/wiki/Debugging
+
+and answer this questions:
+
+
+1. Elixir/OTP/Python version
+
+Elixir:
+
+OTP:
+
+Python:
+
+2. Which pluging are you using:
+
+[ ] basic omnifunc
+[ ] YouCompleteMe
+[ ] deoplete
+
+3. Which steps of Debugging passed?
+
+[ ] Elixir Module definition
+[ ] Elixir Function definition
+[ ] Elixir Module/Function docs
+[ ] Your Project Module definition
+[ ] Your Project Function definition
+
+4. Do you have a specific setup? Like Docker and etc
