@@ -6,7 +6,7 @@
 
 ### Added
 - Use [ElixirSense](https://github.com/msaraiva/elixir_sense) as IDE server
-- implement dummy version of erl terms in python
+- Implement simple version of erl terms coder/decoder in python
 
 ### Changed
 
@@ -16,6 +16,7 @@
 
 ### Removed
 - Alchemist Server
+- Jump to function definition on Elixir code and Projects that run in docker container(Still able to jump to Module file)
 
 # Helium (2.X.X)
 
