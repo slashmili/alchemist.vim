@@ -46,6 +46,13 @@ defmodule ElixirSense.Server.RequestHandler do
     env |> ContextLoader.set_context(cwd) |> Tuple.to_list()
   end
 
+  def handle_request("version", %{}) do
+    %{
+      elixir: System.version,
+      otp: System.otp_release
+    }
+  end
+
   def handle_request(request, payload) do
     IO.puts :stderr, "Cannot handle request \"#{request}\". Payload: #{inspect(payload)}"
   end

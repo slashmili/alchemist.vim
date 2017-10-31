@@ -4,7 +4,7 @@ defmodule ElixirSense.Mixfile do
 
   def project do
     [app: :elixir_sense,
-     version: "0.2.0",
+     version: "1.0.1",
      elixir: "~> 1.5",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -45,7 +45,7 @@ defmodule ElixirSense.Mixfile do
 
   defp package do
     [maintainers: ["Marlus Saraiva (@msaraiva)"],
-     licenses: ["Apache 2.0"],
+     licenses: ["MIT"],
      links: %{"GitHub" => "https://github.com/msaraiva/elixir_sense"}]
   end
 
