@@ -140,8 +140,8 @@ defmodule ElixirSense.Providers.Suggestion do
           hint == "" or String.starts_with?("#{name}", hint)
       do
         desc = Introspection.extract_summary_from_docs(doc)
-        [_, args_str] = Regex.run(~r/.\((.*)\)/, signature)
-        args = args_str |> String.replace(~r/\s/, "")
+        [_, args_str] = Regex.run(Regex.recompile!(~r/.\((.*)\)/), signature)
+        args = args_str |> String.replace(Regex.recompile!(~r/\s/), "")
         %{type: :callback, name: name, arity: arity, args: args, origin: mod_name, summary: desc, spec: spec}
       end
     end) |> Enum.sort

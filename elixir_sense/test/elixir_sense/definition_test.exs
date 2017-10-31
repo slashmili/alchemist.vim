@@ -5,6 +5,18 @@ defmodule ElixirSense.Providers.DefinitionTest do
 
   doctest Definition
 
+  test "find definition of aliased modules in `use`" do
+    buffer = """
+    defmodule MyModule do
+      alias Mix.Generator
+      use Generator
+    end
+    """
+    {file, line} = ElixirSense.definition(buffer, 3, 12)
+    assert file =~ "lib/mix/lib/mix/generator.ex"
+    assert read_line(file, line) =~ "defmodule Mix.Generator"
+  end
+
   test "find definition of functions from Kernel" do
     buffer = """
     defmodule MyModule do
