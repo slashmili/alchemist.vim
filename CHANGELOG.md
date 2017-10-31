@@ -2,6 +2,12 @@
 
 # Lithium(3.X.X)
 
+## [3.0.1] - 2017-10-31
+
+### Changed
+
+- Upgrade elixir sense to 1.0.1
+
 ## [3.0.0] - 2017-09-04
 
 ### Added
