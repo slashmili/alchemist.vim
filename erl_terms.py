@@ -28,11 +28,16 @@ MAP_EXT = struct.pack("b", 116)
 FUN_EXT = 117           # [UInt4:NumFree, pid:Pid, atom:Module, int:Index, int:Uniq, NumFree*ext:FreeVars]
 COMPRESSED = 80         # [UInt4:UncompressedSize, N:ZlibCompressedData]
 
+try:
+    xrange
+except NameError:
+    xrange = range
+
 def decode(binary):
     """
-        >>> decode('\\x83' + SMALL_INTEGER_EXT + '\x01')
+        >>> decode(b'\\x83' + SMALL_INTEGER_EXT + b'\x01')
         1
-        >>> decode('\\x83\\x74\\x00\\x00\\x00\\x01\\x64\\x00\\x05\\x65\\x72\\x72\\x6F\\x72\\x64\\x00\\x03\\x6E\\x69\\x6c')
+        >>> decode(b'\\x83\\x74\\x00\\x00\\x00\\x01\\x64\\x00\\x05\\x65\\x72\\x72\\x6F\\x72\\x64\\x00\\x03\\x6E\\x69\\x6c')
         {'error': None}
         >>> decode(encode(-256))
         -256
@@ -49,10 +54,8 @@ def decode(binary):
         [1]
         >>> decode(encode(['a']))
         ['a']
-        >>> decode(encode({'error': None, 'payload': {'active_param': 1, 'pipe_before': False}, 'signatures': [{'docs': 'docs', 'name': 'name', 'params': ['list']}, {'docs': 'snd doc', 'params': ['list']}], 'request_id': 1 }))
-        {'error': None, 'signatures': [{'docs': 'docs', 'params': ['list'], 'name': 'name'}, {'docs': 'snd doc', 'params': ['list']}], 'payload': {'active_param': 1, 'pipe_before': False}, 'request_id': 1}
     """
-    if binary[0] != FORMAT_VERSION:
+    if binary[0] not in [b'\x83', 131]:
         raise NotImplementedError("Unable to serialize version %s" % binary[0])
     binary = binary[1:]
 
@@ -60,19 +63,19 @@ def decode(binary):
     return fn(binary[0: obj_size])
 
 def __decode_func(binary):
-    if binary[0] == SMALL_INTEGER_EXT:
+    if __data_type(binary[0]) == SMALL_INTEGER_EXT:
         return (2, __decode_int)
-    elif binary[0] == INTEGER_EXT:
+    elif __data_type(binary[0]) == INTEGER_EXT:
         return (5, __decode_int)
-    elif binary[0] == BINARY_EXT:
+    elif __data_type(binary[0]) == BINARY_EXT:
         (size, ) = struct.unpack(">L", binary[1:5])
         return (1 + 4 + size, __decode_string)
-    elif binary[0] == ATOM_EXT:
+    elif __data_type(binary[0]) == ATOM_EXT:
         (size, ) = struct.unpack(">H", binary[1:3])
         return (1 + 2 + size, __decode_atom)
-    elif binary[0] == NIL_EXT:
+    elif __data_type(binary[0]) == NIL_EXT:
         return (1, __decode_list)
-    elif binary[0] == LIST_EXT:
+    elif __data_type(binary[0]) == LIST_EXT:
         (list_size, ) = struct.unpack(">L", binary[1:5])
         tmp_binary = binary[5:]
         byte_size = 0
@@ -81,7 +84,7 @@ def __decode_func(binary):
             byte_size = byte_size + obj_size
             tmp_binary = tmp_binary[obj_size:]
         return (1 + 4 + byte_size + 1, __decode_list)
-    elif binary[0] == MAP_EXT:
+    elif __data_type(binary[0]) == MAP_EXT:
         (map_size, ) = struct.unpack(">L", binary[1:5])
         tmp_binary = binary[5:]
         byte_size = 0
@@ -96,7 +99,7 @@ def __decode_func(binary):
             tmp_binary = tmp_binary[obj_size:]
         return (1 + 4 + byte_size , __decode_map)
     else:
-        raise NotImplementedError("Unable to unserialize %r" % binary[0])
+        raise NotImplementedError("Unable to unserialize %r" % __data_type(binary[0]))
 
 def __decode_map(binary):
     """
@@ -106,8 +109,6 @@ def __decode_map(binary):
         {'foo': 'bar'}
         >>> __decode_map(__encode_map({'foo': {'bar': 4938}}))
         {'foo': {'bar': 4938}}
-        >>> __decode_map(__encode_map({'error': None, 'payload': {'active_param': 1, 'pipe_before': False}, 'signatures': [{'docs': 'docs', 'name': 'name', 'params': ['list']}, {'docs': 'snd doc', 'params': ['list']}], 'request_id': 1 }))
-        {'error': None, 'signatures': [{'docs': 'docs', 'params': ['list'], 'name': 'name'}, {'docs': 'snd doc', 'params': ['list']}], 'payload': {'active_param': 1, 'pipe_before': False}, 'request_id': 1}
     """
     (size,) = struct.unpack(">L", binary[1:5])
     result = {}
@@ -157,7 +158,7 @@ def __decode_string(binary):
         >>> __decode_string(__encode_string("h"))
         'h'
     """
-    return binary[5:]
+    return binary[5:].decode('UTF-8')
 
 def __decode_atom(binary):
     """
@@ -170,13 +171,13 @@ def __decode_atom(binary):
         'my_key'
     """
     atom = binary[3:]
-    if atom == 'true':
+    if atom == b'true':
         return True
-    elif atom == 'false':
+    elif atom == b'false':
         return False
-    elif atom == 'nil':
+    elif atom == b'nil':
         return None
-    return atom
+    return atom.decode('UTF-8')
 
 def __decode_int(binary):
     """
@@ -185,49 +186,52 @@ def __decode_int(binary):
         >>> __decode_int(__encode_int(256))
         256
     """
-    if binary[0] == 'a' :
-        (num,) = struct.unpack("B", binary[1])
-        return num
+    if binary[0] == 97 or binary[0] == 'a' :
+        if type(binary[1]) == int:
+            return binary[1]
+        else:
+            (num,) = struct.unpack("B", binary[1])
+            return num
     (num,) = struct.unpack(">l", binary[1:])
     return num
 
 def encode(struct):
     """
         >>> encode(False)
-        '\\x83d\\x00\\x05false'
+        b'\\x83d\\x00\\x05false'
         >>> encode([])
-        '\\x83j'
+        b'\\x83j'
     """
-    return FORMAT_VERSION + __encoder_func(struct)(struct)
+    return b'\x83' + __encoder_func(struct)(struct)
 
 def __encode_list(obj):
     """
         >>> __encode_list([])
-        'j'
+        b'j'
         >>> __encode_list(['a'])
-        'l\\x00\\x00\\x00\\x01m\\x00\\x00\\x00\\x01aj'
+        b'l\\x00\\x00\\x00\\x01m\\x00\\x00\\x00\\x01aj'
         >>> __encode_list([1])
-        'l\\x00\\x00\\x00\\x01a\\x01j'
+        b'l\\x00\\x00\\x00\\x01a\\x01j'
     """
     if len(obj) == 0:
         return NIL_EXT
     b = struct.pack(">L", len(obj))
     for i in obj:
-        b = '%s%s' %(b, __encoder_func(i)(i))
+        b = b + __encoder_func(i)(i)
     return LIST_EXT + b + NIL_EXT
 
 def __encode_map(obj):
     """
         >>> __encode_map({'foo': 1})
-        't\\x00\\x00\\x00\\x01m\\x00\\x00\\x00\\x03fooa\\x01'
+        b't\\x00\\x00\\x00\\x01m\\x00\\x00\\x00\\x03fooa\\x01'
         >>> __encode_map({'foo': 'bar'})
-        't\\x00\\x00\\x00\\x01m\\x00\\x00\\x00\\x03foom\\x00\\x00\\x00\\x03bar'
+        b't\\x00\\x00\\x00\\x01m\\x00\\x00\\x00\\x03foom\\x00\\x00\\x00\\x03bar'
         >>> __encode_map({'foo': {'bar': 4938}})
-        't\\x00\\x00\\x00\\x01m\\x00\\x00\\x00\\x03foot\\x00\\x00\\x00\\x01m\\x00\\x00\\x00\\x03barb\\x00\\x00\\x13J'
+        b't\\x00\\x00\\x00\\x01m\\x00\\x00\\x00\\x03foot\\x00\\x00\\x00\\x01m\\x00\\x00\\x00\\x03barb\\x00\\x00\\x13J'
     """
     b = struct.pack(">L", len(obj))
-    for k,v in obj.iteritems():
-        b = '%s%s%s' % (b, __encoder_func(k)(k), __encoder_func(v)(v))
+    for k,v in obj.items():
+        b = b + __encoder_func(k)(k) +  __encoder_func(v)(v)
     return MAP_EXT + b
 
 def __encoder_func(obj):
@@ -249,25 +253,25 @@ def __encoder_func(obj):
 def __encode_string(obj):
     """
         >>> __encode_string("h")
-        'm\\x00\\x00\\x00\\x01h'
+        b'm\\x00\\x00\\x00\\x01h'
         >>> __encode_string("hello world!")
-        'm\\x00\\x00\\x00\\x0chello world!'
+        b'm\\x00\\x00\\x00\\x0chello world!'
     """
-    return BINARY_EXT + struct.pack(">L", len(obj)) + obj
+    return BINARY_EXT + struct.pack(">L", len(obj)) + obj.encode('utf-8')
 
 def __encode_none(obj):
     """
         >>> __encode_none(None)
-        'd\\x00\\x03nil'
+        b'd\\x00\\x03nil'
     """
     return __encode_atom("nil")
 
 def __encode_boolean(obj):
     """
         >>> __encode_boolean(True)
-        'd\\x00\\x04true'
+        b'd\\x00\\x04true'
         >>> __encode_boolean(False)
-        'd\\x00\\x05false'
+        b'd\\x00\\x05false'
     """
     if obj == True:
         return __encode_atom("true")
@@ -277,14 +281,14 @@ def __encode_boolean(obj):
         raise "Maybe later"
 
 def __encode_atom(obj):
-    return ATOM_EXT + struct.pack(">H", len(obj)) + (b"%s" % obj)
+    return ATOM_EXT + struct.pack(">H", len(obj)) + obj.encode('utf-8')
 
 def __encode_int(obj):
     """
         >>> __encode_int(1)
-        'a\\x01'
+        b'a\\x01'
         >>> __encode_int(256)
-        'b\\x00\\x00\\x01\\x00'
+        b'b\\x00\\x00\\x01\\x00'
     """
     if 0 <= obj <= 255:
         return SMALL_INTEGER_EXT +  struct.pack("B", obj)
@@ -292,6 +296,13 @@ def __encode_int(obj):
         return INTEGER_EXT + struct.pack(">l", obj)
     else:
         raise "Maybe later"
+
+def __data_type(dtype):
+    if type(dtype) == int:
+        return struct.pack("b", dtype)
+    return dtype
+
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
