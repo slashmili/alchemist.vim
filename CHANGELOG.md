@@ -2,6 +2,10 @@
 
 # Lithium(3.X.X)
 
+## [Unreleased]
+### Changed
+- Support python3
+
 ## [3.0.1] - 2017-10-31
 
 ### Changed
