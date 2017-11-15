@@ -6,6 +6,9 @@
 ### Added
 - Support python3
 
+### Changed
+- Import ElixirSense client directly into deoplete plugin
+
 ## [3.0.1] - 2017-10-31
 
 ### Changed
