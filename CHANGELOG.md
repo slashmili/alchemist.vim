@@ -5,6 +5,7 @@
 ## [Unreleased]
 ### Added
 - Support python3
+- Added support for nvim-completion-manager
 
 ### Changed
 - Import ElixirSense client directly into deoplete plugin
