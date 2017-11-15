@@ -1,6 +1,13 @@
 sudo: false
+language: python
+python:
+  - 2.7
+  - 3.4
+  - 3.6
+install:
+  - pip install nose
 script:
   - python ./elixir_sense.py
-  - python ./erl_terms.py
+  - nosetests t/erl_terms_test.py
 notifications:
   irc: "irc.freenode.org#vim-elixir"
