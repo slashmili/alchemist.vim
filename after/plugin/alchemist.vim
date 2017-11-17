@@ -170,11 +170,11 @@ function! s:open_doc_window(query, newposition, position)
     sil $delete _
     sil $delete _
     normal gg
-    setlocal nomodifiable
 
     if match(a:query, "^:") ==# 0
         setlocal ft=man
     else
+        setlocal nomodifiable
         setlocal ft=exdoc
     endif
 
