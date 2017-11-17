@@ -10,6 +10,9 @@
 ### Changed
 - Import ElixirSense client directly into deoplete plugin
 
+### Fixed
+- Fix throwing error when looking up erlang docs in neovim #121
+
 ## [3.0.1] - 2017-10-31
 
 ### Changed
