@@ -22,11 +22,7 @@ class ElixirSenseClient:
         self._ansi = kw.get('ansi', True)
         self._alchemist_script = kw.get('elixir_sense_script', None)
         self._elixir_otp_src = kw.get('elixir_otp_src', None)
-        self.re_elixir_fun_with_arity = re.compile(r'(?P<func>.*)/[0-9]+$')
-        self.re_elixir_module_and_fun = re.compile(r'^(?P<module>[A-Z][A-Za-z0-9\._]+)\.(?P<func>[a-z_?!]+)')
-        self.re_erlang_module = re.compile(r'^(?P<module>[a-z].*)')
-        self.re_elixir_module = re.compile(r'^(?P<module>[A-Z][A-Za-z0-9\._]+)')
-        self.re_x_base = re.compile(r'^.*{\s*"(?P<base>.*)"\s*')
+        self.re_erlang_module = re.compile(r'^(?P<module>[a-z])')
         self.re_elixir_src = re.compile(r'.*(/elixir.*/lib.*)')
         self.re_erlang_src = re.compile(r'.*otp.*(/lib/.*\.erl)')
         self.sock = None

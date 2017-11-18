@@ -15,8 +15,8 @@ class Source(Base):
         self.mark = '[alchemist]'
         self.filetypes = ['elixir']
         self.is_bytepos = False
-        self.re_suggestions = re.compile(r'kind:(?P<kind>.*), word:(?P<word>.*), abbr:(?P<abbr>.*), menu:(?P<menu>.*), info:(?P<info>.*)$')
-        self.re_is_only_func = re.compile(r'^[a-z].*')
+        self.re_suggestions = re.compile(r'kind:(?P<kind>[^,]*), word:(?P<word>[^,]*), abbr:(?P<abbr>[\w\W]*), menu:(?P<menu>[\w\W]*), info:(?P<info>[\w\W]*)$')
+        self.re_is_only_func = re.compile(r'^[a-z]')
 
         alchemist_script = "%s/elixir_sense/run.exs" % PLUGIN_BASE_PATH
         self.sense_client = ElixirSenseClient(debug=DEBUG, cwd=os.getcwd(), ansi=False, elixir_sense_script=alchemist_script, elixir_otp_src="")

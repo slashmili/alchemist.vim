@@ -9,6 +9,7 @@
 
 ### Changed
 - Import ElixirSense client directly into deoplete plugin
+- Enhancement on greedy regex
 
 ### Fixed
 - Fix throwing error when looking up erlang docs in neovim #121
