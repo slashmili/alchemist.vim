@@ -13,6 +13,10 @@
 
 ### Fixed
 - Fix throwing error when looking up erlang docs in neovim #121
+- Fix a problem that find a function's location
+
+### Changed
+- Move erlang terms test to python unittest
 
 ## [3.0.1] - 2017-10-31
 

@@ -1,6 +1,11 @@
 import struct
 #def encode(py_struct):
 
+__EXPORTS__ = [
+    'decode',
+    'encode',
+]
+
 FORMAT_VERSION = '\x83' #struct.pack("b", 131)
 
 NEW_FLOAT_EXT = 70      # [Float64:IEEE float]
@@ -59,55 +64,55 @@ def decode(binary):
         raise NotImplementedError("Unable to serialize version %s" % binary[0])
     binary = binary[1:]
 
-    (obj_size, fn) = __decode_func(binary)
+    (obj_size, fn) = _decode_func(binary)
     return fn(binary[0: obj_size])
 
-def __decode_func(binary):
-    if __data_type(binary[0]) == SMALL_INTEGER_EXT:
-        return (2, __decode_int)
-    elif __data_type(binary[0]) == INTEGER_EXT:
-        return (5, __decode_int)
-    elif __data_type(binary[0]) == BINARY_EXT:
+def _decode_func(binary):
+    if _data_type(binary[0]) == SMALL_INTEGER_EXT:
+        return (2, _decode_int)
+    elif _data_type(binary[0]) == INTEGER_EXT:
+        return (5, _decode_int)
+    elif _data_type(binary[0]) == BINARY_EXT:
         (size, ) = struct.unpack(">L", binary[1:5])
-        return (1 + 4 + size, __decode_string)
-    elif __data_type(binary[0]) == ATOM_EXT:
+        return (1 + 4 + size, _decode_string)
+    elif _data_type(binary[0]) == ATOM_EXT:
         (size, ) = struct.unpack(">H", binary[1:3])
-        return (1 + 2 + size, __decode_atom)
-    elif __data_type(binary[0]) == NIL_EXT:
-        return (1, __decode_list)
-    elif __data_type(binary[0]) == LIST_EXT:
+        return (1 + 2 + size, _decode_atom)
+    elif _data_type(binary[0]) == NIL_EXT:
+        return (1, _decode_list)
+    elif _data_type(binary[0]) == LIST_EXT:
         (list_size, ) = struct.unpack(">L", binary[1:5])
         tmp_binary = binary[5:]
         byte_size = 0
         for i in xrange(list_size):
-            (obj_size, fn) = __decode_func(tmp_binary)
+            (obj_size, fn) = _decode_func(tmp_binary)
             byte_size = byte_size + obj_size
             tmp_binary = tmp_binary[obj_size:]
-        return (1 + 4 + byte_size + 1, __decode_list)
-    elif __data_type(binary[0]) == MAP_EXT:
+        return (1 + 4 + byte_size + 1, _decode_list)
+    elif _data_type(binary[0]) == MAP_EXT:
         (map_size, ) = struct.unpack(">L", binary[1:5])
         tmp_binary = binary[5:]
         byte_size = 0
         for i in xrange(map_size):
-            (obj_size, fn) = __decode_func(tmp_binary)
+            (obj_size, fn) = _decode_func(tmp_binary)
             byte_size = byte_size + obj_size
             tmp_binary = tmp_binary[obj_size:]
 
 
-            (obj_size, fn) = __decode_func(tmp_binary)
+            (obj_size, fn) = _decode_func(tmp_binary)
             byte_size = byte_size + obj_size
             tmp_binary = tmp_binary[obj_size:]
-        return (1 + 4 + byte_size , __decode_map)
+        return (1 + 4 + byte_size , _decode_map)
     else:
-        raise NotImplementedError("Unable to unserialize %r" % __data_type(binary[0]))
+        raise NotImplementedError("Unable to unserialize %r" % _data_type(binary[0]))
 
-def __decode_map(binary):
+def _decode_map(binary):
     """
-        >>> __decode_map(__encode_map({'foo': 1}))
+        >>> _decode_map(_encode_map({'foo': 1}))
         {'foo': 1}
-        >>> __decode_map(__encode_map({'foo': 'bar'}))
+        >>> _decode_map(_encode_map({'foo': 'bar'}))
         {'foo': 'bar'}
-        >>> __decode_map(__encode_map({'foo': {'bar': 4938}}))
+        >>> _decode_map(_encode_map({'foo': {'bar': 4938}}))
         {'foo': {'bar': 4938}}
     """
     (size,) = struct.unpack(">L", binary[1:5])
@@ -115,11 +120,11 @@ def __decode_map(binary):
     binary = binary[5:]
     for i in xrange(size):
 
-        (key_obj_size, key_fn) = __decode_func(binary)
+        (key_obj_size, key_fn) = _decode_func(binary)
         key = key_fn(binary[0: key_obj_size])
         binary = binary[key_obj_size:]
 
-        (value_obj_size, value_fn) = __decode_func(binary)
+        (value_obj_size, value_fn) = _decode_func(binary)
         value = value_fn(binary[0: value_obj_size])
 
         binary = binary[value_obj_size:]
@@ -129,17 +134,17 @@ def __decode_map(binary):
     return result
 
 
-def __decode_list(binary):
+def _decode_list(binary):
     """
-        >>> __decode_list(__encode_list([]))
+        >>> _decode_list(_encode_list([]))
         []
-        >>> __decode_list(__encode_list(['a']))
+        >>> _decode_list(_encode_list(['a']))
         ['a']
-        >>> __decode_list(__encode_list([1]))
+        >>> _decode_list(_encode_list([1]))
         [1]
-        >>> __decode_list(__encode_list([1, 'a']))
+        >>> _decode_list(_encode_list([1, 'a']))
         [1, 'a']
-        >>> __decode_list(__encode_list([True, None, 1, 'a']))
+        >>> _decode_list(_encode_list([True, None, 1, 'a']))
         [True, None, 1, 'a']
     """
     if binary == NIL_EXT: return []
@@ -147,27 +152,27 @@ def __decode_list(binary):
     result = []
     binary = binary[5:]
     for i in xrange(size):
-        (obj_size, fn) = __decode_func(binary)
+        (obj_size, fn) = _decode_func(binary)
         result.append(fn(binary[0: obj_size]))
         binary = binary[obj_size:]
 
     return result
 
-def __decode_string(binary):
+def _decode_string(binary):
     """
-        >>> __decode_string(__encode_string("h"))
+        >>> _decode_string(_encode_string("h"))
         'h'
     """
     return binary[5:].decode('UTF-8')
 
-def __decode_atom(binary):
+def _decode_atom(binary):
     """
-        >>> __decode_atom(__encode_atom("nil"))
-        >>> __decode_atom(__encode_atom("true"))
+        >>> _decode_atom(_encode_atom("nil"))
+        >>> _decode_atom(_encode_atom("true"))
         True
-        >>> __decode_atom(__encode_atom("false"))
+        >>> _decode_atom(_encode_atom("false"))
         False
-        >>> __decode_atom(__encode_atom("my_key"))
+        >>> _decode_atom(_encode_atom("my_key"))
         'my_key'
     """
     atom = binary[3:]
@@ -179,11 +184,11 @@ def __decode_atom(binary):
         return None
     return atom.decode('UTF-8')
 
-def __decode_int(binary):
+def _decode_int(binary):
     """
-        >>> __decode_int(__encode_int(1))
+        >>> _decode_int(_encode_int(1))
         1
-        >>> __decode_int(__encode_int(256))
+        >>> _decode_int(_encode_int(256))
         256
     """
     if binary[0] == 97 or binary[0] == 'a' :
@@ -202,92 +207,92 @@ def encode(struct):
         >>> encode([])
         b'\\x83j'
     """
-    return b'\x83' + __encoder_func(struct)(struct)
+    return b'\x83' + _encoder_func(struct)(struct)
 
-def __encode_list(obj):
+def _encode_list(obj):
     """
-        >>> __encode_list([])
+        >>> _encode_list([])
         b'j'
-        >>> __encode_list(['a'])
+        >>> _encode_list(['a'])
         b'l\\x00\\x00\\x00\\x01m\\x00\\x00\\x00\\x01aj'
-        >>> __encode_list([1])
+        >>> _encode_list([1])
         b'l\\x00\\x00\\x00\\x01a\\x01j'
     """
     if len(obj) == 0:
         return NIL_EXT
     b = struct.pack(">L", len(obj))
     for i in obj:
-        b = b + __encoder_func(i)(i)
+        b = b + _encoder_func(i)(i)
     return LIST_EXT + b + NIL_EXT
 
-def __encode_map(obj):
+def _encode_map(obj):
     """
-        >>> __encode_map({'foo': 1})
+        >>> _encode_map({'foo': 1})
         b't\\x00\\x00\\x00\\x01m\\x00\\x00\\x00\\x03fooa\\x01'
-        >>> __encode_map({'foo': 'bar'})
+        >>> _encode_map({'foo': 'bar'})
         b't\\x00\\x00\\x00\\x01m\\x00\\x00\\x00\\x03foom\\x00\\x00\\x00\\x03bar'
-        >>> __encode_map({'foo': {'bar': 4938}})
+        >>> _encode_map({'foo': {'bar': 4938}})
         b't\\x00\\x00\\x00\\x01m\\x00\\x00\\x00\\x03foot\\x00\\x00\\x00\\x01m\\x00\\x00\\x00\\x03barb\\x00\\x00\\x13J'
     """
     b = struct.pack(">L", len(obj))
     for k,v in obj.items():
-        b = b + __encoder_func(k)(k) +  __encoder_func(v)(v)
+        b = b + _encoder_func(k)(k) +  _encoder_func(v)(v)
     return MAP_EXT + b
 
-def __encoder_func(obj):
+def _encoder_func(obj):
     if isinstance(obj, str):
-        return __encode_string
+        return _encode_string
     elif isinstance(obj, bool):
-        return __encode_boolean
+        return _encode_boolean
     elif isinstance(obj, int):
-        return __encode_int
+        return _encode_int
     elif isinstance(obj, dict):
-        return __encode_map
+        return _encode_map
     elif isinstance(obj, list):
-        return __encode_list
+        return _encode_list
     elif obj is None:
-        return __encode_none
+        return _encode_none
     else:
         raise NotImplementedError("Unable to serialize %r" % obj)
 
-def __encode_string(obj):
+def _encode_string(obj):
     """
-        >>> __encode_string("h")
+        >>> _encode_string("h")
         b'm\\x00\\x00\\x00\\x01h'
-        >>> __encode_string("hello world!")
+        >>> _encode_string("hello world!")
         b'm\\x00\\x00\\x00\\x0chello world!'
     """
     return BINARY_EXT + struct.pack(">L", len(obj)) + obj.encode('utf-8')
 
-def __encode_none(obj):
+def _encode_none(obj):
     """
-        >>> __encode_none(None)
+        >>> _encode_none(None)
         b'd\\x00\\x03nil'
     """
-    return __encode_atom("nil")
+    return _encode_atom("nil")
 
-def __encode_boolean(obj):
+def _encode_boolean(obj):
     """
-        >>> __encode_boolean(True)
+        >>> _encode_boolean(True)
         b'd\\x00\\x04true'
-        >>> __encode_boolean(False)
+        >>> _encode_boolean(False)
         b'd\\x00\\x05false'
     """
     if obj == True:
-        return __encode_atom("true")
+        return _encode_atom("true")
     elif obj == False:
-        return __encode_atom("false")
+        return _encode_atom("false")
     else:
         raise "Maybe later"
 
-def __encode_atom(obj):
+def _encode_atom(obj):
     return ATOM_EXT + struct.pack(">H", len(obj)) + obj.encode('utf-8')
 
-def __encode_int(obj):
+def _encode_int(obj):
     """
-        >>> __encode_int(1)
+        >>> _encode_int(1)
         b'a\\x01'
-        >>> __encode_int(256)
+        >>> _encode_int(256)
         b'b\\x00\\x00\\x01\\x00'
     """
     if 0 <= obj <= 255:
@@ -297,7 +302,7 @@ def __encode_int(obj):
     else:
         raise "Maybe later"
 
-def __data_type(dtype):
+def _data_type(dtype):
     if type(dtype) == int:
         return struct.pack("b", dtype)
     return dtype
