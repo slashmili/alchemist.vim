@@ -87,7 +87,7 @@ class ElixirSenseClient:
         filename = source.split(":")[0]
 
         if filename == "non_existing": return source
-        if type(filename) == str and self._is_readable(filename): return source
+        if self._is_readable(filename): return source
 
         filename = self._find_elixir_erlang_src(filename)
         return "%s:%i" %(filename, 0)
