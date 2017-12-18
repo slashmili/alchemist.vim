@@ -130,7 +130,7 @@ class ElixirSenseClient:
         if '.' in hint['value']:
             prefix_module = '.'.join(hint['value'].split('.')[:-1]) + '.'
 
-        suggestions = sorted(suggestions[1:], key=lambda s : s['name'])
+        suggestions = sorted(suggestions[1:], key=lambda s : dict.get(s, 'name', ''))
         for s in suggestions:
             if s['type'] == 'hint':
                 continue
@@ -262,6 +262,7 @@ class ElixirSenseClient:
         packer = struct.Struct('!I')
         packed_data = packer.pack(len(cmd))
         try:
+            if sock is None: raise Exception("Socket is not available.")
             sock.sendall(packed_data + cmd)
             return self._sock_readlines(sock)
         except socket.error as e:
