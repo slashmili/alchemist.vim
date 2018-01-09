@@ -32,7 +32,7 @@ class Source(Base):
 
         response = self.sense_client.process_command('suggestions', "\n".join(lines), lnum ,cnum)
         if response[0:6] == 'error:':
-            self.vim.command('echohl ErrorMsg|echom "%s"|echohl None' % response)
+            #self.vim.command('echohl ErrorMsg|echom "%s"|echohl None' % response)
             return []
 
         return self.__get_suggestions__(complete_str, response.split('\n')[:-1])

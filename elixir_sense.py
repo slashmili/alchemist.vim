@@ -185,11 +185,11 @@ class ElixirSenseClient:
             return
 
         f = open("/tmp/log.log", "a")
-        f.write("%s\n" % text)
+        f.write("%s\n" % text.encode('utf8'))
         f.close()
 
-        syslog.openlog("alchemist_client")
-        syslog.syslog(syslog.LOG_ALERT, text)
+        #syslog.openlog("alchemist_client")
+        #syslog.syslog(syslog.LOG_ALERT, text)
 
     def _get_path_unique_name(self, path):
         """
