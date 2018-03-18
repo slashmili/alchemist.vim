@@ -261,8 +261,11 @@ def _encode_string(obj):
         b'm\\x00\\x00\\x00\\x01h'
         >>> _encode_string("hello world!")
         b'm\\x00\\x00\\x00\\x0chello world!'
+        >>> _encode_string("测试")
+        b'm\x00\x00\x00\x06\xe6\xb5\x8b\xe8\xaf\x95'
     """
-    return BINARY_EXT + struct.pack(">L", len(obj)) + obj.encode('utf-8')
+    str_enc = obj.encode('utf-8')
+    return BINARY_EXT + struct.pack(">L", len(str_enc)) + str_enc
 
 def _encode_none(obj):
     """
