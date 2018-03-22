@@ -5,6 +5,7 @@
 ## [3.1.0] - 2018-04-22
 ### Added
 - Support python3
+- Support for utf8 docs
 
 ### Changed
 - Import ElixirSense client directly into deoplete plugin
