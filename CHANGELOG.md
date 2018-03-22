@@ -5,6 +5,11 @@
 ## [Unreleased]
 ### Added
 - Support python3
+- Added support for nvim-completion-manager
+
+### Changed
+- Import ElixirSense client directly into deoplete plugin
+- Enhancement on greedy regex
 
 ### Fixed
 - Fix throwing error when looking up erlang docs in neovim #121

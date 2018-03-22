@@ -1,14 +1,13 @@
-import os
+import os, sys
+PLUGIN_BASE_PATH = os.path.abspath("%s/../../../../../" % __file__)
+sys.path.insert(0, PLUGIN_BASE_PATH)
+from elixir_sense import ElixirSenseClient
 import re
-from numbers import Number
-from subprocess import PIPE, Popen
-import shlex
 from .base import Base
 
-class Source(Base):
-    ALCHEMIST_CLIENT   = 'g:alchemist#alchemist_client'
-    ALCHEMIST_COMPLETE = 'elixircomplete#auto_complete'
+DEBUG = False
 
+class Source(Base):
     def __init__(self, vim):
         Base.__init__(self, vim)
 
@@ -16,8 +15,11 @@ class Source(Base):
         self.mark = '[alchemist]'
         self.filetypes = ['elixir']
         self.is_bytepos = False
-        self.re_suggestions = re.compile(r'kind:(?P<kind>.*), word:(?P<word>.*), abbr:(?P<abbr>.*), menu:(?P<menu>.*), info:(?P<info>.*)$')
-        self.re_is_only_func = re.compile(r'^[a-z].*')
+        self.re_suggestions = re.compile(r'kind:(?P<kind>[^,]*), word:(?P<word>[^,]*), abbr:(?P<abbr>[\w\W]*), menu:(?P<menu>[\w\W]*), info:(?P<info>[\w\W]*)$')
+        self.re_is_only_func = re.compile(r'^[a-z]')
+
+        alchemist_script = "%s/elixir_sense/run.exs" % PLUGIN_BASE_PATH
+        self.sense_client = ElixirSenseClient(debug=DEBUG, cwd=os.getcwd(), ansi=False, elixir_sense_script=alchemist_script, elixir_otp_src="")
 
     def get_complete_position(self, context):
         return self.vim.call('elixircomplete#auto_complete', 1, '')
@@ -26,21 +28,17 @@ class Source(Base):
         lnum = self.vim.funcs.line('.')
         cnum = self.vim.funcs.col('.')
         lines = self.vim.funcs.getline(1, '$')
-        client  = self.__get_client__()
         complete_str = context['complete_str']
-        cwd_opt = '-d{0} -c{1} -l{2} --request=suggestions'.format(os.getcwd(), cnum, lnum)
-        args = '%s %s' % (client, cwd_opt)
-        with Popen(shlex.split(args), stdin=PIPE, stdout=PIPE) as proc:
-            lines = "\n".join(lines)
-            (results, x) = proc.communicate(input=lines.encode())
-        results = results.decode()
-        return self.__get_suggestions__(complete_str, results.split('\n')[:-1])
+
+        response = self.sense_client.process_command('suggestions', "\n".join(lines), lnum ,cnum)
+        if response[0:6] == 'error:':
+            #self.vim.command('echohl ErrorMsg|echom "%s"|echohl None' % response)
+            return []
+
+        return self.__get_suggestions__(complete_str, response.split('\n')[:-1])
 
     # Private implementation
     ########################
-
-    def __get_client__(self):
-        return self.vim.eval(self.ALCHEMIST_CLIENT)
 
     def __get_suggestions__(self, complete_str, server_results):
         suggestions = []

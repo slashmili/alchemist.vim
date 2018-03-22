@@ -9,6 +9,7 @@ import time
 import syslog
 import struct
 import erl_terms
+import errno
 
 class ElixirSenseClient:
 
@@ -21,19 +22,17 @@ class ElixirSenseClient:
         self._ansi = kw.get('ansi', True)
         self._alchemist_script = kw.get('elixir_sense_script', None)
         self._elixir_otp_src = kw.get('elixir_otp_src', None)
-        self.re_elixir_fun_with_arity = re.compile(r'(?P<func>.*)/[0-9]+$')
-        self.re_elixir_module_and_fun = re.compile(r'^(?P<module>[A-Z][A-Za-z0-9\._]+)\.(?P<func>[a-z_?!]+)')
-        self.re_erlang_module = re.compile(r'^(?P<module>[a-z].*)')
-        self.re_elixir_module = re.compile(r'^(?P<module>[A-Z][A-Za-z0-9\._]+)')
-        self.re_x_base = re.compile(r'^.*{\s*"(?P<base>.*)"\s*')
+        self.re_erlang_module = re.compile(r'^(?P<module>[a-z])')
         self.re_elixir_src = re.compile(r'.*(/elixir.*/lib.*)')
         self.re_erlang_src = re.compile(r'.*otp.*(/lib/.*\.erl)')
+        self.sock = None
 
 
     def __create_tmp_dir(self):
         dir_tmp = self._get_tmp_dir()
         if os.path.exists(dir_tmp) == False:
             os.makedirs(self._get_tmp_dir())
+
     def process_command(self, request, source, line, column):
         self._log('column: %s' % column)
         self._log('line: %s' % line)
@@ -50,6 +49,30 @@ class ElixirSenseClient:
                 }
 
         req_erl_struct = erl_terms.encode(py_struct)
+
+        sock = self.__get_socket()
+
+        try:
+            resp_erl_struct = self._send_command(sock, req_erl_struct)
+        except Exception as e:
+            return 'error:%s' % e
+
+        rep_py_struct = erl_terms.decode(resp_erl_struct)
+        if rep_py_struct['error']:
+            return 'error:%s' % rep_py_struct['error']
+        self._log('ElixirSense: %s' % rep_py_struct)
+        if request == "suggestions":
+            return self.to_vim_suggestions(rep_py_struct['payload'])
+        elif request == "docs":
+            if rep_py_struct['payload']['docs']:
+                return rep_py_struct['payload']['docs']['docs']
+            return rep_py_struct['payload']
+        elif request == 'definition':
+            return self.to_vim_definition(rep_py_struct['payload'])
+
+    def __get_socket(self):
+        if self.sock:
+            return self.sock
         server_log = self._get_running_server_log()
         if server_log == None:
             server_log = self._create_server_log()
@@ -68,20 +91,8 @@ class ElixirSenseClient:
                 self._log("Couldn't find the connection settings from server_log: %s" % (server_log))
                 return  None
             sock = self._connect(connection)
-
-        resp_erl_struct = self._send_command(sock, req_erl_struct)
-        rep_py_struct = erl_terms.decode(resp_erl_struct)
-        if rep_py_struct['error']:
-            return 'error:%s' % rep_py_struct['error']
-        self._log('ElixirSense: %s' % rep_py_struct)
-        if request == "suggestions":
-            return self.to_vim_suggestions(rep_py_struct['payload'])
-        elif request == "docs":
-            if rep_py_struct['payload']['docs']:
-                return rep_py_struct['payload']['docs']['docs']
-            return rep_py_struct['payload']
-        elif request == 'definition':
-            return self.to_vim_definition(rep_py_struct['payload'])
+        self.sock = sock
+        return self.sock
 
     def to_vim_definition(self, source):
         filename = source.split(":")[0]
@@ -119,7 +130,7 @@ class ElixirSenseClient:
         if '.' in hint['value']:
             prefix_module = '.'.join(hint['value'].split('.')[:-1]) + '.'
 
-        suggestions = sorted(suggestions[1:], key=lambda s : s['name'])
+        suggestions = sorted(suggestions[1:], key=lambda s : dict.get(s, 'name', ''))
         for s in suggestions:
             if s['type'] == 'hint':
                 continue
@@ -174,11 +185,11 @@ class ElixirSenseClient:
             return
 
         f = open("/tmp/log.log", "a")
-        f.write("%s\n" % text)
+        f.write("%s\n" % text.encode('utf8'))
         f.close()
 
-        syslog.openlog("alchemist_client")
-        syslog.syslog(syslog.LOG_ALERT, text)
+        #syslog.openlog("alchemist_client")
+        #syslog.syslog(syslog.LOG_ALERT, text)
 
     def _get_path_unique_name(self, path):
         """
@@ -250,12 +261,17 @@ class ElixirSenseClient:
     def _send_command(self, sock, cmd):
         packer = struct.Struct('!I')
         packed_data = packer.pack(len(cmd))
-        sock.sendall(packed_data + cmd)
         try:
+            if sock is None: raise Exception("Socket is not available.")
+            sock.sendall(packed_data + cmd)
             return self._sock_readlines(sock)
         except socket.error as e:
+            self.sock = None
+            self._log("Exception in communicating with server: %s" % e)
             if e.errno == 35:
                 raise Exception("reached 10 sec timeout, error:Resource temporarily unavailable")
+            elif e.errno == errno.EPIPE:
+                raise Exception("Lost connection to Server. Try again, error:Resource temporarily unavailable")
             else:
                 raise e
 
