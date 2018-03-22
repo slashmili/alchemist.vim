@@ -2,10 +2,9 @@
 
 # Lithium(3.X.X)
 
-## [Unreleased]
+## [3.1.0] - 2018-04-22
 ### Added
 - Support python3
-- Added support for nvim-completion-manager
 
 ### Changed
 - Import ElixirSense client directly into deoplete plugin
