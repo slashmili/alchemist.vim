@@ -5,7 +5,7 @@ from elixir_sense import ElixirSenseClient
 import re
 from .base import Base
 
-DEBUG = False
+DEBUG = True
 
 class Source(Base):
     def __init__(self, vim):
