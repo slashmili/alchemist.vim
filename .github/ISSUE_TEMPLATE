@@ -14,13 +14,15 @@ OTP:
 
 Python:
 
-2. Which pluging are you using:
+2. Are you using VIM or Neovim? Please provide the version.
+
+3. Which pluging are you using:
 
 [ ] basic omnifunc
 [ ] YouCompleteMe
 [ ] deoplete
 
-3. Which steps of Debugging passed?
+4. Which steps of Debugging passed?
 
 [ ] Elixir Module definition
 [ ] Elixir Function definition
@@ -28,4 +30,4 @@ Python:
 [ ] Your Project Module definition
 [ ] Your Project Function definition
 
-4. Do you have a specific setup? Like Docker and etc
+5. Do you have a specific setup? Like Docker and etc
