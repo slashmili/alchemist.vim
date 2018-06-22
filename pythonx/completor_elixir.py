@@ -12,7 +12,7 @@ from elixir_sense import ElixirSenseClient
 DEBUG = False
 ALCHEMIST_SCRIPT = os.path.join(PLUGIN_BASE_PATH, 'elixir_sense/run.exs')
 RE_SUGGESTIONS = re.compile(r'kind:(?P<kind>[^,]*), word:(?P<word>[^,]*), abbr:(?P<abbr>[\w\W]*), menu:(?P<menu>[\w\W]*), info:(?P<info>[\w\W]*)$')
-RE_IS_ONLY_FUNC = re.compile(r'((^|\s+)([a-z]\w*)|\w+\.)$')
+RE_IS_ONLY_FUNC = re.compile(r'((^|\.|\s+)([a-z]\w*)|\w+\.)$')
 
 
 class Alchemist(Completor):
