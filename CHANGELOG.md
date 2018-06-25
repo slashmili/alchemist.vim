@@ -2,6 +2,10 @@
 
 # Lithium(3.X.X)
 
+## [3.1.1] - 2018-06-25
+### Added
+- Add completor.vim integration
+
 ## [3.1.0] - 2018-04-22
 ### Added
 - Support python3
