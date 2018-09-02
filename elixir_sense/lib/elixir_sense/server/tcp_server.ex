@@ -15,6 +15,7 @@ defmodule ElixirSense.Server.TCPServer do
     children = [
       worker(Task, [__MODULE__, :listen, [socket_type, "localhost", port]]),
       supervisor(Task.Supervisor, [[name: @connection_handler_supervisor]]),
+      worker(SelfDestructTimer, [env]),
       worker(ContextLoader, [env])
     ]
 
@@ -73,6 +74,7 @@ defmodule ElixirSense.Server.TCPServer do
   end
 
   defp connection_handler(socket, auth_token) do
+    SelfDestructTimer.reset
     case :gen_tcp.recv(socket, 0) do
       {:error, :closed} ->
         IO.puts :stderr, "Client socket is closed"
@@ -133,7 +135,14 @@ defmodule ElixirSense.Server.TCPServer do
 
   defp socket_file do
     sock_id = :erlang.system_time()
-    String.to_charlist("/tmp/elixir-sense-#{sock_id}.sock")
+    dir = "/tmp/elixir-sense-#{System.get_env("USER")}"
+    case File.mkdir_p(dir) do
+      :ok ->
+        String.to_charlist("#{dir}/#{sock_id}.sock")
+      _ ->
+        String.to_charlist("/tmp/elixir-sense-#{sock_id}.sock")
+    end
+
   end
 
   defp decode_request_data(data) do
