@@ -15,11 +15,7 @@ defmodule ElixirSense.Server.RequestHandler do
   end
 
   def handle_request("definition", %{"buffer" => buffer, "line" => line, "column" => column}) do
-    case ElixirSense.definition(buffer, line, column) do
-      {"non_existing", nil} -> "non_existing:0"
-      {file, nil}  -> "#{file}:0"
-      {file, line} -> "#{file}:#{line}"
-    end
+    ElixirSense.definition(buffer, line, column)
   end
 
   def handle_request("suggestions", %{"buffer" => buffer, "line" => line, "column" => column}) do

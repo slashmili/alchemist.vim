@@ -44,7 +44,16 @@ defmodule ElixirSense.ServerTest do
         "column" => 6
       }
     }
-    assert send_request(socket, request) =~ "enum.ex:2576"
+
+    %{
+      found: true,
+      type: :function,
+      file: file,
+      line: 2610,
+      column: 7
+    } = send_request(socket, request)
+
+    assert file =~ "enum.ex"
   end
 
   test "signature request", %{socket: socket, auth_token: auth_token} do

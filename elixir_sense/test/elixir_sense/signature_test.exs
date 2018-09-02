@@ -47,14 +47,14 @@ defmodule ElixirSense.SignatureTest do
           %{
             name: "apply",
             params: ["fun", "args"],
-            documentation: "Invokes the given `fun` with the list of arguments `args`.",
+            documentation: "Invokes the given anonymous function `fun` with the list of\narguments `args`.",
             spec: "@spec apply((... -> any), [any]) :: any"
           },
           %{
             name: "apply",
-            params: ["module", "fun", "args"],
-            documentation: "Invokes the given `fun` from `module` with the list of arguments `args`.",
-            spec: "@spec apply(module, atom, [any]) :: any"
+            params: ["module", "function_name", "args"],
+            documentation: "Invokes the given function from `module` with the list of\narguments `args`.",
+            spec: "@spec apply(module, function_name :: atom, [any]) :: any"
           }
         ]
       }

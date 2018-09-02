@@ -161,9 +161,7 @@ defmodule ElixirSense.DocsTest do
 
       ## Examples
 
-          iex> Mix.Generator.create_file \".gitignore\", \"_build
-      deps
-      \"
+          iex> Mix.Generator.create_file(".gitignore", "_build\\ndeps\\n\")
           * creating .gitignore
           :ok
 
@@ -245,24 +243,25 @@ defmodule ElixirSense.DocsTest do
 
       assert subject == "GenServer"
       assert docs =~ """
-        `@type on_start ::
-        {:ok, pid} |
-        :ignore |
-        {:error, {:already_started, pid} | term}
+      `@type from :: {pid, tag :: term}
       `
 
-        Return values of `start*` functions
+        Tuple describing the client of a call request.
+
+      `pid` is the PID of the caller and `tag` is a unique term used to identify the
+      call.
+
 
 
       ____
 
-        `@type name ::
-        atom |
-        {:global, term} |
-        {:via, module, term}
+        `@type server ::
+        pid |
+        name |
+        {atom, node}
       `
 
-        The GenServer name
+        The server reference
       """
     end
 

@@ -30,6 +30,41 @@ defmodule ElixirSense.Core.Source do
     end
   end
 
+  def which_struct(text_before) do
+    code = text_before |> String.reverse()
+    case walk_text(code, &find_struct/5, %{buffer: [], count_open: 0, result: nil}) do
+      %{result: nil} ->
+        nil
+      %{result: result} ->
+        result
+        |> Enum.join
+        |> Kernel.<>("_: _}")
+        |> Code.string_to_quoted()
+        |> extract_struct_module()
+    end
+  end
+
+  defp extract_struct_module({:ok, {:%, _, [{:__aliases__, _, module_list}, {:%{},_, fields}]}}) do
+    fields_names = Keyword.keys(fields) |> Enum.slice(0..-2)
+    {Module.concat(module_list), fields_names}
+  end
+  defp extract_struct_module(_) do
+    nil
+  end
+
+  defp find_struct("%" = grapheme, _rest, _line, _col, %{buffer: buffer, count_open: 1} = acc) do
+    {"", %{acc | result: [grapheme|buffer]}}
+  end
+  defp find_struct("{" = grapheme, rest, _line, _col, %{buffer: buffer, count_open: count_open} = acc) do
+    {rest, %{acc | buffer: [grapheme|buffer], count_open: count_open + 1}}
+  end
+  defp find_struct("}" = grapheme, rest, _line, _col, %{buffer: buffer, count_open: count_open} = acc) do
+    {rest, %{acc | buffer: [grapheme|buffer], count_open: count_open - 1}}
+  end
+  defp find_struct(grapheme, rest, _line, _col, %{buffer: buffer} = acc) do
+    {rest, %{acc | buffer: [grapheme|buffer]}}
+  end
+
   defp find_subject(grapheme, rest, line, col, %{pos_found: false, line: line, col: col} = acc) do
     find_subject(grapheme, rest, line, col, %{acc | pos_found: true})
   end
@@ -97,16 +132,11 @@ defmodule ElixirSense.Core.Source do
 
   def which_func(prefix) do
     tokens =
-      case prefix |> String.to_charlist |> :elixir_tokenizer.tokenize(1, []) do
-        {:ok, _, _, tokens} ->
-          tokens |> Enum.reverse
-        {:error, {_line, _error_prefix, _token}, _rest, sofar} ->
-          # DEBUG
-          # IO.puts :stderr, :elixir_utils.characters_to_binary(error_prefix)
-          # IO.inspect(:stderr, {:sofar, sofar}, [])
-          # IO.inspect(:stderr, {:rest, rest}, [])
-          sofar
-      end
+      prefix
+      |> String.to_charlist
+      |> :elixir_tokenizer.tokenize(1, [])
+      |> tokenize_prefix()
+
     pattern = %{npar: 0, count: 0, count2: 0, candidate: [], pos: nil, pipe_before: false}
     result = scan(tokens, pattern)
     %{candidate: candidate, npar: npar, pipe_before: pipe_before, pos: pos} = result
@@ -117,6 +147,20 @@ defmodule ElixirSense.Core.Source do
       pipe_before: pipe_before,
       pos: pos
     }
+  end
+
+  defp tokenize_prefix({:ok, _, _, tokens}) do
+    tokens |> Enum.reverse
+  end
+
+  # Elixir >= 1.7
+  defp tokenize_prefix({:error, {_line, _column, _error_prefix, _token}, _rest, sofar}) do
+    sofar
+  end
+
+  # Elixir < 1.7
+  defp tokenize_prefix({:error, {_line, _error_prefix, _token}, _rest, sofar}) do
+    sofar
   end
 
   defp normalize_candidate(candidate) do
@@ -157,6 +201,10 @@ defmodule ElixirSense.Core.Source do
     scan(tokens, %{state | candidate: [value|state.candidate], pos: update_pos(pos, state.pos)})
   end
   defp scan([{:aliases, pos, [value]}|tokens], %{count: 1} = state) do
+    updated_pos = update_pos(pos, state.pos)
+    scan(tokens, %{state | candidate: [Module.concat([value])|state.candidate], pos: updated_pos})
+  end
+  defp scan([{:alias, pos, value}|tokens], %{count: 1} = state) do
     updated_pos = update_pos(pos, state.pos)
     scan(tokens, %{state | candidate: [Module.concat([value])|state.candidate], pos: updated_pos})
   end

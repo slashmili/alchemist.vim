@@ -345,7 +345,7 @@ defmodule Alchemist.Helpers.Complete do
 
   defp get_module_funs(mod) do
     if function_exported?(mod, :__info__, 1) do
-      funs = if docs = Code.get_docs(mod, :docs) do
+      funs = if docs = Introspection.get_docs(mod, :docs) do
         specs = Introspection.get_module_specs(mod)
         for {{f, a}, _line, func_kind, _sign, doc} = func_doc <- docs, doc != false do
           spec = Map.get(specs, {f, a}, "")

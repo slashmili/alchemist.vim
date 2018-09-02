@@ -10,13 +10,13 @@ defmodule ElixirSense.Core.SourceTest do
         candidate: {nil, :func},
         npar: 0,
         pipe_before: false,
-        pos: {{1, 7}, {1, 11}}
+        pos: {{1, 7}, {1, nil}}
       }
       assert which_func("var = func(param1, ") == %{
         candidate: {nil, :func},
         npar: 1,
         pipe_before: false,
-        pos: {{1, 7}, {1, 11}}
+        pos: {{1, 7}, {1, nil}}
       }
     end
 
@@ -25,13 +25,13 @@ defmodule ElixirSense.Core.SourceTest do
         candidate: {Mod, :func},
         npar: 1,
         pipe_before: false,
-        pos: {{1, 7}, {1, 15}}
+        pos: {{1, 7}, {1, nil}}
       }
       assert which_func("var = Mod.SubMod.func(param1, param2, par") == %{
         candidate: {Mod.SubMod, :func},
         npar: 2,
         pipe_before: false,
-        pos: {{1, 7}, {1, 22}}
+        pos: {{1, 7}, {1, nil}}
       }
     end
 
@@ -40,31 +40,31 @@ defmodule ElixirSense.Core.SourceTest do
         candidate: {Mod.SubMod, :func},
         npar: 1,
         pipe_before: false,
-        pos: {{1, 18}, {1, 33}}
+        pos: {{1, 18}, {1, nil}}
       }
       assert which_func("var = outer_func(Mod.SubMod.func(param1, [inner_func(") == %{
         candidate: {nil, :inner_func},
         npar: 0,
         pipe_before: false,
-        pos: {{1, 43}, {1, 53}}
+        pos: {{1, 43}, {1, nil}}
       }
       assert which_func("var = outer_func(func(param1, inner_func, ") == %{
         candidate: {nil, :func},
         npar: 2,
         pipe_before: false,
-        pos: {{1, 18}, {1, 22}}
+        pos: {{1, 18}, {1, nil}}
       }
       assert which_func("var = outer_func(func(param1, inner_func(), ") == %{
         candidate: {nil, :func},
         npar: 2,
         pipe_before: false,
-        pos: {{1, 18}, {1, 22}}
+        pos: {{1, 18}, {1, nil}}
       }
       assert which_func("var = func(param1, func2(fun(p3), 4, 5), func3(p1, p2), ") == %{
         candidate: {nil, :func},
         npar: 3,
         pipe_before: false,
-        pos: {{1, 7}, {1, 11}}
+        pos: {{1, 7}, {1, nil}}
       }
     end
 
@@ -73,7 +73,7 @@ defmodule ElixirSense.Core.SourceTest do
         var = Mod.func(param1,
           param2,
 
-        """) == %{candidate: {Mod, :func}, npar: 2, pipe_before: false, pos: {{1, 7}, {1, 15}}}
+        """) == %{candidate: {Mod, :func}, npar: 2, pipe_before: false, pos: {{1, 7}, {1, nil}}}
     end
 
     test "after double quotes" do
@@ -81,13 +81,13 @@ defmodule ElixirSense.Core.SourceTest do
         candidate: {nil, :func},
         npar: 1,
         pipe_before: false,
-        pos: {{1, 7}, {1, 11}}
+        pos: {{1, 7}, {1, nil}}
       }
       assert which_func("var = func(\"a_string_(param1\", ") == %{
         candidate: {nil, :func},
         npar: 1,
         pipe_before: false,
-        pos: {{1, 7}, {1, 11}}
+        pos: {{1, 7}, {1, nil}}
       }
     end
 
@@ -96,7 +96,7 @@ defmodule ElixirSense.Core.SourceTest do
         candidate: {nil, :func2},
         npar: 1,
         pipe_before: false,
-        pos: {{1, 26}, {1, 31}}
+        pos: {{1, 26}, {1, nil}}
       }
     end
 
@@ -105,7 +105,7 @@ defmodule ElixirSense.Core.SourceTest do
         candidate: {:global, :whereis_name},
         npar: 0,
         pipe_before: false,
-        pos: {{1, 7}, {1, 27}}
+        pos: {{1, 7}, {1, nil}}
       }
     end
 
@@ -118,7 +118,7 @@ defmodule ElixirSense.Core.SourceTest do
         candidate: {Enum, :sort_by},
         npar: 2,
         pipe_before: false,
-        pos: {{1, 7}, {1, 19}}
+        pos: {{1, 7}, {1, nil}}
       }
     end
 
@@ -127,7 +127,7 @@ defmodule ElixirSense.Core.SourceTest do
         candidate: {Enum, :map},
         npar: 1,
         pipe_before: false,
-        pos: {{1, 7}, {1, 15}}
+        pos: {{1, 7}, {1, nil}}
       }
     end
 
@@ -136,7 +136,7 @@ defmodule ElixirSense.Core.SourceTest do
         candidate: {Enum, :map},
         npar: 0,
         pipe_before: false,
-        pos: {{1, 7}, {1, 15}}
+        pos: {{1, 7}, {1, nil}}
       }
     end
 
@@ -145,7 +145,7 @@ defmodule ElixirSense.Core.SourceTest do
         candidate: {Enum, :map},
         npar: 0,
         pipe_before: false,
-        pos: {{1, 7}, {1, 15}}
+        pos: {{1, 7}, {1, nil}}
       }
     end
 
@@ -154,7 +154,7 @@ defmodule ElixirSense.Core.SourceTest do
         candidate: {Enum, :map},
         npar: 0,
         pipe_before: false,
-        pos: {{1, 7}, {1, 15}}
+        pos: {{1, 7}, {1, nil}}
       }
     end
 
@@ -163,7 +163,7 @@ defmodule ElixirSense.Core.SourceTest do
         candidate: {Enum, :map},
         npar: 1,
         pipe_before: false,
-        pos: {{1, 7}, {1, 15}}
+        pos: {{1, 7}, {1, nil}}
       }
     end
 
@@ -172,7 +172,7 @@ defmodule ElixirSense.Core.SourceTest do
         candidate: {Enum, :map},
         npar: 0,
         pipe_before: false,
-        pos: {{1, 7}, {1, 15}}
+        pos: {{1, 7}, {1, nil}}
       }
     end
 
@@ -181,7 +181,7 @@ defmodule ElixirSense.Core.SourceTest do
         candidate: {Enum, :map},
         npar: 1,
         pipe_before: false,
-        pos: {{1, 7}, {1, 15}}
+        pos: {{1, 7}, {1, nil}}
       }
     end
 
@@ -190,7 +190,7 @@ defmodule ElixirSense.Core.SourceTest do
         candidate: {Enum, :map},
         npar: 1,
         pipe_before: false,
-        pos: {{1, 7}, {1, 15}}
+        pos: {{1, 7}, {1, nil}}
       }
     end
 
@@ -199,7 +199,7 @@ defmodule ElixirSense.Core.SourceTest do
         candidate: {Enum, :map},
         npar: 0,
         pipe_before: false,
-        pos: {{1, 7}, {1, 15}}
+        pos: {{1, 7}, {1, nil}}
       }
     end
 
@@ -208,7 +208,7 @@ defmodule ElixirSense.Core.SourceTest do
         candidate: {Enum, :map},
         npar: 0,
         pipe_before: false,
-        pos: {{1, 7}, {1, 15}}
+        pos: {{1, 7}, {1, nil}}
       }
     end
 
@@ -376,4 +376,60 @@ defmodule ElixirSense.Core.SourceTest do
     end
 
   end
+
+  describe "which_struct" do
+
+    test "modules without namespace" do
+      code = """
+      defmodule MyMod do
+        def my_func(par1) do
+          var = %Mod{
+      """
+      assert which_struct(code) == {Mod, []}
+    end
+
+    test "modules with namespace" do
+      code = """
+      defmodule MyMod do
+        def my_func(par1) do
+          var = %ModA.ModB{
+      """
+      assert which_struct(code) == {ModA.ModB, []}
+    end
+
+    test "nested structs" do
+      code = """
+      defmodule MyMod do
+        def my_func(par1) do
+          var = %Mod{field1: %InnerMod{}, field2: {}, field3: []}
+        end
+      end
+      """
+      assert which_struct(text_before(code, 3, 16)) == {Mod, []}
+      assert which_struct(text_before(code, 3, 23)) == nil
+      assert which_struct(text_before(code, 3, 34)) == {InnerMod, []}
+      assert which_struct(text_before(code, 3, 37)) == {Mod, [:field1]}
+      assert which_struct(text_before(code, 3, 39)) == {Mod, [:field1]}
+      assert which_struct(text_before(code, 3, 50)) == {Mod, [:field1, :field2]}
+    end
+
+    test "nested structs with multiple lines" do
+      code = """
+      defmodule MyMod do
+        def my_func(par1) do
+          var = %Mod{
+            field1: %InnerMod{},
+            field2: {},
+            field3: %{
+              field4: %{}
+            },
+          }
+        end
+      end
+      """
+      assert which_struct(text_before(code, 7, 8)) == nil
+      assert which_struct(text_before(code, 8, 9)) == {Mod, [:field1, :field2, :field3]}
+    end
+  end
+
 end

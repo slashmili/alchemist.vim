@@ -18,7 +18,6 @@ requires = [
   "elixir_sense/server/context_loader.ex",
   "elixir_sense/server/tcp_server.ex",
   "elixir_sense.ex",
-  "self_destruct_timer.ex",
   "elixir_sense/server.ex"
 ]
 

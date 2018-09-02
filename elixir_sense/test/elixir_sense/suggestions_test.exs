@@ -94,7 +94,7 @@ defmodule ElixirSense.SuggestionsTest do
     assert list == [
       %{type: :hint, value: "Str"},
       %{name: "Stream", subtype: :struct,
-       summary: "Module for creating and composing streams.",
+       summary: "Functions for creating and composing streams.",
        type: :module},
       %{name: "String", subtype: nil,
        summary: "A String in Elixir is a UTF-8 encoded binary.",
@@ -120,7 +120,7 @@ defmodule ElixirSense.SuggestionsTest do
     assert list == [%{
       args: "old_vsn,state,extra", arity: 3, name: :code_change,
       origin: "GenServer",
-      spec: "@callback code_change(old_vsn, state :: term, extra :: term) ::\n  {:ok, new_state :: term} |\n  {:error, reason :: term} when old_vsn: term | {:down, term}\n",
+      spec: "@callback code_change(old_vsn, state :: term, extra :: term) ::\n  {:ok, new_state :: term} |\n  {:error, reason :: term} |\n  {:down, term} when old_vsn: term\n",
       summary: "Invoked to change the state of the `GenServer` when a different version of a\nmodule is loaded (hot code swapping) and the state's term structure should be\nchanged.",
       type: :callback
     }]
@@ -147,17 +147,17 @@ defmodule ElixirSense.SuggestionsTest do
        snippet: "{:reply, \"${1:reply}$\", \"${2:new_state}$\"}",
        spec: "{:reply, reply, new_state} when reply: term, new_state: term, reason: term",
        type: :return},
-      %{description: "{:reply, reply, new_state, timeout | :hibernate}",
-        snippet: "{:reply, \"${1:reply}$\", \"${2:new_state}$\", \"${3:timeout | :hibernate}$\"}",
-        spec: "{:reply, reply, new_state, timeout | :hibernate} when reply: term, new_state: term, reason: term",
+      %{description: "{:reply, reply, new_state, timeout | :hibernate | {:continue, term}}",
+        snippet: "{:reply, \"${1:reply}$\", \"${2:new_state}$\", \"${3:timeout | :hibernate | {:continue, term}}$\"}",
+        spec: "{:reply, reply, new_state, timeout | :hibernate | {:continue, term}} when reply: term, new_state: term, reason: term",
         type: :return},
       %{description: "{:noreply, new_state}",
         snippet: "{:noreply, \"${1:new_state}$\"}",
         spec: "{:noreply, new_state} when reply: term, new_state: term, reason: term",
         type: :return},
-      %{description: "{:noreply, new_state, timeout | :hibernate}",
-        snippet: "{:noreply, \"${1:new_state}$\", \"${2:timeout | :hibernate}$\"}",
-        spec: "{:noreply, new_state, timeout | :hibernate} when reply: term, new_state: term, reason: term",
+      %{description: "{:noreply, new_state, timeout | :hibernate, {:continue, term}}",
+        snippet: "{:noreply, \"${1:new_state}$\", \"${2:timeout | :hibernate}$\", {:continue, term()}}",
+        spec: "{:noreply, new_state, timeout | :hibernate, {:continue, term}} when reply: term, new_state: term, reason: term",
         type: :return},
       %{description: "{:stop, reason, reply, new_state}",
         snippet: "{:stop, \"${1:reason}$\", \"${2:reply}$\", \"${3:new_state}$\"}",
@@ -225,6 +225,67 @@ defmodule ElixirSense.SuggestionsTest do
 
     assert Enum.at(list,0) == %{type: :hint, value: "Elixir"}
     assert Enum.at(list,1) == %{type: :module, name: "Elixir", subtype: nil, summary: ""}
+  end
+
+  test "suggestion for aliases modules defined by require clause" do
+
+    buffer =
+      """
+      defmodule Mod do
+        require Integer, as: I
+        I.is_o
+      end
+      """
+
+    list = ElixirSense.suggestions(buffer, 3, 9)
+    assert Enum.at(list,1).name == "is_odd"
+  end
+
+  test "suggestion for struct fields" do
+    buffer =
+      """
+      defmodule Mod do
+        %IO.Stream{
+      end
+      """
+
+    list = ElixirSense.suggestions(buffer, 2, 14)
+    assert list == [
+      %{type: :hint, value: ""},
+      %{name: :device, origin: "IO.Stream", type: :field},
+      %{name: :line_or_bytes, origin: "IO.Stream", type: :field},
+      %{name: :raw, origin: "IO.Stream", type: :field}
+    ]
+  end
+
+  test "suggestion for aliased struct fields" do
+    buffer =
+      """
+      defmodule Mod do
+        alias IO.Stream
+        %Stream{
+      end
+      """
+
+    list = ElixirSense.suggestions(buffer, 3, 11)
+    assert list == [
+      %{type: :hint, value: ""},
+      %{name: :device, origin: "IO.Stream", type: :field},
+      %{name: :line_or_bytes, origin: "IO.Stream", type: :field},
+      %{name: :raw, origin: "IO.Stream", type: :field}
+    ]
+  end
+
+  test "no suggestion of fields when the module is not a struct" do
+    buffer =
+      """
+      defmodule Mod do
+        %Enum{
+      end
+      """
+
+    list = ElixirSense.suggestions(buffer, 2, 9)
+    assert Enum.any?(list, fn %{type: type} -> type == :field end) == false
   end
 
 end

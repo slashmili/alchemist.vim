@@ -220,7 +220,7 @@ function! alchemist#exdef(...)
 
     let result = alchemist#alchemist_client('definition', lnum, cnum, lines)
     let source_match = split(result, '\n')
-    if len(source_match) == 0 || source_match[0] == 'non_existing:0'
+    if len(source_match) == 0 || source_match[0] == 'definition_not_found'
         call s:echo_error('E426: tag not found: ' . query)
         return
     endif

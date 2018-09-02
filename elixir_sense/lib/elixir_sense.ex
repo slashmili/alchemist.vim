@@ -18,6 +18,7 @@ defmodule ElixirSense do
   alias ElixirSense.Providers.Signature
   alias ElixirSense.Providers.Expand
   alias ElixirSense.Providers.Eval
+  alias ElixirSense.Providers.References
 
   @doc ~S"""
   Returns all documentation related a module or function, including types and callback information.
@@ -34,7 +35,7 @@ defmodule ElixirSense do
       iex> docs |> String.split("\n") |> Enum.at(6)
       "Converts `enumerable` to a list."
       iex> types |> String.split("\n") |> Enum.at(0)
-      "  `@type t :: Enumerable.t"
+      "  `@type default :: any"
   """
   @spec docs(String.t, pos_integer, pos_integer) :: %{subject: String.t, actual_subject: String.t, docs: Introspection.docs}
   def docs(code, line, column) do
@@ -61,9 +62,9 @@ defmodule ElixirSense do
       ...>   MyEnum.to_list(1..3)
       ...> end
       ...> '''
-      iex> {path, line} = ElixirSense.definition(code, 3, 11)
-      iex> "#{Path.basename(path)}:#{to_string(line)}"
-      "enum.ex:2576"
+      iex>  %{found: true, file: path, line: line, column: column} = ElixirSense.definition(code, 3, 11)
+      iex> "#{Path.basename(path)}:#{to_string(line)}:#{to_string(column)}"
+      "enum.ex:2610:7"
   """
   @spec definition(String.t, pos_integer, pos_integer) :: Definition.location
   def definition(code, line, column) do
@@ -72,10 +73,11 @@ defmodule ElixirSense do
     %State.Env{
       imports: imports,
       aliases: aliases,
-      module: module
+      module: module,
+      vars: vars,
     } = Metadata.get_env(buffer_file_metadata, line)
 
-    Definition.find(subject, imports, aliases, module)
+    Definition.find(subject, imports, aliases, module, vars)
   end
 
   @doc ~S"""
@@ -134,6 +136,7 @@ defmodule ElixirSense do
   def suggestions(buffer, line, column) do
     hint = Source.prefix(buffer, line, column)
     buffer_file_metadata = Parser.parse_string(buffer, true, true, line)
+    text_before = Source.text_before(buffer, line, column)
     %State.Env{
       imports: imports,
       aliases: aliases,
@@ -144,7 +147,7 @@ defmodule ElixirSense do
       scope: scope
     } = Metadata.get_env(buffer_file_metadata, line)
 
-    Suggestion.find(hint, [module|imports], aliases, vars, attributes, behaviours, scope)
+    Suggestion.find(hint, [module|imports], aliases, module, vars, attributes, behaviours, scope, text_before)
   end
 
   @doc """
@@ -295,6 +298,23 @@ defmodule ElixirSense do
   @spec match(String.t) :: Eval.bindings
   def match(code) do
     Eval.match_and_format(code)
+  end
+
+  def references(code, line, column) do
+    subject = Source.subject(code, line, column)
+
+    buffer_file_metadata = Parser.parse_string(code, true, true, line)
+    %State.Env{
+      imports: imports,
+      aliases: aliases,
+      module: module,
+      scope: scope,
+      scope_id: scope_id,
+    } = Metadata.get_env(buffer_file_metadata, line)
+
+    vars = buffer_file_metadata.vars_info_per_scope_id[scope_id] |> Map.values
+
+    References.find(subject, imports, aliases, module, scope, vars)
   end
 
 end

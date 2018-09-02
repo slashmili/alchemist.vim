@@ -94,14 +94,17 @@ class ElixirSenseClient:
         self.sock = sock
         return self.sock
 
-    def to_vim_definition(self, source):
-        filename = source.split(":")[0]
+    def to_vim_definition(self, definition):
+        if definition['found']:
+            line = definition['line']
+            filename = definition['file']
+            if self._is_readable(filename):
+                return "%s:%s" % (filename, line)
 
-        if filename == "non_existing": return source
-        if self._is_readable(filename): return source
-
-        filename = self._find_elixir_erlang_src(filename)
-        return "%s:%i" %(filename, 0)
+            filename = self._find_elixir_erlang_src(filename)
+            return "%s:%i" %(filename, 0)
+        else:
+            return "definition_not_found"
 
     def to_vim_suggestions(self, suggestions):
         """

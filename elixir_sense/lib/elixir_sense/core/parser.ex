@@ -21,8 +21,9 @@ defmodule ElixirSense.Core.Parser do
         if Map.has_key?(acc.lines_to_env, cursor_line_number) or !try_to_fix_line_not_found  do
           %Metadata{
             source: source,
-            mods_funs_to_lines: acc.mods_funs_to_lines,
-            lines_to_env: acc.lines_to_env
+            mods_funs_to_positions: acc.mods_funs_to_positions,
+            lines_to_env: acc.lines_to_env,
+            vars_info_per_scope_id: acc.vars_info_per_scope_id,
           }
         else
           # IO.puts :stderr, "LINE NOT FOUND"
@@ -41,7 +42,7 @@ defmodule ElixirSense.Core.Parser do
   end
 
   defp string_to_ast(source, try_to_fix_parse_error, cursor_line_number) do
-    case Code.string_to_quoted(source) do
+    case Code.string_to_quoted(source, columns: true) do
       {:ok, ast} ->
         {:ok, ast}
       error ->

@@ -15,7 +15,6 @@ defmodule ElixirSense.Server.TCPServer do
     children = [
       worker(Task, [__MODULE__, :listen, [socket_type, "localhost", port]]),
       supervisor(Task.Supervisor, [[name: @connection_handler_supervisor]]),
-      worker(SelfDestructTimer, [env]),
       worker(ContextLoader, [env])
     ]
 
@@ -74,7 +73,6 @@ defmodule ElixirSense.Server.TCPServer do
   end
 
   defp connection_handler(socket, auth_token) do
-    SelfDestructTimer.reset
     case :gen_tcp.recv(socket, 0) do
       {:error, :closed} ->
         IO.puts :stderr, "Client socket is closed"
@@ -96,9 +94,9 @@ defmodule ElixirSense.Server.TCPServer do
       {:invalid_request, message} ->
         IO.puts(:stderr, "Server Error: #{message}")
         :erlang.term_to_binary(%{request_id: nil, payload: nil, error: message})
-      {:error, request_id, exception} ->
-        IO.puts(:stderr, "Server Error: \n" <> Exception.message(exception) <> "\n" <> Exception.format_stacktrace(System.stacktrace))
-        :erlang.term_to_binary(%{request_id: request_id, payload: nil, error: Exception.message(exception)})
+      {:error, request_id, message, details} ->
+        IO.puts(:stderr, "Server Error: \n" <> message <> "\n" <> details)
+        :erlang.term_to_binary(%{request_id: request_id, payload: nil, error: message})
     end
   end
 
@@ -111,14 +109,17 @@ defmodule ElixirSense.Server.TCPServer do
       result =
         if secure_compare(auth_token, req_token) do
           ContextLoader.reload()
-          payload = RequestHandler.handle_request(request, payload)
+          payload = RequestHandler.handle_request(request, payload) |> format_payload()
           %{request_id: request_id, payload: payload, error: nil}
         else
           %{request_id: request_id, payload: nil, error: "unauthorized"}
         end
       {:ok, result}
     rescue
-      e -> {:error, request_id, e}
+      e ->
+        message = Exception.message(e)
+        details = Exception.format_stacktrace(System.stacktrace)
+        {:error, request_id, message, details}
     end
   end
 
@@ -143,6 +144,9 @@ defmodule ElixirSense.Server.TCPServer do
         {:error, "Cannot decode request data. :erlang.binary_to_term/1 failed"}
     end
   end
+
+  defp format_payload(%_{} = data), do: Map.from_struct(data)
+  defp format_payload(data), do: data
 
   # Adapted from https://github.com/plackemacher/secure_compare/blob/master/lib/secure_compare.ex
   defp secure_compare(nil, nil), do: true
