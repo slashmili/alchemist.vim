@@ -2,6 +2,14 @@
 
 # Lithium(3.X.X)
 
+## [3.2.0] - 2018-09-02
+### Added
+- Support Elixir 1.7 & OTP 21
+
+### Changed
+- Upgrade ElixirSense
+
+
 ## [3.1.1] - 2018-06-25
 ### Added
 - Add completor.vim integration
