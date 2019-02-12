@@ -6,7 +6,7 @@ import pprint
 import subprocess, shlex
 import select, socket
 import time
-import syslog
+# import syslog
 import struct
 import erl_terms
 import errno
