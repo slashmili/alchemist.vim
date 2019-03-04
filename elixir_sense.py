@@ -6,7 +6,10 @@ import pprint
 import subprocess, shlex
 import select, socket
 import time
-import syslog
+try :
+    import syslog
+except ImportError:
+    pass
 import struct
 import erl_terms
 import errno
