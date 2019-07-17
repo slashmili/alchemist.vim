@@ -179,29 +179,8 @@ defmodule ElixirSense.DocsTest do
       %{subject: subject, docs: %{docs: docs}} = ElixirSense.docs(buffer, 2, 5)
 
       assert subject == "defmacro"
-      assert docs =~ """
-      > Kernel.defmacro(call, expr \\\\\\\\ nil)
-
-      Defines a macro with the given name and body.
-
-      Check `def/2` for rules on naming and default arguments.
-
-      ## Examples
-
-          defmodule MyLogic do
-            defmacro unless(expr, opts) do
-              quote do
-                if !unquote(expr), unquote(opts)
-              end
-            end
-          end
-
-          require MyLogic
-          MyLogic.unless false do
-            IO.puts \"It works\"
-          end
-
-      """
+      assert docs =~ "Kernel.defmacro(call, expr \\\\\\\\ nil)"
+      assert docs =~ "Defines a macro with the given name and body."
     end
 
     test "retrieve documentation from modules" do

@@ -7,7 +7,7 @@ defmodule ElixirSense.Server.ContextLoader do
   @minimal_reload_time 2000
 
   def start_link(env) do
-    GenServer.start_link(__MODULE__, env, [name: __MODULE__])
+    GenServer.start_link(__MODULE__, env, name: __MODULE__)
   end
 
   def init(env) do
@@ -44,7 +44,11 @@ defmodule ElixirSense.Server.ContextLoader do
     {:reply, :ok, {loaded, new_paths, new_apps, env, cwd, time}}
   end
 
-  def handle_call({:set_context, {env, cwd}}, _from, {loaded, paths, apps, _env, _cwd, last_load_time}) do
+  def handle_call(
+        {:set_context, {env, cwd}},
+        _from,
+        {loaded, paths, apps, _env, _cwd, last_load_time}
+      ) do
     {:reply, {env, cwd}, {loaded, paths, apps, env, cwd, last_load_time}}
   end
 
@@ -53,14 +57,15 @@ defmodule ElixirSense.Server.ContextLoader do
   end
 
   defp preload_modules(modules) do
-    modules |> Enum.each(fn mod ->
+    modules
+    |> Enum.each(fn mod ->
       {:module, _} = Code.ensure_loaded(mod)
     end)
   end
 
   defp all_loaded do
     preload_modules([Inspect, :base64, :crypto])
-    for {m, _} <- :code.all_loaded, do: m
+    for {m, _} <- :code.all_loaded(), do: m
   end
 
   defp load_paths(env, cwd) do
@@ -72,14 +77,14 @@ defmodule ElixirSense.Server.ContextLoader do
 
   defp load_apps(env, cwd) do
     for path <- Path.wildcard(Path.join(cwd, "_build/#{env}/lib/*/ebin/*.app")) do
-      app = path |> Path.basename() |> Path.rootname() |> String.to_atom
+      app = path |> Path.basename() |> Path.rootname() |> String.to_atom()
       Application.load(app)
       app
     end
   end
 
   defp purge_modules(loaded) do
-    for m <- (all_loaded() -- loaded) do
+    for m <- all_loaded() -- loaded do
       :code.delete(m)
       :code.purge(m)
     end
@@ -92,5 +97,4 @@ defmodule ElixirSense.Server.ContextLoader do
   defp purge_apps(apps) do
     for a <- apps, do: Application.unload(a)
   end
-
 end

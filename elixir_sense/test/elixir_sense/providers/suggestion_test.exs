@@ -9,15 +9,42 @@ defmodule ElixirSense.Providers.SuggestionTest do
     def say_hi, do: true
   end
 
-  test "find definition of functions from Kernel" do
-    result = Suggestion.find("List", [], [], SomeModule, [], [], [], SomeModule, "") |> Enum.take(16)
-    assert result |> Enum.at(0) == %{type: :hint, value: "List."}
-    assert result |> Enum.at(1) == %{name: "List", subtype: nil, summary: "Functions that work on (linked) lists.", type: :module}
-    assert result |> Enum.at(3) == %{args: "", arity: 1, name: "__info__", origin: "List", spec: nil, summary: "", type: "function"}
-    assert result |> Enum.at(4) == %{args: "list", arity: 1, name: "first", origin: "List", spec: "@spec first([elem]) :: nil | elem when elem: var", summary: "Returns the first element in `list` or `nil` if `list` is empty.", type: "function"}
-    assert result |> Enum.at(5) == %{args: "list", arity: 1, name: "last", origin: "List", spec: "@spec last([elem]) :: nil | elem when elem: var", summary: "Returns the last element in `list` or `nil` if `list` is empty.", type: "function"}
-    assert result |> Enum.at(13) == %{args: "", arity: 1, name: "module_info", origin: "List", spec: nil, summary: "", type: "function"}
-    assert result |> Enum.at(15) == %{args: "list,counter \\\\ :infinity", name: "ascii_printable?", arity: 2, origin: "List", type: "function", spec: "", summary: "Checks if a list is a charlist made only of printable ASCII characters."}
+  test "find definition of default functions" do
+    result = Suggestion.find("ElixirSenseExample.EmptyModule", [], [], SomeModule, [], [], [], SomeModule, "") |> Enum.take(18)
+    assert result |> Enum.at(0) == %{type: :hint, value: "ElixirSenseExample.EmptyModule."}
+    assert result |> Enum.at(1) == %{
+      name: "EmptyModule",
+      subtype: nil,
+      summary: "Empty module without other functions",
+      type: :module
+    }
+    assert result |> Enum.at(2) == %{
+      args: "",
+      arity: 1,
+      name: "__info__",
+      origin: "ElixirSenseExample.EmptyModule",
+      spec: nil,
+      summary: "",
+      type: "function"
+    }
+    assert result |> Enum.at(3) == %{
+      args: "",
+      arity: 1,
+      name: "module_info",
+      origin: "ElixirSenseExample.EmptyModule",
+      spec: nil,
+      summary: "",
+      type: "function"
+    }
+    assert result |> Enum.at(4) == %{
+      args: "",
+      arity: 0,
+      name: "module_info",
+      origin: "ElixirSenseExample.EmptyModule",
+      spec: nil,
+      summary: "",
+      type: "function"
+    }
   end
 
   test "return completion candidates for 'Str'" do

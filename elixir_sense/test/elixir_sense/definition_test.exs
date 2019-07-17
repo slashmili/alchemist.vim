@@ -9,19 +9,21 @@ defmodule ElixirSense.Providers.DefinitionTest do
   test "find definition of aliased modules in `use`" do
     buffer = """
     defmodule MyModule do
-      alias Mix.Generator
-      use Generator
+      alias ElixirSenseExample.UseExample
+      use UseExample
+      #        ^
     end
     """
     %{found: true, type: :module, file: file, line: line, column: column} = ElixirSense.definition(buffer, 3, 12)
-    assert file =~ "lib/mix/lib/mix/generator.ex"
-    assert read_line(file, {line, column}) =~ "Mix.Generator"
+    assert file =~ "elixir_sense/test/support/use_example.ex"
+    assert read_line(file, {line, column}) =~ "ElixirSenseExample.UseExample"
   end
 
+  @tag requires_source: true
   test "find definition of functions from Kernel" do
     buffer = """
     defmodule MyModule do
-
+    #^
     end
     """
     %{found: true, type: :function, file: file, line: line, column: column} = ElixirSense.definition(buffer, 1, 2)
@@ -29,10 +31,12 @@ defmodule ElixirSense.Providers.DefinitionTest do
     assert read_line(file, {line, column}) =~ "defmodule("
   end
 
+  @tag requires_source: true
   test "find definition of functions from Kernel.SpecialForms" do
     buffer = """
     defmodule MyModule do
       import List
+       ^
     end
     """
     %{found: true, type: :function, file: file, line: line, column: column} = ElixirSense.definition(buffer, 2, 4)
@@ -43,37 +47,53 @@ defmodule ElixirSense.Providers.DefinitionTest do
   test "find definition of functions from imports" do
     buffer = """
     defmodule MyModule do
-      import Mix.Generator
-      create_file(
+      import ElixirSenseExample.ModuleWithFunctions
+      function_arity_zero()
+      #^
     end
     """
     %{found: true, type: :function, file: file, line: line, column: column} = ElixirSense.definition(buffer, 3, 4)
-    assert file =~ "lib/mix/lib/mix/generator.ex"
-    assert read_line(file, {line, column}) =~ "create_file"
+    assert file =~ "elixir_sense/test/support/module_with_functions.ex"
+    assert read_line(file, {line, column}) =~ "function_arity_zero"
   end
 
   test "find definition of functions from aliased modules" do
     buffer = """
     defmodule MyModule do
-      alias List, as: MyList
-      MyList.flatten([[1],[3]])
+      alias ElixirSenseExample.ModuleWithFunctions, as: MyMod
+      MyMod.function_arity_one(42)
+      #        ^
     end
     """
     %{found: true, type: :function, file: file, line: line, column: column} = ElixirSense.definition(buffer, 3, 11)
-    assert file =~ "lib/elixir/lib/list.ex"
-    assert read_line(file, {line, column}) =~ "flatten"
+    assert file =~ "elixir_sense/test/support/module_with_functions.ex"
+    assert read_line(file, {line, column}) =~ "function_arity_one"
+  end
+
+  test "find definition of delegated functions" do
+    buffer = """
+    defmodule MyModule do
+      alias ElixirSenseExample.ModuleWithFunctions, as: MyMod
+      MyMod.delegated_function()
+      #        ^
+    end
+    """
+    %{found: true, type: :function, file: file, line: line, column: column} = ElixirSense.definition(buffer, 3, 11)
+    assert file =~ "elixir_sense/test/support/module_with_functions.ex"
+    assert read_line(file, {line, column}) =~ "delegated_function"
   end
 
   test "find definition of modules" do
     buffer = """
     defmodule MyModule do
       alias List, as: MyList
-      String.to_atom("erlang")
+      ElixirSenseExample.ModuleWithFunctions.function_arity_zero()
+      #                   ^
     end
     """
-    %{found: true, type: :module, file: file, line: line, column: column} = ElixirSense.definition(buffer, 3, 4)
-    assert file =~ "lib/elixir/lib/string.ex"
-    assert read_line(file, {line, column}) =~ "String do"
+    %{found: true, type: :module, file: file, line: line, column: column} = ElixirSense.definition(buffer, 3, 23)
+    assert file =~ "elixir_sense/test/support/module_with_functions.ex"
+    assert read_line(file, {line, column}) =~ "ElixirSenseExample.ModuleWithFunctions do"
   end
 
   test "find definition of erlang modules" do
@@ -81,6 +101,7 @@ defmodule ElixirSense.Providers.DefinitionTest do
     defmodule MyModule do
       def dup(x) do
         :lists.duplicate(2, x)
+        # ^
       end
     end
     """
@@ -94,6 +115,7 @@ defmodule ElixirSense.Providers.DefinitionTest do
     defmodule MyModule do
       def dup(x) do
         :lists.duplicate(2, x)
+        #         ^
       end
     end
     """
@@ -116,6 +138,7 @@ defmodule ElixirSense.Providers.DefinitionTest do
     defmodule MyModule do
       env = __ENV__
       IO.puts(env.file)
+      #            ^
     end
     """
     assert ElixirSense.definition(buffer, 3, 16) == %Location{found: false}
@@ -125,6 +148,7 @@ defmodule ElixirSense.Providers.DefinitionTest do
     buffer = """
     defmodule MyModule do
       var = %{count: 1}
+      #        ^
     end
     """
     assert ElixirSense.definition(buffer, 2, 12) == %Location{found: false}
@@ -134,19 +158,23 @@ defmodule ElixirSense.Providers.DefinitionTest do
     buffer = """
     defmodule MyModule do
       :erlang.node
+      # ^
     end
     """
     assert ElixirSense.definition(buffer, 2, 5) == %Location{found: false}
   end
 
   test "find the related module when searching for built-in functions" do
+    # module_info is defined by default for every elixir and erlang module:
+    # https://stackoverflow.com/a/33373107/175830
     buffer = """
     defmodule MyModule do
-      List.module_info()
+      ElixirSenseExample.ModuleWithFunctions.module_info()
+      #                                      ^
     end
     """
-    %{found: true, type: :function, file: file, line: 1, column: 1} = ElixirSense.definition(buffer, 2, 10)
-    assert file =~ "lib/elixir/lib/list.ex"
+    %{found: true, type: :function, file: file, line: 1, column: 1} = ElixirSense.definition(buffer, 2, 42)
+    assert file =~ "elixir_sense/test/support/module_with_functions.ex"
   end
 
   test "find definition of variables" do
@@ -170,6 +198,7 @@ defmodule ElixirSense.Providers.DefinitionTest do
       def func(%{a: [var2|_]}) do
         var1 = 3
         IO.puts(var1 + var2)
+        #               ^
       end
     end
     """

@@ -2,6 +2,10 @@
 
 # Lithium(3.X.X)
 
+## [3.3.0] - 2019-07-17
+### Changed
+- Upgrade ElixirSense using c7ed928ad1c0e2ddf94a951fabe93b7af9b6a78a
+
 ## [3.2.0] - 2018-09-02
 ### Added
 - Support Elixir 1.7 & OTP 21

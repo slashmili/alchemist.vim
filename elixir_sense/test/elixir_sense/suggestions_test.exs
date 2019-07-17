@@ -126,15 +126,14 @@ defmodule ElixirSense.SuggestionsTest do
     }]
   end
 
-  test "lists returns" do
+  test "lists function return values" do
     buffer = """
     defmodule MyServer do
-      use GenServer
+      use ElixirSenseExample.ExampleBehaviour
 
       def handle_call(request, from, state) do
 
       end
-
     end
     """
 
@@ -155,9 +154,9 @@ defmodule ElixirSense.SuggestionsTest do
         snippet: "{:noreply, \"${1:new_state}$\"}",
         spec: "{:noreply, new_state} when reply: term, new_state: term, reason: term",
         type: :return},
-      %{description: "{:noreply, new_state, timeout | :hibernate, {:continue, term}}",
-        snippet: "{:noreply, \"${1:new_state}$\", \"${2:timeout | :hibernate}$\", {:continue, term()}}",
-        spec: "{:noreply, new_state, timeout | :hibernate, {:continue, term}} when reply: term, new_state: term, reason: term",
+      %{description: "{:noreply, new_state, timeout | :hibernate | {:continue, term}}",
+        snippet: "{:noreply, \"${1:new_state}$\", \"${2:timeout | :hibernate | {:continue, term}}$\"}",
+        spec: "{:noreply, new_state, timeout | :hibernate | {:continue, term}} when reply: term, new_state: term, reason: term",
         type: :return},
       %{description: "{:stop, reason, reply, new_state}",
         snippet: "{:stop, \"${1:reason}$\", \"${2:reply}$\", \"${3:new_state}$\"}",

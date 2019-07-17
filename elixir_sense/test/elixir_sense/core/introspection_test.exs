@@ -97,15 +97,19 @@ defmodule ElixirSense.Core.IntrospectionTest do
   end
 
   test "get_returns_from_callback (all types in 'when')" do
-    returns = get_returns_from_callback(:gen_server, :handle_call, 3)
-    assert returns == [
-      %{description: "{:reply, reply, new_state}", snippet: "{:reply, \"${1:reply}$\", \"${2:new_state}$\"}", spec: "{:reply, reply, new_state} when reply: term, new_state: term, reason: term"},
-      %{description: "{:reply, reply, new_state, timeout | :hibernate | {:continue, term}}", snippet: "{:reply, \"${1:reply}$\", \"${2:new_state}$\", \"${3:timeout | :hibernate | {:continue, term}}$\"}", spec: "{:reply, reply, new_state, timeout | :hibernate | {:continue, term}} when reply: term, new_state: term, reason: term"},
-      %{description: "{:noreply, new_state}", snippet: "{:noreply, \"${1:new_state}$\"}", spec: "{:noreply, new_state} when reply: term, new_state: term, reason: term"},
-      %{description: "{:noreply, new_state, timeout | :hibernate, {:continue, term}}", snippet: "{:noreply, \"${1:new_state}$\", \"${2:timeout | :hibernate}$\", {:continue, term()}}", spec: "{:noreply, new_state, timeout | :hibernate, {:continue, term}} when reply: term, new_state: term, reason: term"},
-      %{description: "{:stop, reason, reply, new_state}", snippet: "{:stop, \"${1:reason}$\", \"${2:reply}$\", \"${3:new_state}$\"}", spec: "{:stop, reason, reply, new_state} when reply: term, new_state: term, reason: term"},
-      %{description: "{:stop, reason, new_state}", snippet: "{:stop, \"${1:reason}$\", \"${2:new_state}$\"}", spec: "{:stop, reason, new_state} when reply: term, new_state: term, reason: term"}
-    ]
+    returns = get_returns_from_callback(ElixirSenseExample.ExampleBehaviour, :handle_call, 3)
+
+    expected_returns =
+      [
+        %{description: "{:reply, reply, new_state}", snippet: "{:reply, \"${1:reply}$\", \"${2:new_state}$\"}", spec: "{:reply, reply, new_state} when reply: term, new_state: term, reason: term"},
+        %{description: "{:reply, reply, new_state, timeout | :hibernate | {:continue, term}}", snippet: "{:reply, \"${1:reply}$\", \"${2:new_state}$\", \"${3:timeout | :hibernate | {:continue, term}}$\"}", spec: "{:reply, reply, new_state, timeout | :hibernate | {:continue, term}} when reply: term, new_state: term, reason: term"},
+        %{description: "{:noreply, new_state}", snippet: "{:noreply, \"${1:new_state}$\"}", spec: "{:noreply, new_state} when reply: term, new_state: term, reason: term"},
+        %{description: "{:noreply, new_state, timeout | :hibernate | {:continue, term}}", snippet: "{:noreply, \"${1:new_state}$\", \"${2:timeout | :hibernate | {:continue, term}}$\"}", spec: "{:noreply, new_state, timeout | :hibernate | {:continue, term}} when reply: term, new_state: term, reason: term"},
+        %{description: "{:stop, reason, reply, new_state}", snippet: "{:stop, \"${1:reason}$\", \"${2:reply}$\", \"${3:new_state}$\"}", spec: "{:stop, reason, reply, new_state} when reply: term, new_state: term, reason: term"},
+        %{description: "{:stop, reason, new_state}", snippet: "{:stop, \"${1:reason}$\", \"${2:new_state}$\"}", spec: "{:stop, reason, new_state} when reply: term, new_state: term, reason: term"}
+      ]
+
+    assert returns == expected_returns
   end
 
   test "get_returns_from_callback (erlang specs)" do

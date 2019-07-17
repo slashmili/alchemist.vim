@@ -131,11 +131,7 @@ defmodule ElixirSense.Core.Source do
   end
 
   def which_func(prefix) do
-    tokens =
-      prefix
-      |> String.to_charlist
-      |> :elixir_tokenizer.tokenize(1, [])
-      |> tokenize_prefix()
+    tokens = ElixirSense.Core.Tokenizer.tokenize(prefix)
 
     pattern = %{npar: 0, count: 0, count2: 0, candidate: [], pos: nil, pipe_before: false}
     result = scan(tokens, pattern)
@@ -147,20 +143,6 @@ defmodule ElixirSense.Core.Source do
       pipe_before: pipe_before,
       pos: pos
     }
-  end
-
-  defp tokenize_prefix({:ok, _, _, tokens}) do
-    tokens |> Enum.reverse
-  end
-
-  # Elixir >= 1.7
-  defp tokenize_prefix({:error, {_line, _column, _error_prefix, _token}, _rest, sofar}) do
-    sofar
-  end
-
-  # Elixir < 1.7
-  defp tokenize_prefix({:error, {_line, _error_prefix, _token}, _rest, sofar}) do
-    sofar
   end
 
   defp normalize_candidate(candidate) do

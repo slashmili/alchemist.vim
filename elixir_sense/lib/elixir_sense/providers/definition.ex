@@ -2,6 +2,7 @@ defmodule ElixirSense.Providers.Definition do
 
   @moduledoc """
   Provides a function to find out where symbols are defined.
+
   Currently finds definition of modules, functions and macros.
   """
 
@@ -51,7 +52,7 @@ defmodule ElixirSense.Providers.Definition do
         source -> List.to_string(source)
       end
     end
-    file = if file && (File.exists?(file) || file =~ ~r"exs??$") do
+    file = if file && File.exists?(file) do
       file
     else
       erl_file = module |> :code.which |> to_string |> String.replace(Regex.recompile!(~r/(.+)\/ebin\/([^\s]+)\.beam$/), "\\1/src/\\2.erl")
@@ -73,15 +74,11 @@ defmodule ElixirSense.Providers.Definition do
       _ -> :function
     end
 
-    position = cond do
-      String.ends_with?(file, ".erl") ->
-        find_fun_position_in_erl_file(file, fun)
-      !File.exists?(file) ->
-        :ok
-        {1, 1}
-      true ->
-        file_metadata = Parser.parse_file(file, false, false, nil)
-        Metadata.get_function_position(file_metadata, mod, fun)
+    position = if String.ends_with?(file, ".erl") do
+      find_fun_position_in_erl_file(file, fun)
+    else
+      file_metadata = Parser.parse_file(file, false, false, nil)
+      Metadata.get_function_position(file_metadata, mod, fun)
     end
 
     case position do

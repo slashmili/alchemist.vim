@@ -58,13 +58,13 @@ defmodule ElixirSense do
 
       iex> code = ~S'''
       ...> defmodule MyModule do
-      ...>   alias Enum, as: MyEnum
-      ...>   MyEnum.to_list(1..3)
+      ...>   alias ElixirSenseExample.ModuleWithFunctions, as: MyMod
+      ...>   MyMod.function_arity_one("some string")
       ...> end
       ...> '''
       iex>  %{found: true, file: path, line: line, column: column} = ElixirSense.definition(code, 3, 11)
       iex> "#{Path.basename(path)}:#{to_string(line)}:#{to_string(column)}"
-      "enum.ex:2610:7"
+      "module_with_functions.ex:6:7"
   """
   @spec definition(String.t, pos_integer, pos_integer) :: Definition.location
   def definition(code, line, column) do

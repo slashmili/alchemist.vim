@@ -11,7 +11,7 @@ defmodule ElixirSense.Core.MetadataBuilder do
 
   @scope_keywords [:for, :try, :fn]
   @block_keywords [:do, :else, :rescue, :catch, :after]
-  @defs [:def, :defp, :defmacro, :defmacrop]
+  @defs [:def, :defp, :defmacro, :defmacrop, :defdelegate]
 
   @doc """
   Traverses the AST building/retrieving the environment information.

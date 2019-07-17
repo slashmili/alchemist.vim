@@ -6,12 +6,18 @@ defmodule ElixirSense.Core.MetadataBuilderTest do
   alias ElixirSense.Core.State
   alias ElixirSense.Core.State.VarInfo
 
+  @tag requires_source: true
   test "build metadata from kernel.ex" do
     assert get_subject_definition_line(Kernel, :defmodule, nil) =~ "defmacro defmodule(alias, do: block) do"
   end
 
+  @tag requires_source: true
   test "build metadata from kernel/special_forms.ex" do
     assert get_subject_definition_line(Kernel.SpecialForms, :alias, nil) =~ "defmacro alias(module, opts)"
+  end
+
+  test "build_metadata from a module" do
+    assert get_subject_definition_line(ElixirSenseExample.ModuleWithFunctions, :function_arity_zero, nil) =~ "def function_arity_zero"
   end
 
   test "module attributes" do
@@ -640,6 +646,8 @@ defmodule ElixirSense.Core.MetadataBuilderTest do
         IO.puts ""
         defmacro import(module, opts)
         IO.puts ""
+        defdelegate func_delegated(par), to: OtherModule
+        IO.puts ""
       end
       """
       |> string_to_state
@@ -651,6 +659,7 @@ defmodule ElixirSense.Core.MetadataBuilderTest do
     assert State.get_scope_name(state, 11) == {:macro1, 1}
     assert State.get_scope_name(state, 13) == :MyModule
     assert State.get_scope_name(state, 15) == :MyModule
+    assert State.get_scope_name(state, 16) == {:func_delegated, 1}
   end
 
   defp string_to_state(string) do

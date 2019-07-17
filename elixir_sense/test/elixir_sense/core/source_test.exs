@@ -4,6 +4,10 @@ defmodule ElixirSense.Core.SourceTest do
   import ElixirSense.Core.Source
 
   describe "which_func/1" do
+    test "at the beginning of a defmodule" do
+      assert which_func("defmo") ==
+        %{candidate: :none, npar: 0, pipe_before: false, pos: nil}
+    end
 
     test "functions without namespace" do
       assert which_func("var = func(") == %{

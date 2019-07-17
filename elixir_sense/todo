@@ -1,0 +1,46 @@
+diff --git a/elixir_sense/lib/elixir_sense/server/context_loader.ex b/elixir_sense/lib/elixir_sense/server/context_loader.ex
+index bf1e02c..f98f48d 100644
+--- a/elixir_sense/lib/elixir_sense/server/context_loader.ex
++++ b/elixir_sense/lib/elixir_sense/server/context_loader.ex
+@@ -35,7 +35,6 @@ defmodule ElixirSense.Server.ContextLoader do
+         purge_modules(loaded)
+         purge_paths(paths)
+         purge_apps(apps)
+-        {load_paths("test", cwd), load_apps("test", cwd)}
+         {load_paths(env, cwd), load_apps(env, cwd)}
+       else
+         {paths, apps}
+
+diff --git a/elixir_sense/lib/elixir_sense/server/tcp_server.ex b/elixir_sense/lib/elixir_sense/server/tcp_server.ex
+index b1a51ae..f35eeb7 100644
+--- a/elixir_sense/lib/elixir_sense/server/tcp_server.ex
++++ b/elixir_sense/lib/elixir_sense/server/tcp_server.ex
+@@ -15,7 +15,6 @@ defmodule ElixirSense.Server.TCPServer do
+     children = [
+       worker(Task, [__MODULE__, :listen, [socket_type, "localhost", port]]),
+       supervisor(Task.Supervisor, [[name: @connection_handler_supervisor]]),
+-      worker(SelfDestructTimer, [env]),
+       worker(ContextLoader, [env])
+     ]
+
+@@ -74,7 +73,6 @@ defmodule ElixirSense.Server.TCPServer do
+   end
+
+   defp connection_handler(socket, auth_token) do
+-    SelfDestructTimer.reset
+
+
+
+diff --git a/elixir_sense/run.exs b/elixir_sense/run.exs
+index 8a83b1c..40dfde7 100644
+--- a/elixir_sense/run.exs
++++ b/elixir_sense/run.exs
+@@ -18,7 +18,6 @@ requires = [
+   "elixir_sense/server/context_loader.ex",
+   "elixir_sense/server/tcp_server.ex",
+   "elixir_sense.ex",
+-  "self_destruct_timer.ex",
+   "elixir_sense/server.ex"
+ ]
+
+

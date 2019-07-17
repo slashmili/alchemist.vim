@@ -39,9 +39,9 @@ defmodule ElixirSense.ServerTest do
       "auth_token" => auth_token,
       "request" => "definition",
       "payload" => %{
-        "buffer" => "Enum.to_list",
+        "buffer" => "ElixirSenseExample.ModuleWithFunctions.function_arity_zero",
         "line" => 1,
-        "column" => 6
+        "column" => 40
       }
     }
 
@@ -49,11 +49,11 @@ defmodule ElixirSense.ServerTest do
       found: true,
       type: :function,
       file: file,
-      line: 2610,
+      line: 2,
       column: 7
     } = send_request(socket, request)
 
-    assert file =~ "enum.ex"
+    assert file =~ "elixir_sense/test/support/module_with_functions.ex"
   end
 
   test "signature request", %{socket: socket, auth_token: auth_token} do

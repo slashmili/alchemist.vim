@@ -22,8 +22,9 @@ requires = [
   "elixir_sense/server.ex"
 ]
 
-requires |> Enum.each(fn file ->
+requires
+|> Enum.each(fn file ->
   Code.require_file("lib/#{file}", __DIR__)
 end)
 
-ElixirSense.Server.start(System.argv)
+ElixirSense.Server.start(System.argv())
