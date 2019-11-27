@@ -418,6 +418,8 @@ if !exists('g:alchemist_iex_term_split')
 endif
 if has('nvim')
   let s:alchemist_iex_runner = "terminal"
+elseif (v:version >= 801)
+  let s:alchemist_iex_runner = "terminal ++curwin"
 elseif exists('g:ConqueTerm_Loaded')
   let s:alchemist_iex_runner = "ConqueTerm"
 endif
@@ -441,7 +443,7 @@ endfunction
 
 function! alchemist#open_iex(command)
   if !exists('s:alchemist_iex_runner')
-    echom "IEx requires either Neovim or ConqueShell"
+    echom "IEx requires VIM 8.1, Neovim or ConqueShell"
     return ""
   endif
   if s:iex_buffer_exists()

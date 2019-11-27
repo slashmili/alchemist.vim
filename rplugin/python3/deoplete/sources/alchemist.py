@@ -3,7 +3,7 @@ PLUGIN_BASE_PATH = os.path.abspath("%s/../../../../../" % __file__)
 sys.path.insert(0, PLUGIN_BASE_PATH)
 from elixir_sense import ElixirSenseClient
 import re
-from .base import Base
+from deoplete.base.source import Base
 
 DEBUG = False
 

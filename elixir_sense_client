@@ -70,7 +70,7 @@ def main(argv):
     sense = ElixirSenseClient(debug=debug, cwd=cwd, ansi=ansi, elixir_sense_script=alchemist_script, elixir_otp_src=elixir_otp_src)
     response = sense.process_command(request, source, line ,column)
     sense._log("response:\n%s" % response)
-    print(response, end="")
+    print(response.encode('utf-8'), end="")
 
 
 def where_am_i():

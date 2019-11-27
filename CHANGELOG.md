@@ -2,6 +2,12 @@
 
 # Lithium(3.X.X)
 
+## [3.3.0] - 2019-11-27
+### Added
+- Support For VIM 8.1 terminal
+- Support UTF-8 docs
+
+
 ## [3.2.0] - 2018-09-02
 ### Added
 - Support Elixir 1.7 & OTP 21
