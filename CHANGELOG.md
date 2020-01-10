@@ -2,6 +2,10 @@
 
 # Lithium(3.X.X)
 
+## [3.4.0] - 2019-11-27
+### Fixed
+- Printing UTF-8 string in python3
+
 ## [3.3.0] - 2019-11-27
 ### Added
 - Support For VIM 8.1 terminal
