@@ -2,6 +2,10 @@
 
 # Lithium(3.X.X)
 
+## [3.5.0] - 2020-03-08
+### Added
+- Support for prabirshrestha/asyncomplete.vim plugin
+
 ## [3.4.0] - 2019-11-27
 ### Fixed
 - Printing UTF-8 string in python3
