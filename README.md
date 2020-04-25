@@ -6,7 +6,7 @@
 [![Build Status](https://travis-ci.org/slashmili/alchemist.vim.svg?branch=develop)](https://travis-ci.org/slashmili/alchemist.vim)
 
 
-This plugin uses [ElixirSense](https://github.com/msaraiva/elixir_sense) to give inside information about your elixir project in vim. (looking for old version that works with alchemist-server? checkout [2.8.2](https://github.com/slashmili/alchemist.vim/tree/2.8.2))
+This plugin uses [ElixirSense](https://github.com/elixir-lsp/elixir_sense) to give inside information about your elixir project in vim. (looking for old version that works with alchemist-server? checkout [2.8.2](https://github.com/slashmili/alchemist.vim/tree/2.8.2))
 
 **alchemist.vim** supports:
 
