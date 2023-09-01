@@ -1,9 +1,22 @@
+**This repo is archived**
+
+If you are looking to configure neovim, you should use [neovim-lspconfig](https://github.com/neovim/nvim-lspconfig) with [elixir-ls](https://github.com/elixir-lsp/elixir-ls) or with [next-ls](https://github.com/elixir-tools/next-ls)
+
+I've made a video to make the transmission smoother: 
+
+
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/tOiSHHsN29Q/0.jpg)]([https://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID_HERE](https://www.youtube.com/watch?v=tOiSHHsN29Q))
+
+https://www.youtube.com/watch?v=tOiSHHsN29Q
+
 # alchemist.vim
 
-<img src="https://github.com/slashmili/alchemist.vim/raw/master/logo.png" width="200" align="right">
+
+
+<img src="https://github.com/slashmili/alchemist.vim/raw/main/logo.png" width="200" align="right">
 
 [![License GPL 3](https://img.shields.io/badge/license-GPL_3-green.svg)](http://www.gnu.org/licenses/gpl-3.0)
-[![Build Status](https://travis-ci.org/slashmili/alchemist.vim.svg?branch=develop)](https://travis-ci.org/slashmili/alchemist.vim)
 
 
 This plugin uses [ElixirSense](https://github.com/elixir-lsp/elixir_sense) to give inside information about your elixir project in vim. (looking for old version that works with alchemist-server? checkout [2.8.2](https://github.com/slashmili/alchemist.vim/tree/2.8.2))
